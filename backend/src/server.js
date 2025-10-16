@@ -16,7 +16,11 @@ app.use(express.json({ limit: "30mb" }));
 // app.use(cors({
 
 // }))
-app.options("*", cors());
+app.use(cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(cookieParser());
 
 // Routes
