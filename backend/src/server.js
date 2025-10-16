@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import { ENV } from "./config/env.js";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.route.js";
+import passport from "passport";
+import "./config/passport.js";
 
 
 const app = express();
@@ -22,6 +24,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // Routes
 app.get('/', (req, res) => {

@@ -1,6 +1,7 @@
 import { createUser, getCurrentUser, loginUser, refreshAccessToken } from "../services/AuthService.js";
 import { validateSignup } from "../lib/validate.js";
-import { attachAuthCookies, clearAuthCookies } from "../lib/utils.js";
+import { attachAuthCookies, clearAuthCookies, generateAccessToken, generateRefreshToken } from "../lib/utils.js";
+import { ENV } from "../config/env.js";
 
 export const signup = async (req, res) => {
     try {
@@ -38,7 +39,7 @@ export const login = async (req, res) => {
     }
 };
 
-export const logout = async (_, res) => {
+export const logout = (_, res) => {
     clearAuthCookies(res);
     res.status(200).json({ message: "Logged out successfully" });
 };
@@ -70,5 +71,27 @@ export const getMe = async (req, res) => {
     } catch (error) {
         res.status(error.status || 500).json({ message: error.message });
         console.log("Error in getMe: ", error);
+    }
+};
+
+export const oauthCallback = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.redirect(`${ENV.CLIENT_URL}/login`);
+        }
+
+        // Generate tokens
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Attach cookies
+        attachAuthCookies(res, accessToken, refreshToken);
+
+        // Redirect to frontend
+        return res.redirect(ENV.CLIENT_URL);
+    } catch (error) {
+        console.error("Error in oauthCallback:", error);
+        return res.redirect(`${ENV.CLIENT_URL}/login?error=oauth_failed`);
     }
 };

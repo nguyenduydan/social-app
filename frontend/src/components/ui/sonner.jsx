@@ -8,32 +8,31 @@ import {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 
-const Toaster = ({
-  ...props
-}) => {
+const Toaster = ({ ...props }) => {
   const { theme = "system" } = useTheme();
 
   return (
     <Sonner
       theme={theme}
-      className="toaster group rounded-full"
       position="top-center"
+      className="toaster group flex justify-center"
       icons={{
-        success: <CircleCheckIcon className="size-5 text-emerald-500" />,
-        info: <InfoIcon className="size-5 text-cyan-500" />,
-        warning: <TriangleAlertIcon className="size-5 text-yellow-500" />,
-        error: <OctagonXIcon className="size-5 text-red-500" />,
-        loading: <Loader2Icon className="size-5 animate-spin" />,
+        success: <CircleCheckIcon className="size-4 text-emerald-500" />,
+        info: <InfoIcon className="size-4 text-cyan-500" />,
+        warning: <TriangleAlertIcon className="size-4 text-yellow-500" />,
+        error: <OctagonXIcon className="size-4 text-red-500" />,
+        loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "40px",
-        }
-      }
-      {...props} />
+      style={{
+        "--normal-bg": "var(--popover)",
+        "--normal-text": "var(--popover-foreground)",
+        "--border-radius": "9999px", // bo tròn kiểu pill
+      }}
+      toastOptions={{
+        duration: 2000,
+      }}
+      {...props}
+    />
   );
 };
 
