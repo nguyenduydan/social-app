@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
+import crypto from "crypto";
 
 const { JWT_SECRET, REFRESH_TOKEN_SECRET, APP_ENV, JWT_EXPIRE, REFRESH_TOKEN_EXPIRE } = ENV;
 
@@ -46,4 +47,8 @@ export const attachAuthCookies = (res, accessToken, refreshToken) => {
 export const clearAuthCookies = (res) => {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
+};
+
+export const generateResetCode = () => {
+    return crypto.randomInt(0, 1_000_000).toString().padStart(6, "0");
 };

@@ -21,8 +21,7 @@ const Signup = () => {
 
     const { signup, isSigningUp, loginWithGoogle } = useAuthStore();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = () => {
         signup(formData);
     };
 
@@ -39,102 +38,110 @@ const Signup = () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className='space-y-4'>
-                        <div className='space-y-4'>
-                            <div className='space-y-2'>
-                                <Label htmlFor='name' className='text-gray-200'>Display Name</Label>
-                                <div className='relative'>
-                                    <User className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
-                                    <Input
-                                        id='name'
-                                        type='text'
-                                        placeholder='John Doe'
-                                        value={formData.displayName}
-                                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                                        className='pl-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
-                                    />
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSubmit();
+                            }}
+                        >
+                            <div className='space-y-4'>
+                                <div className='space-y-2'>
+                                    <Label htmlFor='name' className='text-gray-200'>Display Name</Label>
+                                    <div className='relative'>
+                                        <User className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
+                                        <Input
+                                            id='name'
+                                            type='text'
+                                            placeholder='John Doe'
+                                            value={formData.displayName}
+                                            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                                            className='pl-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='space-y-2'>
-                                <Label htmlFor='email' className='text-gray-200'>Email</Label>
-                                <div className='relative'>
-                                    <Mail className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
-                                    <Input
-                                        id='email'
-                                        type='email'
-                                        placeholder='you@example.com'
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className='pl-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
-                                    />
+                                <div className='space-y-2'>
+                                    <Label htmlFor='email' className='text-gray-200'>Email</Label>
+                                    <div className='relative'>
+                                        <Mail className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
+                                        <Input
+                                            id='email'
+                                            type='email'
+                                            placeholder='you@example.com'
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className='pl-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='space-y-2'>
-                                <Label htmlFor='password' className='text-gray-200'>Password</Label>
-                                <div className='relative'>
-                                    <Lock className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
-                                    <Input
-                                        id='password'
-                                        type={showPassword ? 'text' : 'password'}
-                                        placeholder='••••••••'
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className='pl-10 pr-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
-                                    />
-                                    <button
-                                        type='button'
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className='absolute right-3 top-3 text-emerald-500 hover:text-emerald-400 transition-colors'
-                                    >
-                                        {showPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                                    </button>
+                                <div className='space-y-2'>
+                                    <Label htmlFor='password' className='text-gray-200'>Password</Label>
+                                    <div className='relative'>
+                                        <Lock className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
+                                        <Input
+                                            id='password'
+                                            type={showPassword ? 'text' : 'password'}
+                                            placeholder='••••••••'
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            className='pl-10 pr-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
+                                        />
+                                        <button
+                                            type='button'
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className='absolute right-3 top-3 text-emerald-500 hover:text-emerald-400 transition-colors'
+                                        >
+                                            {showPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='space-y-2'>
-                                <Label htmlFor='confirmPassword' className='text-gray-200'>Confirm Password</Label>
-                                <div className='relative'>
-                                    <Lock className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
-                                    <Input
-                                        id='confirmPassword'
-                                        type={showConfirmPassword ? 'text' : 'password'}
-                                        placeholder='••••••••'
-                                        value={formData.confirmPassword}
-                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className='pl-10 pr-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
-                                    />
-                                    <button
-                                        type='button'
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className='absolute right-3 top-3 text-emerald-500 hover:text-emerald-400 transition-colors'
-                                    >
-                                        {showConfirmPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                                    </button>
+                                <div className='space-y-2'>
+                                    <Label htmlFor='confirmPassword' className='text-gray-200'>Confirm Password</Label>
+                                    <div className='relative'>
+                                        <Lock className='absolute left-3 top-3 h-4 w-4 text-emerald-500' />
+                                        <Input
+                                            id='confirmPassword'
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            placeholder='••••••••'
+                                            value={formData.confirmPassword}
+                                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                            className='pl-10 pr-10 bg-black/50 border-emerald-900 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500 focus:ring-emerald-500'
+                                        />
+                                        <button
+                                            type='button'
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className='absolute right-3 top-3 text-emerald-500 hover:text-emerald-400 transition-colors'
+                                        >
+                                            {showConfirmPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='flex items-center space-x-2 text-sm'>
-                                <input type='checkbox' className='rounded border-emerald-900 bg-black/50' name='checkbox' />
-                                <label className='text-gray-300 cursor-pointer' name='checkbox'>
-                                    I agree to the{' '}
-                                    <a href='#' className='text-emerald-400 hover:text-emerald-300 transition-colors'>
-                                        Terms & Conditions
-                                    </a>
-                                </label>
-                            </div>
-                            <Button
-                                onClick={handleSubmit}
-                                className='w-full text-lg cursor-pointer transition-all bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 my-2 rounded-lg border-green-800 border-b-[4px] hover:brightness-110 hover:-translate-y-[1px] hover:border-b-[6px] active:border-b-[2px] active:brightness-90 active:translate-y-[2px]'
-                                disabled={isSigningUp}
-                            >
-                                {isSigningUp ? (
-                                    <>
-                                        <Spinner />
-                                        Creating...
-                                    </>
-                                ) : (
-                                    "Create Account"
-                                )}
+                                <div className='flex items-center space-x-2 text-sm'>
+                                    <input type='checkbox' className='rounded border-emerald-900 bg-black/50' name='checkbox' />
+                                    <span className='text-gray-300 cursor-pointer'>
+                                        I agree to the{' '}
+                                        <a href='#' className='text-emerald-400 hover:text-emerald-300 transition-colors'>
+                                            Terms & Conditions
+                                        </a>
+                                    </span>
+                                </div>
+                                <Button
+                                    type="submit"
+                                    className='w-full text-lg cursor-pointer transition-all ease-in-out duration-100 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-5 my-3 rounded-lg border-green-800 border-b-[6px] hover:brightness-130 active:border-b-[2px] active:brightness-90 active:translate-y-[2px]'
+                                    disabled={isSigningUp}
+                                >
+                                    {isSigningUp ? (
+                                        <>
+                                            <Spinner />
+                                            Creating...
+                                        </>
+                                    ) : (
+                                        "Create Account"
+                                    )}
 
-                            </Button>
-                        </div>
+                                </Button>
+                            </div>
+                        </form>
+
                         <div className='relative'>
                             <Separator className='bg-emerald-900' />
                         </div>

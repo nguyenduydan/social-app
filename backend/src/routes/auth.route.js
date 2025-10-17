@@ -1,5 +1,5 @@
 import express from "express";
-import { getMe, login, logout, oauthCallback, refreshToken, signup } from "../controllers/AuthController.js";
+import { forgotPassword, getMe, login, logout, oauthCallback, refreshToken, resetPassword, signup, verifyResetCode } from "../controllers/AuthController.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import passport from "passport";
 
@@ -15,5 +15,8 @@ router.post("/signup", signup);// Login user
 router.post("/logout", logout);// Logout user
 router.post("/refresh-token", refreshToken);// Refresh access token
 router.get("/me", protectRoute, getMe);// Get current user
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.patch("/reset-password", resetPassword);
 
 export default router;

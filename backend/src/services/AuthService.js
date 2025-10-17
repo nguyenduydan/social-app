@@ -2,11 +2,8 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { generateAccessToken, generateRefreshToken } from "../lib/utils.js";
 import { ENV } from "../config/env.js";
-// import { sendWelcomeEmail } from "../utils/email.js";
 
 export const createUser = async ({ displayName, email, password }) => {
-
-
     // Check trùng email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -52,14 +49,14 @@ export const loginUser = async ({ email, password }) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-        const error = new Error("Invalid Credentials");
+        const error = new Error("Email is not exits");
         error.status = 400;
         throw error;
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-        const error = new Error("Invalid Credentials");
+        const error = new Error("Password is not correct");
         error.status = 400;
         throw error;
     }
@@ -97,4 +94,40 @@ export const getCurrentUser = async (userId) => {
         throw err;
     }
     return user;
+};
+
+export const updatePassword = async (email, newPassword) => {
+    try {
+        // Validate password
+        if (!newPassword || newPassword.length < 6) {
+            throw new Error('Password must be at least 6 characters');
+        }
+
+        // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password in database
+        const updatedUser = await User.findOneAndUpdate(
+            { email: email },
+            { password: hashedPassword },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            throw new Error('User not found');
+        }
+
+        return {
+            message: 'Password updated successfully',
+            user: {
+                id: updatedUser._id,
+                email: updatedUser.email
+            }
+        };
+
+    } catch (error) {
+        console.error('Update password error:', error);
+        throw new Error(error.message || 'Failed to update password');
+    }
 };
