@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { generateAccessToken, generateRefreshToken } from "../lib/utils.js";
+import { generateAccessToken, generateRefreshToken, verifyToken } from "../lib/utils.js";
 import { ENV } from "../config/env.js";
 
 export const createUser = async ({ displayName, email, password }) => {

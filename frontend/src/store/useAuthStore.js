@@ -10,6 +10,8 @@ export const useAuthStore = create((set, get) => ({
     isLoading: false,
     step: 1,
     cooldown: 0,
+    accessToken: null,
+    isRefreshing: false,
 
     formData: {
         email: "",
@@ -31,6 +33,27 @@ export const useAuthStore = create((set, get) => ({
             formData: { email: "", code: "", newPassword: "", confirmPassword: "" },
             cooldown: 0
         }),
+
+    refreshAccessToken: async () => {
+        const { isRefreshing } = get();
+        if (isRefreshing) return; // tránh gọi nhiều lần cùng lúc
+
+        set({ isRefreshing: true });
+        try {
+            const res = await api.post("/auth/refresh-token", {}, { withCredentials: true });
+            const newAccessToken = res.data?.accessToken;
+
+            if (newAccessToken) {
+                set({ accessToken: newAccessToken });
+                api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+                toast.success("Token refreshed!");
+            }
+        } catch (error) {
+            console.log("Error refreshing token:", error);
+        } finally {
+            set({ isRefreshing: false });
+        }
+    },
 
     // Kiểm tra Auth khi reload
     checkAuth: async () => {
