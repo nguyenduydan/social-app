@@ -1,17 +1,19 @@
 import React from "react";
+import { Link, useLocation } from "react-router";
 
-const NavLink = ({ item, isActive, onNavigate }) => {
+const NavLink = ({ item }) => {
+    const location = useLocation();
+    const isActive = location.pathname === item.path;
+
     return (
-        <a
-            key={item.href}
-            href={item.href}
-            onClick={() => onNavigate(item.href)}
-            className={` relative font-semibold transition-all duration-500 ease-out text-black dark:text-white text-md p-3 rounded-2xl hover:bg-gray-400
-                ${isActive ? "bg-green-800 text-white" : ""} cursor-pointer
-            `}
+        <Link
+            to={item.path}
+            className={`relative font-semibold transition-all duration-500 ease-out text-white dark:text-white text-md p-3 rounded-2xl hover:bg-gray-400 cursor-pointer
+        ${isActive ? "bg-green-800 dark:bg-green-700 text-white" : ""}
+      `}
         >
             {item.icon}
-        </a>
+        </Link>
     );
 };
 

@@ -60,7 +60,6 @@ export const useAuthStore = create((set, get) => ({
         try {
             const res = await api.get("/auth/me");
             set({ authUser: res.data.user });
-            toast.success(`Welcome back, ${res.data.user?.displayName || "User"}!`);
         } catch {
             set({ authUser: null });
         } finally {

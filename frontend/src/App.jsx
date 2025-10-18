@@ -8,6 +8,7 @@ import Home from '@/pages/Home';
 import LoadingPage from '@/components/common/loadingPage';
 import Navbar from './components/layout/Navbar';
 import MainLayout from './components/layout/MainLayout';
+import Profile from './pages/Profile';
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -30,6 +31,7 @@ const App = () => {
         <Route element={<MainLayout />}>
           {/* Home */}
           <Route path='/' element={authUser ? <Home /> : <Navigate to={"/login"} />} />
+          <Route path='/profile' element={authUser ? <Profile /> : <Navigate to={"/login"} />} />
           {/* Profile */}
         </Route>
         {/* Auth */}

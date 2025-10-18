@@ -1,5 +1,6 @@
 import { Home, MessageSquareText, Settings, User } from "lucide-react";
 import HomePage from "@/pages/Home";
+import Profile from "./pages/Profile";
 
 const routes = [
     {
@@ -21,7 +22,7 @@ const routes = [
         layout: "/client",
         path: "/profile",
         icon: <User />,
-        element: <HomePage />
+        element: <Profile />
     },
     {
         name: "Settings",

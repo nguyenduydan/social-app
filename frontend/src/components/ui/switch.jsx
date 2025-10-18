@@ -36,7 +36,7 @@ const Switch = () => {
                 onChange={() => setIsDark(!isDark)}
             />
             <div
-                className="w-15 h-6 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 peer-checked:from-gray-400 peer-checked:to-gray-500 transition-all duration-500 after:content-['☀️'] after:absolute after:top-2 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:flex after:items-center after:justify-center after:transition-all after:duration-500 peer-checked:after:translate-x-8 peer-checked:after:content-['🌙'] after:shadow-md after:text-xs"
+                className="w-15 h-6 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 peer-checked:from-gray-400 peer-checked:to-gray-500 transition-all duration-500 after:content-['☀️'] after:absolute after:top-0.5 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:flex after:items-center after:justify-center after:transition-all after:duration-500 peer-checked:after:translate-x-8 peer-checked:after:content-['🌙'] after:shadow-md after:text-xs"
             ></div>
         </label>
     );
