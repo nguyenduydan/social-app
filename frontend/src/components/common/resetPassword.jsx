@@ -7,9 +7,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "./ui/spinner";
+import { Spinner } from "../ui/spinner";
 import { useAuthStore } from "@/store/useAuthStore";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 
 const ResetPassword = ({ onClose }) => {

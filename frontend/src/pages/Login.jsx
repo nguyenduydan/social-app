@@ -9,7 +9,7 @@ import { Link } from 'react-router';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Spinner } from '@/components/ui/spinner';
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
-import ResetPassword from '@/components/resetPassword';
+import ResetPassword from '@/components/common/resetPassword';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
