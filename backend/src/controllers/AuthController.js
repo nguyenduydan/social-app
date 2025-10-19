@@ -1,5 +1,4 @@
-import { createUser, getCurrentUser, loginUser, refreshAccessToken, updatePassword } from "../services/AuthService.js";
-import { validateSignup } from "../lib/validate.js";
+import { createUser, signinUser, logoutUser, refreshAccessToken, updatePassword } from "../services/AuthService.js";
 import { attachAuthCookies, clearAuthCookies, generateAccessToken, generateRefreshToken, generateResetCode } from "../lib/utils.js";
 import { ENV } from "../config/env.js";
 import sendResetCode from "../config/sendMail.js";
@@ -8,14 +7,12 @@ const resetCodes = {};
 
 export const signup = async (req, res) => {
     try {
-        const { displayName, email, password } = req.body;
+        const { firstName, lastName, email, password } = req.body;
 
-        validateSignup({ displayName, email, password });
-
-        const { user, accessToken, refreshToken } = await createUser({ displayName, email, password });
+        const { accessToken, refreshToken } = await createUser({ firstName, lastName, email, password });
 
         attachAuthCookies(res, accessToken, refreshToken);
-        res.status(201).json({ user });
+        res.sendStatus(204); //created successfully but not send data
     } catch (error) {
         const status = error.status || 500;
         res.status(status).json({
@@ -25,14 +22,19 @@ export const signup = async (req, res) => {
     }
 };
 
-export const login = async (req, res) => {
+export const signin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const { user, accessToken, refreshToken } = await loginUser({ email, password });
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required " });
+        }
+
+        const { user, accessToken, refreshToken } = await signinUser({ email, password });
 
         attachAuthCookies(res, accessToken, refreshToken);
-        res.status(200).json({ user });
+
+        res.status(200).json({ user, accessToken });
     } catch (error) {
         const status = error.status || 500;
         res.status(status).json({
@@ -42,38 +44,37 @@ export const login = async (req, res) => {
     }
 };
 
-export const logout = (_, res) => {
-    clearAuthCookies(res);
-    res.status(200).json({ message: "Logged out successfully" });
+export const logout = async (req, res) => {
+    try {
+        const isRefreshToken = req.cookies?.refreshToken;
+
+        if (isRefreshToken) {
+            logoutUser(isRefreshToken);
+            clearAuthCookies(res);
+        }
+
+        res.sendStatus(204);
+    } catch (error) {
+        const status = error.status || 500;
+        res.status(status).json({
+            message: error.message || "Internal server error",
+        });
+        console.log("Error in logout: ", error);
+    }
 };
 
 export const refreshToken = async (req, res) => {
     try {
-        const { refreshToken } = req.cookies;
+        const refreshToken = req.cookies?.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({ message: "No token provided" });
+        }
         const newAccessToken = await refreshAccessToken(refreshToken);
 
-        res.cookie("accessToken", newAccessToken, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: ENV.APP_ENV === "production",
-            maxAge: 15 * 60 * 1000,
-        });
-
-        res.status(200).json({ success: true });
+        res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
         res.status(error.status || 500).json({ message: error.message });
         console.log("Error in refreshToken: ", error);
-    }
-};
-
-export const getMe = async (req, res) => {
-    try {
-        if (!req.user._id) return res.status(404).json({ message: "No userId" });
-        const user = await getCurrentUser(req.user._id);
-        res.status(200).json({ user });
-    } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-        console.log("Error in getMe: ", error);
     }
 };
 

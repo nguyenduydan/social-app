@@ -1,13 +1,11 @@
 import { create } from "zustand";
 import { api } from "@/lib/axios";
 import { toast } from "sonner";
+import { authService } from "@/services/authService";
 
 export const useAuthStore = create((set, get) => ({
-    authUser: null, // Dữ liệu user
-    isCheckingAuth: true,
-    isSigningUp: false,
-    isLoggingIn: false,
-    isLoading: false,
+    user: null, // Dữ liệu user
+    loading: false,
     step: 1,
     cooldown: 0,
     accessToken: null,
@@ -19,12 +17,21 @@ export const useAuthStore = create((set, get) => ({
         newPassword: "",
         confirmPassword: "",
     },
-
     // Cập nhật formData
     setFormData: (data) =>
         set((state) => ({
             formData: { ...state.formData, ...data },
         })),
+
+    //clear state - mục đích để tái sử dụng
+    clearState: () => {
+        set({ accessToken: null, user: null, loading: false });
+    },
+
+
+    setAccessToken: (accessToken) => {
+        set({ accessToken });
+    },
 
     // Reset lại flow forgot password
     resetFlow: () =>
@@ -34,73 +41,70 @@ export const useAuthStore = create((set, get) => ({
             cooldown: 0
         }),
 
-    refreshAccessToken: async () => {
-        const { isRefreshing } = get();
-        if (isRefreshing) return; // tránh gọi nhiều lần cùng lúc
-
-        set({ isRefreshing: true });
+    refresh: async () => {
         try {
-            const res = await api.post("/auth/refresh-token", {}, { withCredentials: true });
-            const newAccessToken = res.data?.accessToken;
+            set({ loading: true });
+            const { user, fetchMe, setAccessToken } = get();
 
-            if (newAccessToken) {
-                set({ accessToken: newAccessToken });
-                api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
-                toast.success("Token refreshed!");
+            const accessToken = await authService.refresh();
+
+            setAccessToken(accessToken);
+            if (!user) {
+                await fetchMe();
             }
+
         } catch (error) {
             console.log("Error refreshing token:", error);
+            toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            get().clearState();
         } finally {
-            set({ isRefreshing: false });
+            set({ loading: false });
         }
     },
 
     // Kiểm tra Auth khi reload
-    checkAuth: async () => {
+    fetchMe: async () => {
         try {
-            const res = await api.get("/auth/me");
-            set({ authUser: res.data.user });
-        } catch {
-            set({ authUser: null });
+            set({ loading: true });
+            const user = await authService.fetchMe();
+            set({ user });
+        } catch (error) {
+            set({ user: null });
+            console.log("Error: ", error);
+            toast.error("Lỗi xảy ra khi lấy dữ liệu người dùng. Hãy thử lại");
         } finally {
-            set({ isCheckingAuth: false });
+            set({ loading: false });
         }
     },
 
     // Đăng ký
-    signup: async (data) => {
-        set({ isSigningUp: true });
+    signUp: async (firstName, lastName, email, password) => {
         try {
-            if (data.password !== data.confirmPassword) {
-                toast.error("Passwords do not match. Please check again.");
-                return;
-            }
-
-            const res = await api.post("/auth/signup", data);
-            set({ authUser: res.data });
-            toast.success("Account created successfully!");
+            set({ loading: true });
+            //call api
+            await authService.signUp(firstName, lastName, email, password);
+            toast.success("Đăng ký thành công!");
         } catch (error) {
             console.log("Error in signup:", error);
-            const message = error?.response?.data?.message || "Something went wrong";
-            toast.error(message);
+            toast.error("Đăng ký không thành công!");
         } finally {
-            set({ isSigningUp: false });
+            set({ loading: false });
         }
     },
 
     // Đăng nhập
-    login: async (data) => {
-        set({ isLoggingIn: true });
+    signIn: async (email, password) => {
         try {
-            const res = await api.post("/auth/login", data);
-            set({ authUser: res.data });
-            toast.success("Logged in successfully!");
+            set({ loading: true });
+            const { accessToken } = await authService.signIn(email, password);
+            get().setAccessToken(accessToken);
+            await get().fetchMe();
+            toast.success("Đăng nhập thành công!");
         } catch (error) {
             console.log("Error in login:", error);
-            const message = error?.response?.data?.message || "Something went wrong";
-            toast.error(message);
+            toast.error("Đăng nhập thất bại");
         } finally {
-            set({ isLoggingIn: false });
+            set({ loading: false });
         }
     },
 
@@ -110,14 +114,15 @@ export const useAuthStore = create((set, get) => ({
     },
 
     // Đăng xuất
-    logout: async () => {
+    signOut: async () => {
         try {
-            const res = await api.post("/auth/logout");
-            set({ authUser: null });
-            toast.success(res?.data?.message || "Logged out successfully");
+            const { clearState } = get();
+            clearState();
+            await authService.signOut();
+            toast.success("Đăng xuất thành công!");
         } catch (error) {
             console.log("Error in logout:", error);
-            toast.error(error?.response?.data?.message || "Something went wrong");
+            toast.error("Đăng xuất không thành công");
         }
     },
 
@@ -129,7 +134,7 @@ export const useAuthStore = create((set, get) => ({
             return;
         }
 
-        set({ isLoading: true });
+        set({ loading: true });
         try {
             const res = await api.post("/auth/forgot-password", { email: formData.email });
             toast.success(res.data?.message || "Reset code sent!");
@@ -140,7 +145,7 @@ export const useAuthStore = create((set, get) => ({
             const message = error?.response?.data?.message || "Something went wrong";
             toast.error(message);
         } finally {
-            set({ isLoading: false });
+            set({ loading: false });
         }
     },
 
@@ -153,7 +158,7 @@ export const useAuthStore = create((set, get) => ({
             return;
         }
 
-        set({ isLoading: true });
+        set({ loading: true });
         try {
             const res = await api.post("/auth/verify-reset-code", {
                 email: formData.email,
@@ -166,7 +171,7 @@ export const useAuthStore = create((set, get) => ({
             const message = error?.response?.data?.message || "Invalid code";
             toast.error(message);
         } finally {
-            set({ isLoading: false });
+            set({ loading: false });
         }
     },
 
@@ -183,7 +188,7 @@ export const useAuthStore = create((set, get) => ({
             return;
         }
 
-        set({ isLoading: true });
+        set({ loading: true });
         try {
             const res = await api.patch("/auth/reset-password", {
                 email: formData.email,
@@ -196,7 +201,7 @@ export const useAuthStore = create((set, get) => ({
             const message = error?.response?.data?.message || "Failed to reset password";
             toast.error(message);
         } finally {
-            set({ isLoading: false });
+            set({ loading: false });
         }
     },
 

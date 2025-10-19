@@ -1,6 +1,6 @@
 import { Home, MessageSquareText, Settings, User } from "lucide-react";
-import HomePage from "@/pages/Home";
-import Profile from "./pages/Profile";
+import HomePage from "@/pages/HomePage";
+import Profile from "./pages/ProfilePage";
 
 const routes = [
     {

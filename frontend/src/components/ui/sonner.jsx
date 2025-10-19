@@ -29,7 +29,7 @@ const Toaster = ({ ...props }) => {
         "--border-radius": "9999px", // bo tròn kiểu pill
       }}
       toastOptions={{
-        duration: 1000,
+        duration: 3000,
       }}
       {...props}
     />

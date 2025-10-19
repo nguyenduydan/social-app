@@ -6,10 +6,15 @@ import Switch from '../ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { Button } from "../ui/button";
+// import { toast } from "sonner";
+// import { api } from "@/lib/axios";
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const [isScrolling, setIsScrolling] = useState(false);
-    const { logout } = useAuthStore();
+    const { signOut, user } = useAuthStore();
 
     useEffect(() => {
         let scrollTimeout;
@@ -30,6 +35,25 @@ const Navbar = () => {
         };
     }, []);
 
+    const handleLogOut = async () => {
+        try {
+            await signOut();
+            navigate("/signin");
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // const handleTest = async () => {
+    //     try {
+    //         await api.get("users/test", { withCredentials: true });
+    //         toast.success("Oke");
+    //     } catch (error) {
+    //         console.log(error);
+    //         toast.error("Lỗi");
+    //     }
+    // };
+
 
     return (
         <nav className={`fixed bg-navbar/80 backdrop-blur-sm w-full z-50 start-0 transition-all border-b-2 ${isScrolling ? "-top-20" : "top-0"} duration-500`}>
@@ -48,6 +72,8 @@ const Navbar = () => {
                     </InputGroup>
                 </div>
                 <div className="flex md:order-2 space-x-3 md:space-x-8 items-center">
+                    {/* <Button onClick={handleTest}>
+                    </Button> */}
                     <Bell />
                     <Switch />
                     <DropdownMenu>
@@ -58,10 +84,10 @@ const Navbar = () => {
                             </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="translate-x-[-20px]">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel>{user?.displayName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem><User />Profile</DropdownMenuItem>
-                            <DropdownMenuItem onClick={logout}>
+                            <DropdownMenuItem onClick={handleLogOut}>
                                 <LogOutIcon />Logout
                             </DropdownMenuItem>
                         </DropdownMenuContent>
