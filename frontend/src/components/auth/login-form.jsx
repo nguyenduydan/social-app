@@ -110,7 +110,7 @@ export function LoginForm({ className, ...props }) {
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full text-lg cursor-pointer transition-all ease-in-out duration-100 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-5 rounded-xl border-green-800 border-b-[6px] hover:brightness-130 active:border-b-[2px] active:brightness-90 active:translate-y-[2px]"
+                                    className="w-full text-lg cursor-pointer transition-all ease-in-out duration-300 bg-gradient-primary px-6 py-5 rounded-xl border-green-800 border-b-[6px] hover:brightness-130 active:border-b-[2px] active:brightness-90 active:translate-y-[2px]"
                                 >
                                     {isSubmitting ? <Spinner /> : "Đăng nhập"}
                                 </Button>
@@ -127,7 +127,7 @@ export function LoginForm({ className, ...props }) {
                                     variant="outline"
                                     type="button"
                                     onClick={loginWithGoogle}
-                                    className="cursor-pointer w-full py-4 border-border text-secondary-foreground hover:bg-emerald-400 hover:border-emerald-400 transition-all rounded-xl hover:text-secondary-foreground font-bold"
+                                    className="cursor-pointer w-full py-4 border-border text-secondary-foreground transition-all rounded-xl font-bold"
                                 >
                                     <svg
                                         className="mr-2 h-4 w-4 text-red-500"
@@ -167,13 +167,13 @@ export function LoginForm({ className, ...props }) {
                 </CardContent>
             </Card>
 
-            <FieldDescription className="px-6 text-center text-secondary">
+            <FieldDescription className="px-6 text-center text-secondary-foreground">
                 Bằng cách tiếp tục, bạn đồng ý với{" "}
-                <a href="#" className="text-primary-foreground">
+                <a href="#" className="text-accent font-bold">
                     Điều khoản dịch vụ
                 </a>{" "}
                 và{" "}
-                <a href="#" className="text-primary-foreground">
+                <a href="#" className="text-accent font-bold">
                     Chính sách bảo mật
                 </a> của chúng tôi.
             </FieldDescription>

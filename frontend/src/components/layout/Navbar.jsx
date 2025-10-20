@@ -7,15 +7,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useNavigate } from "react-router";
 import { Kbd } from "../ui/kbd";
-import { useScrollStatus } from "@/hooks/useScrollStatus";
-// import { toast } from "sonner";
-// import { api } from "@/lib/axios";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const { signOut, user } = useAuthStore();
-    const { isScrolling } = useScrollStatus(500);
-
     const handleLogOut = async () => {
         try {
             await signOut();
@@ -25,19 +20,8 @@ const Navbar = () => {
         }
     };
 
-    // const handleTest = async () => {
-    //     try {
-    //         await api.get("users/test", { withCredentials: true });
-    //         toast.success("Oke");
-    //     } catch (error) {
-    //         console.log(error);
-    //         toast.error("Lỗi");
-    //     }
-    // };
-
-
     return (
-        <nav className={`fixed bg-sidebar/70 backdrop-blur-sm w-full px-6 py-4 z-50 start-0 transition-all border-b-1 border-secondary-foreground/20 ${isScrolling ? "-top-20" : "top-0"} duration-500`}>
+        <nav className="fixed bg-sidebar/70 backdrop-blur-sm w-full px-6 py-4 z-50 start-0 transition-all duration-300 border-b border-border/20">
             <div className="flex items-center justify-between gap-10">
                 {/* Brand */}
                 <div className="flex-shrink-0">
@@ -74,8 +58,6 @@ const Navbar = () => {
 
                 {/* Menubar */}
                 <div className="flex md:order-3 space-x-5 md:space-x-8 items-center">
-                    {/* <Button onClick={handleTest}>
-                    </Button> */}
                     <Bell className="text-primary fill-primary brightness-125 size-4 md:size-6" />
                     <Switch />
                     <DropdownMenu modal={false}>
@@ -96,7 +78,7 @@ const Navbar = () => {
                     </DropdownMenu>
                 </div>
             </div>
-        </nav>
+        </nav >
     );
 };
 

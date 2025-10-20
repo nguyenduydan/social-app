@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useThemeStore } from './store/useThemeStore';
 import { useEffect } from 'react';
+import { ScrollProvider } from './contexts/ScrollContext';
 
 const App = () => {
   const applyTheme = useThemeStore((s) => s.applyTheme); //only use applyTheme method
@@ -20,7 +21,7 @@ const App = () => {
   }, [applyTheme]);
 
   return (
-    <>
+    <ScrollProvider>
       <Toaster richColors />
       <BrowserRouter>
         <Routes>
@@ -37,7 +38,7 @@ const App = () => {
           </Route>
         </Routes>
       </BrowserRouter>
-    </>
+    </ScrollProvider>
   );
 };
 
