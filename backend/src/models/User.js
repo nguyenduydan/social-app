@@ -45,7 +45,6 @@ const userSchema = new mongoose.Schema(
             sparse: true,
         },
         lastSeen: Date,
-        isOnline: Boolean,
         role: {
             type: String,
             enum: ["admin", "user"]
