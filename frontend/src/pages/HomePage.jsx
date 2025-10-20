@@ -4,7 +4,7 @@ import RightSide from "@/components/Home/RightSide";
 
 const Home = () => {
     return (
-        <section className="min-h-screen pt-20 px-4 bg-secondary transition-bg duration-500">
+        <section className="min-h-screen w-full pt-20 px-4 bg-background transition-bg duration-500">
             <div className="grid grid-cols-12 gap-4 h-full">
                 {/* Info User */}
                 <div className="hidden lg:block lg:col-span-3">

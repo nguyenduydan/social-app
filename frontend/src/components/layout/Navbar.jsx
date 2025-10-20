@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Button } from "../ui/button";
+import { Kbd } from "../ui/kbd";
 // import { toast } from "sonner";
 // import { api } from "@/lib/axios";
 
@@ -56,29 +56,50 @@ const Navbar = () => {
 
 
     return (
-        <nav className={`fixed bg-navbar/80 backdrop-blur-sm w-full z-50 start-0 transition-all border-b-2 ${isScrolling ? "-top-20" : "top-0"} duration-500`}>
-            <div className="flex flex-wrap items-center justify-between p-4">
-                <a href="#" className="flex items-center space-x-3">
-                    <img src={logo} className="h-10 w-10" alt="Social Logo" />
-                    <span className="self-center text-4xl whitespace-nowrap dark:brightness-150 font-extrabold text-shadow-lg bg-gradient-to-r from-emerald-700 to-green-900 bg-clip-text text-transparent">DIFA</span>
-                </a>
-                <div className="items-center justify-between hidden w-full pl-10 md:flex md:w-auto md:order-1 transition-all" id="navbar-sticky">
-                    {/* Search input */}
-                    <InputGroup className="rounded-full w-full md:min-w-2xl shadow-md bg-white">
-                        <InputGroupInput placeholder="Search..." />
-                        <InputGroupAddon>
-                            <Search />
-                        </InputGroupAddon>
-                    </InputGroup>
+        <nav className={`fixed bg-sidebar/70 backdrop-blur-sm w-full px-6 py-4 z-50 start-0 transition-all border-b-1 border-secondary-foreground/20 ${isScrolling ? "-top-20" : "top-0"} duration-500`}>
+            <div className="flex items-center justify-between gap-10">
+                {/* Brand */}
+                <div className="flex-shrink-0">
+                    <a
+                        href="#"
+                        className="flex items-center space-x-1 dark:brightness-200"
+                    >
+                        <img src={logo} className="h-6 w-6 md:h-10 md:w-10" alt="Social Logo" />
+                        <span className="text-2xl md:text-4xl font-extrabold bg-gradient-to-b from-green-500 to-green-950 bg-clip-text text-transparent">
+                            IFA
+                        </span>
+                    </a>
                 </div>
-                <div className="flex md:order-2 space-x-3 md:space-x-8 items-center">
+                {/* Search input */}
+                <div
+                    id="navbar-sticky"
+                    className="w-full transition-all order-2 hidden md:flex justify-center"
+                >
+                    <div className="w-full max-w-xl">
+                        <InputGroup className="rounded-full shadow-md bg-white dark:bg-black/50 px-2">
+                            <InputGroupInput
+                                placeholder="Search..."
+                                className="text-sm md:text-base bg-transparent focus:outline-none"
+                            />
+                            <InputGroupAddon>
+                                <Search className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
+                            </InputGroupAddon>
+                            <InputGroupAddon align="inline-end">
+                                <Kbd>Ctrl + K</Kbd>
+                            </InputGroupAddon>
+                        </InputGroup>
+                    </div>
+                </div>
+
+                {/* Menubar */}
+                <div className="flex md:order-3 space-x-5 md:space-x-8 items-center">
                     {/* <Button onClick={handleTest}>
                     </Button> */}
-                    <Bell />
+                    <Bell className="text-primary fill-primary brightness-125 size-4 md:size-6" />
                     <Switch />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="cursor-pointer">
-                            <Avatar>
+                    <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger className="cursor-pointer" asChild>
+                            <Avatar className="size-8 md:size-10">
                                 <AvatarImage src="https://github.com/shadcn.png" />
                                 <AvatarFallback>CN</AvatarFallback>
                             </Avatar>

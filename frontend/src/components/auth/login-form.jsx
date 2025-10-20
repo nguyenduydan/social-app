@@ -54,7 +54,7 @@ export function LoginForm({ className, ...props }) {
                     <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8 space-y-3">
                         <FieldGroup>
                             <div className="flex flex-col items-center gap-2 text-center">
-                                <img src={logo} className="h-10 w-10" alt="Social Logo" />
+                                <img src={logo} className="h-10 w-10 dark:brightness-200" alt="Social Logo" />
                                 <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
                                     Chào mừng quay lại DIFA
                                 </h1>
@@ -161,13 +161,13 @@ export function LoginForm({ className, ...props }) {
                         <img
                             src={signupImg}
                             alt="signup"
-                            className="absolute inset-0 top-1/2 -translate-y-1/2 object-cover dark:brightness-[0.3]"
+                            className="absolute inset-0 top-1/2 -translate-y-1/2 object-cover dark:brightness-110"
                         />
                     </div>
                 </CardContent>
             </Card>
 
-            <FieldDescription className="px-6 text-center text-gray-800">
+            <FieldDescription className="px-6 text-center text-secondary">
                 Bằng cách tiếp tục, bạn đồng ý với{" "}
                 <a href="#" className="text-primary-foreground">
                     Điều khoản dịch vụ

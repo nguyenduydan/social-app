@@ -1,43 +1,38 @@
-import { useEffect, useState } from "react";
+import { useThemeStore } from "@/store/useThemeStore";
+import { Moon, Sun } from "lucide-react";
+import { useEffect } from "react";
 
 const Switch = () => {
-    const [isDark, setIsDark] = useState(false);
+    const { isDark, toggleTheme } = useThemeStore();
 
-    // 🔹 Lấy theme từ localStorage khi component mount
     useEffect(() => {
-        const savedTheme = localStorage.getItem("theme");
-        if (savedTheme === "dark") {
-            setIsDark(true);
-            document.documentElement.classList.add("dark");
-        } else {
-            setIsDark(false);
-            document.documentElement.classList.remove("dark");
-        }
-    }, []);
-
-    // 🔹 Khi user toggle, cập nhật class + lưu lại localStorage
-    useEffect(() => {
-        const htmlElement = document.documentElement;
-        if (isDark) {
-            htmlElement.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            htmlElement.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+        document.documentElement.classList.toggle("dark", isDark);
     }, [isDark]);
 
     return (
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label className="relative inline-flex items-center cursor-pointer group">
             <input
                 type="checkbox"
-                className="sr-only peer"
                 checked={isDark}
-                onChange={() => setIsDark(!isDark)}
+                onChange={toggleTheme}
+                className="hidden"
             />
-            <div
-                className="w-15 h-6 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 peer-checked:from-gray-400 peer-checked:to-gray-500 transition-all duration-500 after:content-['☀️'] after:absolute after:top-0.5 after:left-1 after:bg-white after:rounded-full after:h-5 after:w-5 after:flex after:items-center after:justify-center after:transition-all after:duration-500 peer-checked:after:translate-x-8 peer-checked:after:content-['🌙'] after:shadow-md after:text-xs"
-            ></div>
+
+            <span
+                className="flex items-center justify-center w-7 h-7 md:h-10 md:w-10 rounded-xl border-2 border-gray-800 bg-white dark:bg-gray-900 shadow-lg transition-all duration-300 [box-shadow:1px_1px_0px_1px_green] group-has-[input:checked]:[box-shadow:1px_1px_0px_1px_#075985] hover:[box-shadow:1px_1px_0px_1px_#1e1e1e] active:scale-70"
+            >
+                {/* Mặt trăng (Dark Mode) */}
+                <Moon
+                    className="absolute w-4 h-4 md:w-6 md:h-6 text-sky-700 opacity-0 group-has-[input:checked]:opacity-100
+                     rotate-180 group-has-[input:checked]:rotate-0 transition-all duration-500"
+                />
+
+                {/* Mặt trời (Light Mode) */}
+                <Sun
+                    className="absolute w-4 h-4 md:w-6 md:h-6 text-yellow-500 opacity-100 group-has-[input:checked]:opacity-0
+                     rotate-0 group-has-[input:checked]:rotate-180 transition-all duration-500"
+                />
+            </span>
         </label>
     );
 };

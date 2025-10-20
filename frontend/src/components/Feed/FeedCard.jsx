@@ -1,18 +1,20 @@
 import { EllipsisVertical, Heart, MessageCircle, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardFooter } from "../ui/card";
+import avatarNotFound from "@/assets/avatarNotFound.png";
+import { Button } from "../ui/button";
 
 const FeedCard = () => {
     return (
         <div className="max-w-3xl mx-auto">
-            <Card className="px-8 py-10 bg-black/5 shadow-md border-0 rounded-2xl">
+            <Card className="px-8 py-10 bg-card shadow-md border-0 rounded-2xl">
                 {/* Header */}
                 <CardHeader className="pb-0 px-0">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                             <Avatar className="size-12">
                                 <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback>CN</AvatarFallback>
+                                <AvatarFallback><AvatarImage src={avatarNotFound} /></AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col leading-tight">
                                 <p className="font-bold text-sm sm:text-base">Nguyen Thiet Duy Dan</p>
@@ -43,18 +45,18 @@ const FeedCard = () => {
 
                 {/* Footer (Actions) */}
                 <CardFooter className="flex justify-between items-center px-5 pt-3">
-                    <button className="flex items-center space-x-2 text-gray-400 hover:text-red-600 transition">
+                    <Button variant="ghost" className="flex items-center space-x-2 text-gray-400 hover:text-red-600 transition">
                         <Heart className="w-5 h-5" />
                         <span className="text-sm font-medium">Like</span>
-                    </button>
-                    <button className="flex items-center space-x-2 text-gray-400 hover:text-blue-600 transition">
+                    </Button>
+                    <Button variant="ghost" className="flex items-center space-x-2 text-gray-400 hover:text-blue-600 transition">
                         <MessageCircle className="w-5 h-5" />
                         <span className="text-sm font-medium">Comment</span>
-                    </button>
-                    <button className="flex items-center space-x-2 text-gray-400 hover:text-green-600 transition">
+                    </Button>
+                    <Button variant="ghost" className="flex items-center space-x-2 text-gray-400 hover:text-green-600 transition">
                         <Share2 className="w-5 h-5" />
                         <span className="text-sm font-medium">Share</span>
-                    </button>
+                    </Button>
                 </CardFooter>
             </Card>
         </div>
