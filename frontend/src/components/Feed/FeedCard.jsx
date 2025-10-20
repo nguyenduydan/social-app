@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 const FeedCard = () => {
     return (
         <div className="max-w-3xl mx-auto">
-            <Card className="px-8 py-10 bg-card shadow-md border-0 rounded-2xl">
+            <Card className="px-8 py-10 bg-card gap-2 shadow-md border-0 rounded-2xl">
                 {/* Header */}
                 <CardHeader className="pb-0 px-0">
                     <div className="flex justify-between items-center">

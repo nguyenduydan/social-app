@@ -65,7 +65,6 @@
 
 :root {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
   --background: oklch(94.007% 0.00011 271.152);
   --foreground: oklch(0.2046 0 0);
   --card: oklch(0.9911 0 0);

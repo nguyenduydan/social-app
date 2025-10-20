@@ -5,35 +5,16 @@ import { useAuthStore } from '@/store/useAuthStore';
 import Switch from '../ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Kbd } from "../ui/kbd";
+import { useScrollStatus } from "@/hooks/useScrollStatus";
 // import { toast } from "sonner";
 // import { api } from "@/lib/axios";
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const [isScrolling, setIsScrolling] = useState(false);
     const { signOut, user } = useAuthStore();
-
-    useEffect(() => {
-        let scrollTimeout;
-
-        const handleScroll = () => {
-            setIsScrolling(true);
-
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                setIsScrolling(false);
-            }, 400);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-            clearTimeout(scrollTimeout);
-        };
-    }, []);
+    const { isScrolling } = useScrollStatus(500);
 
     const handleLogOut = async () => {
         try {

@@ -2,16 +2,16 @@ import mongoose from "mongoose";
 
 const postSchema = mongoose.Schema(
     {
-        author: { type: ObjectId, ref: 'User', required: true },
+        author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         content: { type: String, required: true },
         media: [{
             url: String,
             type: { type: String, enum: ['image', 'video'] },
             publicId: String
         }],
-        likes: [{ type: ObjectId, ref: 'User' }],
+        likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         comments: [{
-            user: { type: ObjectId, ref: 'User' },
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
             text: String,
             createdAt: Date
         }],

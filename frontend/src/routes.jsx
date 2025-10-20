@@ -7,28 +7,28 @@ const routes = [
         name: "Home",
         layout: "/client",
         path: "/",
-        icon: <Home />,
+        icon: <Home className="size-6 md:size-8" />,
         element: <HomePage />
     },
     {
         name: "Messages",
         layout: "/client",
         path: "/messages",
-        icon: <MessageSquareText />,
+        icon: <MessageSquareText className="size-6 md:size-8" />,
         element: <HomePage />
     },
     {
         name: "Profile",
         layout: "/client",
         path: "/profile",
-        icon: <User />,
+        icon: <User className="size-6 md:size-8" />,
         element: <Profile />
     },
     {
         name: "Settings",
         layout: "/client",
         path: "/settings",
-        icon: <Settings />,
+        icon: <Settings className="size-6 md:size-8" />,
         element: <HomePage />
     },
 ];

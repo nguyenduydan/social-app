@@ -8,6 +8,7 @@ import "./config/passport.js";
 //Routes
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import postRoutes from "./routes/post.route.js";
 import { protectRoute } from "./middlewares/auth.middleware.js";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/auth", authRoutes);
 // private routes
 app.use(protectRoute);
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
 
 connectDB()
     .then(() => {

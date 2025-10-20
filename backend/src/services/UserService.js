@@ -1,5 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
-import uploadToCloudinary from "../lib/uploadtoCloudinary.js";
+import uploadToCloudinary from "../lib/uploadToCloudinary.js";
 import { createError } from "../lib/utils.js";
 import User from "../models/User.js";
 

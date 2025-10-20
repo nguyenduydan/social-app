@@ -19,7 +19,7 @@ const Switch = () => {
             />
 
             <span
-                className="flex items-center justify-center w-6 h-6 md:h-10 md:w-10 rounded-xl border-2 border-gray-800 bg-white dark:bg-gray-900 transition-all duration-300 active:scale-80"
+                className="flex items-center justify-center w-6 h-6 md:h-10 md:w-10 rounded-xl border-2 border-gray-300 bg-white dark:bg-gray-900 transition-all duration-300 active:scale-80"
             >
                 {/* Mặt trăng (Dark Mode) */}
                 <Moon

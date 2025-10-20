@@ -8,8 +8,8 @@ const NavLink = ({ item }) => {
     return (
         <Link
             to={item.path}
-            className={`relative font-semibold transition-all duration-500 ease-out text-white dark:text-white text-md p-3 rounded-2xl hover:bg-gray-400 cursor-pointer
-        ${isActive ? "bg-primary text-white" : ""}
+            className={`relative flex w-15 h-10 md:w-25 md:h-15 my-1 justify-center items-center border-y-0 transition-all duration-500 ease-out rounded-full cursor-pointer
+        ${isActive ? "border-x-1 border-white bg-secondary/20 dark:bg-secondary/40 shadow-[0_0_5px_rgba(0,0,0,0.6)] scale-115 text-green-900 dark:text-green-500" : "hover:border-white  hover:bg-muted/30 hover:scale-110 hover:text-green-800 dark:hover:text-green-400"}
       `}
         >
             {item.icon}
