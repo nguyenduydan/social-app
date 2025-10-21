@@ -5,11 +5,11 @@ import { useScrollRef } from "@/contexts/ScrollContext";
 
 const Navigation = () => {
     const scrollRef = useScrollRef();
-    const { isScrolling } = useScrollStatus(scrollRef, 5, 1000);
+    const { isScrolling } = useScrollStatus(scrollRef, 5, 400);
 
     return (
         <nav
-            className={`fixed w-full z-50 transition-all duration-300 ease-out ${isScrolling
+            className={`fixed w-full z-20 transition-all duration-300 ease-out ${isScrolling
                 ? "scale-40 -bottom-2 "
                 : "scale-80 bottom-2 "
                 }`}

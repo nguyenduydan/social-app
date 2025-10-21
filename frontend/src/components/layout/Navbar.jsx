@@ -21,7 +21,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="fixed bg-sidebar/70 backdrop-blur-sm w-full px-6 py-4 z-50 start-0 transition-all duration-300 border-b border-border/20">
+        <nav className="fixed bg-card w-full px-6 py-4 z-50 start-0 transition-all duration-300 border-b border-border/20">
             <div className="flex items-center justify-between gap-10">
                 {/* Brand */}
                 <div className="flex-shrink-0">
@@ -47,7 +47,7 @@ const Navbar = () => {
                                 className="text-sm md:text-base bg-transparent focus:outline-none"
                             />
                             <InputGroupAddon>
-                                <Search className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
+                                <Search className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
                             </InputGroupAddon>
                             <InputGroupAddon align="inline-end">
                                 <Kbd>Ctrl + K</Kbd>

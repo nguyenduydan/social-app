@@ -1,5 +1,4 @@
-import cloudinary from "../config/cloudinary.js";
-import uploadToCloudinary from "../lib/uploadToCloudinary.js";
+import { uploadToCloudinary } from "../lib/useCloudinary.js";
 import { createError } from "../lib/utils.js";
 import User from "../models/User.js";
 
@@ -46,7 +45,7 @@ export const updateUserInfo = async (data) => {
         if (avatar) {
             // Delete old avatar from Cloudinary if exists
             if (currentUser.avatar?.publicId) {
-                await cloudinary.uploader.destroy(currentUser.avatar.publicId);
+                await deleteOnCloudinary(currentUser.avatar);
             }
 
             // Upload new avatar
@@ -61,7 +60,7 @@ export const updateUserInfo = async (data) => {
         if (coverPhoto) {
             // Delete old cover photo from Cloudinary if exists
             if (currentUser.coverPhoto?.publicId) {
-                await cloudinary.uploader.destroy(currentUser.coverPhoto.publicId);
+                await deleteOnCloudinary(currentUser.avatar);
             }
 
             // Upload new cover photo
@@ -102,11 +101,11 @@ export const updateUserAvatar = async (data) => {
 
         // Delete old avatar from Cloudinary if exists
         if (currentUser.avatar?.publicId) {
-            await cloudinary.uploader.destroy(currentUser.avatar.publicId);
+            await deleteOnCloudinary(currentUser.avatar);
         }
 
         // Upload new avatar to Cloudinary
-        const uploadedAvatar = await uploadToCloudinary(file, 'avatar');
+        const uploadedAvatar = await uploadToCloudinary(file, 'avatars');
 
         // Update user with new avatar
         const userUpdated = await User.findByIdAndUpdate(
@@ -144,7 +143,7 @@ export const updateUserCoverPhoto = async (data) => {
 
         // Delete old cover photo from Cloudinary if exists
         if (currentUser.coverPhoto?.publicId) {
-            await cloudinary.uploader.destroy(currentUser.coverPhoto.publicId);
+            await deleteOnCloudinary(currentUser.avatar);
         }
 
         // Upload new cover photo to Cloudinary
