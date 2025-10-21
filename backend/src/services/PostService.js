@@ -1,46 +1,51 @@
-import uploadToCloudinary from "../lib/uploadToCloudinary.js";
+import { uploadToCloudinary, deleteOnCloudinary } from "../lib/useCloudinary.js";
 import Post from "../models/Post.js";
 import { createError } from "../lib/utils.js";
 import User from "../models/User.js";
 import { getPaginationMetadata, getPaginationParams } from "../lib/pagination.js";
+import { compressVideo } from "../lib/mediaCompressor.js";
 
-export const create = async (data) => {
+export const createPostService = async ({ userId, content, media = [], visibility = "friends" }) => {
     try {
-        const { userId, content, media = [], visibility } = data;
+        if (!userId) throw createError("User ID is required", 400);
 
-        if ((!content || content.trim() === "") && (!media || media.length === 0)) {
-            throw createError("Post must contain text or media", 400);
-        }
+        const uploadedMedia = await Promise.all(
+            media.map(async (item) => {
+                const { mimetype, buffer } = item;
 
-        let uploadedMedia = [];
+                let processedBuffer = buffer;
 
-        if (media && media.length > 0) {
-            // Upload tất cả media (image/video)
-            uploadedMedia = await Promise.all(
-                media.map(async (item) => {
-                    const result = await uploadToCloudinary(item, "posts");
-                    return {
-                        url: result.secure_url,
-                        type: result.resource_type === "video" ? "video" : "image",
-                        publicId: result.public_id,
-                    };
-                })
-            );
-        }
+                // Nén video nếu cần
+                if (mimetype.startsWith("video/")) {
+                    processedBuffer = await compressVideo(buffer);
+                }
+
+                // Chuyển buffer thành base64 để upload
+                const base64 = processedBuffer.toString("base64");
+                const dataUrl = `data:${mimetype};base64,${base64}`;
+
+                const uploaded = await uploadToCloudinary(dataUrl, "social_media");
+
+                return {
+                    url: uploaded.secure_url,
+                    public_id: uploaded.public_id,
+                    type: uploaded.resource_type,
+                };
+            })
+        );
 
         const newPost = new Post({
             author: userId,
             content,
             media: uploadedMedia,
-            visibility: visibility || "friends",
+            visibility,
         });
 
         const savedPost = await newPost.save();
-
         return savedPost;
     } catch (error) {
-        console.error("Error in create post:", error);
-        throw createError(error.message || "Failed to create post", error.status || 500);
+        console.error("❌ Error in createPostService:", error);
+        throw createError(error.message || "Failed to create post", 500);
     }
 };
 
@@ -57,7 +62,7 @@ export const getFeeds = async (userId, query = {}) => {
 
         //Lấy danh sách bài viết
         const posts = await Post.find({
-            author: { $in: usersToInclude }, // toán tử so sánh trong MongoDB, dùng để kiểm tra xem giá trị của một trường có nằm trong một danh sách
+            // author: { $in: usersToInclude }, // toán tử so sánh trong MongoDB, dùng để kiểm tra xem giá trị của một trường có nằm trong một danh sách
             visibility: { $ne: "private" }, //Khác giá trị
         })
             .populate("author", "displayName avatar")
@@ -177,27 +182,18 @@ export const deletePostService = async (postId, userId) => {
             throw createError("You are not authorized to delete this post", 403);
         }
 
-        // Xóa media trên Cloudinary (nếu có)
-        if (post.media && post.media.length > 0) {
-            for (const file of post.media) {
-                if (file.publicId) {
-                    try {
-                        // Nếu là video → dùng resource_type: "video"
-                        await cloudinary.uploader.destroy(file.publicId, {
-                            resource_type: file.type === "video" ? "video" : "image",
-                        });
-                    } catch (err) {
-                        console.warn(`⚠️ Failed to delete Cloudinary file: ${file.publicId}`);
-                    }
-                }
-            }
+        // Xóa media trên Cloudinary nếu có
+        if (post.media?.length) {
+            await deleteOnCloudinary(post.media);
         }
 
-        // Xóa bài viết
+        // Xóa bài viết trong DB
         await Post.findByIdAndDelete(postId);
+
+        console.log(`✅ Post ${postId} deleted successfully`);
         return { message: "Post deleted successfully" };
     } catch (error) {
-        console.error("Error in deletePostService:", error);
+        console.error("❌ Error in deletePostService:", error);
         throw createError(
             error.message || "Failed to delete post",
             error.status || 500

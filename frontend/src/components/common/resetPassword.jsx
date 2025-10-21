@@ -20,7 +20,7 @@ const ResetPassword = ({ onClose }) => {
         forgotPassword,
         verifyResetCode,
         resetPassword,
-        isLoading,
+        loading,
         cooldown
     } = useAuthStore();
 
@@ -49,10 +49,10 @@ const ResetPassword = ({ onClose }) => {
                             placeholder="you@example.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ email: e.target.value })}
-                            disabled={isLoading}
+                            disabled={loading}
                         />
-                        <Button onClick={forgotPassword} disabled={isLoading} className="w-full cursor-pointer">
-                            {isLoading ? <Spinner /> : "Send Reset Code"}
+                        <Button onClick={forgotPassword} disabled={loading} className="w-full cursor-pointer">
+                            {loading ? <Spinner /> : "Send Reset Code"}
                         </Button>
                     </div>
                 )}
@@ -65,7 +65,7 @@ const ResetPassword = ({ onClose }) => {
                                 maxLength={6}
                                 value={formData.code}
                                 onChange={(value) => setFormData({ code: value })}
-                                disabled={isLoading}
+                                disabled={loading}
                                 pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
                             >
                                 <InputOTPGroup className="gap-3 justify-center [&>div]:size-12 [&>div]:text-xl [&>div]:rounded-md [&>div]:border-2" >
@@ -90,7 +90,7 @@ const ResetPassword = ({ onClose }) => {
                                 onClick={forgotPassword}
                                 variant="outline"
                                 className="w-full cursor-pointer"
-                                disabled={isLoading}
+                                disabled={loading}
                             >
                                 Resend Code
                             </Button>
@@ -99,10 +99,10 @@ const ResetPassword = ({ onClose }) => {
                         {/* Verify button */}
                         <Button
                             onClick={verifyResetCode}
-                            disabled={isLoading || formData.code.length !== 6}
+                            disabled={loading || formData.code.length !== 6}
                             className="w-full cursor-pointer"
                         >
-                            {isLoading ? <Spinner /> : "Verify Code"}
+                            {loading ? <Spinner /> : "Verify Code"}
                         </Button>
                     </div>
                 )}
@@ -123,8 +123,8 @@ const ResetPassword = ({ onClose }) => {
                             value={formData.confirmPassword}
                             onChange={(e) => setFormData({ confirmPassword: e.target.value })}
                         />
-                        <Button onClick={handleResetPassword} disabled={isLoading} className="w-full cursor-pointer">
-                            {isLoading ? <Spinner /> : "Reset Password"}
+                        <Button onClick={handleResetPassword} disabled={loading} className="w-full cursor-pointer">
+                            {loading ? <Spinner /> : "Reset Password"}
                         </Button>
                     </div>
                 )}

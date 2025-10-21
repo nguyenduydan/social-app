@@ -17,6 +17,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router";
+import { useState } from "react";
+import { Dialog, DialogTrigger } from "../ui/dialog";
+import ResetPassword from "../common/resetPassword";
 
 const loginSchema = z.object({
     email: z.email('Email không hợp lệ'),
@@ -25,7 +28,8 @@ const loginSchema = z.object({
 
 export function LoginForm({ className, ...props }) {
     const navigate = useNavigate();
-    const { signIn, loginWithGoogle } = useAuthStore();
+    const { signIn, loginWithGoogle, resetFlow } = useAuthStore();
+    const [open, setOpen] = useState(false);
 
     const {
         register,
@@ -104,7 +108,30 @@ export function LoginForm({ className, ...props }) {
                                     )}
                                 </div>
                             </Field>
+                            <Field>
+                                <div className='flex items-center justify-between text-sm'>
+                                    <label className='flex items-center space-x-2 cursor-pointer text-gray-300'>
+                                        <input type='checkbox' className='rounded border-emerald-900 bg-black/50' />
+                                        <span className="text-secondary-foreground">Remember me</span>
+                                    </label>
+                                    <Dialog
+                                        open={open}
+                                        onOpenChange={(isOpen) => {
+                                            setOpen(isOpen);
+                                            if (!isOpen) resetFlow();
+                                        }}
+                                    >
+                                        <DialogTrigger
+                                            className='text-primary transition-colors cursor-pointer'
+                                            onClick={() => setOpen(true)}
+                                        >
+                                            Forgot password?
+                                        </DialogTrigger>
 
+                                        <ResetPassword onClose={() => setOpen(false)} />
+                                    </Dialog>
+                                </div>
+                            </Field>
                             {/* Submit Button */}
                             <Field>
                                 <Button

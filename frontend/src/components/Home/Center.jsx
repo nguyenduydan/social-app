@@ -1,4 +1,4 @@
-import FeedCard from "../Feed/FeedCard";
+import FeedCard from "../Posts/PostCard";
 
 const Center = ({ className }) => {
     return (

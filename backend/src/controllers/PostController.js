@@ -1,4 +1,4 @@
-import { create, deletePostService, getFeeds, getPostByIdService, updatePostService } from "../services/PostService.js";
+import { createPostService, deletePostService, getFeeds, getPostByIdService, updatePostService } from "../services/PostService.js";
 
 export const getFeed = async (req, res) => {
     try {
@@ -13,16 +13,36 @@ export const getFeed = async (req, res) => {
 
 export const createPost = async (req, res) => {
     try {
-        const { content, media, visibility } = req.body;
         const userId = req.user?._id;
+        const { content, visibility } = req.body;
+        const files = req.files || [];
 
-        if (!userId) return res.status(404).json({ message: "UserId not found" });
+        if (!userId) {
+            return res.status(404).json({ message: "UserId not found" });
+        }
 
-        await create({ userId, content, media, visibility });
-        return res.sendStatus(201);
+        if ((!content || content.trim() === "") && files.length === 0) {
+            return res.status(400).json({ message: "Post must contain text or media" });
+        }
+
+        // Chuẩn hóa media để service xử lý
+        const media = files.map((file) => ({
+            buffer: file.buffer,
+            mimetype: file.mimetype,
+            originalname: file.originalname,
+        }));
+
+        const newPost = await createPostService({
+            userId,
+            content,
+            visibility,
+            media,
+        });
+
+        res.status(201).json(newPost);
     } catch (error) {
-        console.log("Error in createPost: ", error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Error in createPost:", error);
+        res.status(error.status || 500).json({ message: error.message || "Internal server error" });
     }
 };
 
