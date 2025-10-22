@@ -32,7 +32,7 @@ const PostList = () => {
 
     // Danh sách bài viết
     return (
-        <div className="space-y-4 mx-2 md:mx-0 ">
+        <div className="space-y-4 ">
             {Array.isArray(posts) && posts.length > 0 ? (
                 posts.map((post, idx) => (
                     <div

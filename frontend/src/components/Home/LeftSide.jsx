@@ -12,7 +12,7 @@ const LeftSide = ({ className }) => {
     return (
         <div className={`${className}`}>
             <InfoUserCard />
-            <div className="px-5">
+            {/* <div className="px-5">
                 <Dialog
                     open={open}
                     onOpenChange={(isOpen) => {
@@ -35,8 +35,7 @@ const LeftSide = ({ className }) => {
                     </DialogTrigger>
                     <CreatePost onOpen={open} onClose={() => setOpen(false)} />
                 </Dialog>
-            </div>
-
+            </div> */}
         </div>
     );
 };

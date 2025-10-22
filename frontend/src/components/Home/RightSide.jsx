@@ -38,7 +38,7 @@ const RightSide = () => {
     return (
         <div className="hidden xl:flex flex-col w-full">
             {/* --- Gợi ý theo dõi --- */}
-            <Card className="p-4 rounded-none border-none shadow-sm">
+            <Card className="p-4 bg-background rounded-none border-none">
                 <h3 className="font-semibold text-lg px-4">Gợi ý theo dõi</h3>
                 <ScrollArea className="h-[170px]">
                     <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">
@@ -69,7 +69,7 @@ const RightSide = () => {
             </Card>
 
             {/* --- Lời mời kết bạn --- */}
-            <Card className="p-4 rounded-none shadow-sm border-y-1 border-muted">
+            <Card className="p-4 bg-background rounded-none border-y-1 border-muted">
                 <h3 className="font-semibold text-lg px-4">Lời mời kết bạn</h3>
                 <ScrollArea className="h-[150px]">
                     <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">
@@ -106,7 +106,7 @@ const RightSide = () => {
 
             {/* --- Danh sách bạn bè --- */}
 
-            <Card className="p-4 rounded-none shadow-none">
+            <Card className="p-4 bg-background rounded-none shadow-none">
                 <h3 className="font-semibold text-lg px-4">Danh sách bạn bè</h3>
                 <ScrollArea className="h-[380px]">
                     <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">

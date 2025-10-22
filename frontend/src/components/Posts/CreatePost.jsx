@@ -123,7 +123,7 @@ const CreatePost = ({ onOpen, onClose }) => {
                             e.target.style.height = "auto";
                             e.target.style.height = `${e.target.scrollHeight}px`;
                         }}
-                        placeholder={`${user?.displayName || "Bạn"} đang nghĩ gì?`}
+                        placeholder={`${user?.displayName || "Bạn"}, bạn đang nghĩ gì thế?`}
                         className="w-full max-h-30 bg-transparent placeholder-gray-400 resize-none focus:outline-none text-lg"
                         rows={1}
                     />

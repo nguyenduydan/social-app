@@ -2,52 +2,58 @@ import { useEffect, useState, useRef } from "react";
 
 /**
  * Hook theo dõi trạng thái cuộn (scroll)
- * @param {React.RefObject|null} scrollRef - Phần tử cuộn (hoặc window)
- * @param {number} threshold - Khoảng cách tối thiểu để tính là đổi hướng (px)
- * @param {number} idleDelay - Thời gian chờ để xem là ngừng cuộn (ms)
- * @returns {{ isScrollingDown: boolean, isScrollingUp: boolean, scrollY: number, isAtTop: boolean, isAtBottom: boolean, isScrolling: boolean }}
+ * - Lưu lại lastDirection ('down' | 'up' | null') và không xóa khi idle
+ * - Reset direction khi chạm top hoặc khi di chuyển ngược lại vượt threshold
  */
 export const useScrollStatus = (scrollRef = null, threshold = 10, idleDelay = 150) => {
     const [scrollY, setScrollY] = useState(0);
-    const [isScrollingDown, setIsScrollingDown] = useState(false);
-    const [isScrollingUp, setIsScrollingUp] = useState(false);
     const [isScrolling, setIsScrolling] = useState(false);
 
+    // public booleans derived from lastDirection
+    const [isScrollingDown, setIsScrollingDown] = useState(false);
+    const [isScrollingUp, setIsScrollingUp] = useState(false);
+
     const lastScrollY = useRef(0);
+    const lastDirection = useRef(null); // 'down' | 'up' | null
     const timeoutRef = useRef(null);
 
     useEffect(() => {
         const element = scrollRef?.current || window;
 
-        // Kiểm tra element có tồn tại không
         if (!element) return;
 
+        const getY = () => (scrollRef?.current ? scrollRef.current.scrollTop : window.scrollY);
+
         const handleScroll = () => {
-            const currentY = scrollRef?.current ? scrollRef.current.scrollTop : window.scrollY;
+            const currentY = getY();
+            const diff = currentY - lastScrollY.current;
 
             setScrollY(currentY);
             setIsScrolling(true);
 
-            const diff = currentY - lastScrollY.current;
-
-            // Đổi hướng khi vượt qua threshold
+            // only update when movement is significant
             if (Math.abs(diff) > threshold) {
                 if (diff > 0) {
+                    // scrolling down
+                    lastDirection.current = "down";
                     setIsScrollingDown(true);
                     setIsScrollingUp(false);
                 } else {
+                    // scrolling up
+                    lastDirection.current = "up";
                     setIsScrollingUp(true);
                     setIsScrollingDown(false);
                 }
                 lastScrollY.current = currentY;
             }
 
-            // Reset timeout để phát hiện dừng cuộn
+            // reset idle timer: only set isScrolling false on idle, keep lastDirection
             clearTimeout(timeoutRef.current);
             timeoutRef.current = setTimeout(() => {
                 setIsScrolling(false);
-                setIsScrollingDown(false);
-                setIsScrollingUp(false);
+                // keep isScrollingDown/up based on lastDirection
+                setIsScrollingDown(lastDirection.current === "down");
+                setIsScrollingUp(lastDirection.current === "up");
             }, idleDelay);
         };
 
@@ -55,19 +61,17 @@ export const useScrollStatus = (scrollRef = null, threshold = 10, idleDelay = 15
 
         return () => {
             element.removeEventListener("scroll", handleScroll);
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-            // Reset tất cả state khi unmount
+            clearTimeout(timeoutRef.current);
+            // optional reset on unmount
             setIsScrolling(false);
             setIsScrollingDown(false);
             setIsScrollingUp(false);
             setScrollY(0);
             lastScrollY.current = 0;
+            lastDirection.current = null;
         };
     }, [scrollRef, threshold, idleDelay]);
 
-    // Kiểm tra chạm đỉnh hoặc đáy
     const isAtTop = scrollY < 50;
     const isAtBottom = scrollRef?.current
         ? scrollY + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight - 10
@@ -80,5 +84,7 @@ export const useScrollStatus = (scrollRef = null, threshold = 10, idleDelay = 15
         isAtTop,
         isAtBottom,
         isScrolling,
+        // expose lastDirection if needed
+        lastDirection: lastDirection.current,
     };
 };

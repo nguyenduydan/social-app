@@ -13,8 +13,8 @@ const InfoUserCard = () => {
     ];
 
     return (
-        <div className='bg-muted'>
-            <Card className="border-none shadow-soft overflow-hidden rounded-none py-0 gap-0">
+        <div className='bg-background'>
+            <Card className="border-none bg-background overflow-hidden rounded-none py-0 gap-0">
                 <CardHeader className="relative flex flex-col items-center justify-center gap-6 px-0 pb-16">
                     {/* Cover photo */}
                     <div className="relative w-full h-32">
@@ -30,7 +30,7 @@ const InfoUserCard = () => {
                     </div>
 
                     {/* Avatar positioned absolutely */}
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
+                    <div className="absolute -bottom-5 left-1/2 z-10 -translate-x-1/2">
                         <div className='relative'>
                             <Avatar className="size-32 ring-offset-4 ring-offset-secondary transition-all duration-300 hover:ring-primary/40 hover:scale-105">
                                 <AvatarImage
