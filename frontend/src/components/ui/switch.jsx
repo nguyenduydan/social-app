@@ -2,7 +2,7 @@ import { useThemeStore } from "@/store/useThemeStore";
 import { Moon, Sun } from "lucide-react";
 import { useEffect } from "react";
 
-const Switch = () => {
+const Switch = ({ className }) => {
     const { isDark, toggleTheme } = useThemeStore();
 
     useEffect(() => {
@@ -19,7 +19,9 @@ const Switch = () => {
             />
 
             <span
-                className="flex items-center justify-center w-6 h-6 md:h-10 md:w-10 rounded-xl border-2 border-gray-300 bg-white dark:bg-gray-900 transition-all duration-300 active:scale-80"
+                className={`flex items-center justify-center w-8 h-8 md:h-12 md:w-12 rounded-full transition-all duration-300 hover:text-foreground hover:bg-secondary/30 dark:hover:bg-muted/60
+                        hover:shadow-[0_0_5px_0px_rgba(0,0,0,0.3)]
+                        hover:scale-105 active:scale-75 ${className}`}
             >
                 {/* Mặt trăng (Dark Mode) */}
                 <Moon

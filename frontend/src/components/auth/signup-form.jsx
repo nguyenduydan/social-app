@@ -72,7 +72,7 @@ export function SignupForm({ className, ...props }) {
               {/* Họ và tên */}
               <FieldGroup className="grid grid-cols-1 md:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="lastName" className="text-secondary-foreground font-bold">
+                  <FieldLabel htmlFor="lastName" className=" font-bold">
                     Họ
                   </FieldLabel>
                   <div className="relative">
@@ -81,7 +81,7 @@ export function SignupForm({ className, ...props }) {
                       type="text"
                       placeholder="Nguyễn Văn"
                       {...register("lastName")}
-                      className="px-5 border-border text-secondary-foreground placeholder:text-secondary-foreground/50 focus:border-emerald-800 focus:ring-emerald-800"
+                      className="px-5 border-border focus:border-emerald-800 focus:ring-emerald-800"
                     />
                     {errors.lastName && (
                       <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -91,7 +91,7 @@ export function SignupForm({ className, ...props }) {
                   </div>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="firstName" className="text-secondary-foreground font-bold">
+                  <FieldLabel htmlFor="firstName" className=" font-bold">
                     Tên
                   </FieldLabel>
                   <div className="relative">
@@ -100,7 +100,7 @@ export function SignupForm({ className, ...props }) {
                       type="text"
                       placeholder="Nam"
                       {...register("firstName")}
-                      className="px-5 border-border text-secondary-foreground placeholder:text-secondary-foreground/50 focus:border-emerald-500 focus:ring-emerald-500"
+                      className="px-5 border-border focus:border-emerald-500 focus:ring-emerald-500"
                     />
                     {errors.firstName && (
                       <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -113,7 +113,7 @@ export function SignupForm({ className, ...props }) {
 
               {/* Email */}
               <Field>
-                <FieldLabel htmlFor="email" className="text-secondary-foreground font-bold">
+                <FieldLabel htmlFor="email" className=" font-bold">
                   Email
                 </FieldLabel>
                 <div className="relative">
@@ -122,7 +122,7 @@ export function SignupForm({ className, ...props }) {
                     type="email"
                     placeholder="you@example.com"
                     {...register("email")}
-                    className="px-5 border-border text-secondary-foreground  placeholder:text-secondary-foreground/50 focus:border-emerald-500 focus:ring-emerald-500"
+                    className="px-5 border-border  focus:border-emerald-500 focus:ring-emerald-500"
                   />
                   {errors.email && (
                     <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -134,7 +134,7 @@ export function SignupForm({ className, ...props }) {
 
               {/* Password */}
               <Field>
-                <FieldLabel htmlFor="password" className="text-secondary-foreground font-bold">
+                <FieldLabel htmlFor="password" className=" font-bold">
                   Password
                 </FieldLabel>
                 <div className="relative">
@@ -143,7 +143,7 @@ export function SignupForm({ className, ...props }) {
                     type="password"
                     placeholder="••••••••"
                     {...register("password")}
-                    className="px-5  border-border text-secondary-foreground placeholder:text-secondary-foreground/50 focus:border-emerald-500 focus:ring-emerald-500"
+                    className="px-5  border-border focus:border-emerald-500 focus:ring-emerald-500"
                   />
                   {errors.password && (
                     <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -175,7 +175,7 @@ export function SignupForm({ className, ...props }) {
                   variant="outline"
                   type="button"
                   onClick={loginWithGoogle}
-                  className=" cursor-pointer w-full py-4 rounded-xl border-border text-secondary-foreground transition-all font-bold"
+                  className=" cursor-pointer w-full py-4 rounded-xl border-border  transition-all font-bold"
                 >
                   <svg
                     className="mr-2 h-4 w-4 text-red-500"
@@ -192,7 +192,7 @@ export function SignupForm({ className, ...props }) {
               </Field>
 
               {/* Login link */}
-              <FieldDescription className="text-center text-secondary-foreground">
+              <FieldDescription className="text-center ">
                 Bạn đã có tài khoản?{" "}
                 <Link
                   to="/signin"
@@ -215,7 +215,7 @@ export function SignupForm({ className, ...props }) {
         </CardContent>
       </Card>
 
-      <FieldDescription className="px-6 text-center text-secondary-foreground">
+      <FieldDescription className="px-6 text-center ">
         Bằng cách tiếp tục, bạn đồng ý với{" "}
         <a href="#" className="text-accent font-bold">
           Điều khoản dịch vụ

@@ -1,19 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-export const useScrollToTop = (scrollRef, threshold = 300) => {
-    const [showScrollTop, setShowScrollTop] = useState(false);
+
+export const useScrollToTop = ({ scrollRef }) => {
 
     useEffect(() => {
-        const el = scrollRef?.current;
-        if (!el) return;
+        if (!scrollRef.current) return;
 
-        const handleScroll = () => {
-            setShowScrollTop(el.scrollTop > threshold);
+        const scrollElement = scrollRef.current;
+        scrollElement.style.scrollBehavior = 'smooth';
+
+        return () => {
+            if (scrollElement) {
+                scrollElement.style.scrollBehavior = 'auto';
+            }
         };
+    }, [scrollRef]);
 
-        el.addEventListener("scroll", handleScroll);
-        return () => el.removeEventListener("scroll", handleScroll);
-    }, [scrollRef, threshold]);
-
-    return showScrollTop;
+    return useScrollToTop;
 };

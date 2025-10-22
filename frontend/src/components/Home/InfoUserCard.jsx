@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { FieldSeparator } from '../ui/field';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -14,28 +14,58 @@ const InfoUserCard = () => {
 
     return (
         <div className='bg-muted'>
-            <Card className="border-none shadow-soft overflow-hidden">
-                <CardHeader className="flex flex-col items-center justify-center gap-6 pb-4">
-                    <div className="relative">
-                        <Avatar className="size-32 ring-4 ring-primary/20 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/40 hover:scale-105">
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                            <AvatarFallback className="text-2xl bg-primary/10 text-primary">ND</AvatarFallback>
-                        </Avatar>
-                        <div className="absolute bottom-0 right-0 size-6 bg-status-online rounded-full border-4 border-background" />
+            <Card className="border-none shadow-soft overflow-hidden rounded-none py-0 gap-0">
+                <CardHeader className="relative flex flex-col items-center justify-center gap-6 px-0 pb-16">
+                    {/* Cover photo */}
+                    <div className="relative w-full h-32">
+                        {user?.coverPhoto?.url ? (
+                            <img
+                                src={user?.coverPhoto?.url || ""}
+                                alt={user?.displayName || "Cover photo"}
+                                className="absolute inset-0 w-full h-full object-cover bg-gradient-accent"
+                            />
+                        ) : (
+                            <div className="absolute inset-0 w-full h-full bg-gradient-accent" />
+                        )}
                     </div>
-                    <div className="text-center space-y-1">
-                        <CardTitle className="text-2xl font-bold">{user?.displayName}</CardTitle>
+
+                    {/* Avatar positioned absolutely */}
+                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
+                        <div className='relative'>
+                            <Avatar className="size-32 ring-offset-4 ring-offset-secondary transition-all duration-300 hover:ring-primary/40 hover:scale-105">
+                                <AvatarImage
+                                    src={user?.avatar?.url}
+                                    alt={user?.displayName || "User avatar"}
+                                    className="object-cover"
+                                />
+                                <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                                    {user?.displayName?.charAt(0) || "?"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute bottom-0 right-0 size-6 bg-status-online rounded-full border-4 border-background" />
+                        </div>
                     </div>
                 </CardHeader>
 
-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-border/50" />
+                <CardContent className="pt-10 pb-6">
+                    {/* User name */}
+                    <div className="text-center space-y-1 mb-4">
+                        <CardTitle className="text-2xl font-bold">{user?.displayName}</CardTitle>
+                        <CardDescription className="text-sm text-foreground/70">
+                            {user?.createdAt
+                                ? `Tham gia từ ${new Date(user.createdAt).toLocaleDateString("vi-VN")}`
+                                : "Ngày tham gia không xác định"}
+                        </CardDescription>
+                    </div>
 
-                <CardContent className="pt-6 pb-6">
+                    <FieldSeparator className="*:data-[slot=field-separator-content]:bg-border/50 mb-4" />
+
+                    {/* Stats */}
                     <div className='grid grid-cols-3 gap-4'>
                         {stats.map((stat) => (
                             <button
                                 key={stat.label}
-                                className="flex flex-col items-center gap-1 p-3 rounded-lg transition-all duration-300 hover:bg-primary/20 hover:scale-105"
+                                className="group flex flex-col items-center gap-1 p-3 rounded-lg transition-all duration-300 hover:bg-primary/20 hover:scale-105"
                             >
                                 <span className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                                     {stat.value}
@@ -46,6 +76,27 @@ const InfoUserCard = () => {
                             </button>
                         ))}
                     </div>
+
+                    {/* Bio */}
+                    <p className="text-sm text-foreground/80 text-center py-5">
+                        {user?.bio || "🎨 Content Creator | 📸 Photography Enthusiast | 🌍 Travel Lover"}
+                    </p>
+                    {/* info */}
+                    <div className='flex flex-col gap-5'>
+                        <p>
+                            <strong>Ngày sinh:</strong> {user?.dateOfBirth || "not provided"}
+                        </p>
+                        <p>
+                            <strong>Email:</strong> {user?.email || "not provided"}
+                        </p>
+                        <p>
+                            <strong>Địa chỉ:</strong> {user?.location || "Unknown"}
+                        </p>
+                        <p>
+                            <strong>Mạng xã hội khác:</strong> {user?.socialLinks?.join(", ") || "Not linked"}
+                        </p>
+                    </div>
+
                 </CardContent>
             </Card>
         </div>

@@ -69,7 +69,7 @@ export function LoginForm({ className, ...props }) {
 
                             {/* Email */}
                             <Field>
-                                <FieldLabel htmlFor="email" className="text-secondary-foreground font-bold">
+                                <FieldLabel htmlFor="email" className="font-bold">
                                     Email
                                 </FieldLabel>
                                 <div className="relative">
@@ -78,7 +78,7 @@ export function LoginForm({ className, ...props }) {
                                         type="email"
                                         placeholder="you@example.com"
                                         {...register("email")}
-                                        className="px-5 border-border text-secondary-foreground placeholder:text-secondary-foreground/30 focus:border-emerald-500 focus:ring-emerald-500"
+                                        className="px-5 border-border focus:border-emerald-500 focus:ring-emerald-500"
                                     />
                                     {errors.email && (
                                         <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -90,7 +90,7 @@ export function LoginForm({ className, ...props }) {
 
                             {/* Password */}
                             <Field>
-                                <FieldLabel htmlFor="password" className="text-secondary-foreground font-bold">
+                                <FieldLabel htmlFor="password" className=" font-bold">
                                     Password
                                 </FieldLabel>
                                 <div className="relative">
@@ -99,7 +99,7 @@ export function LoginForm({ className, ...props }) {
                                         type="password"
                                         placeholder="••••••••"
                                         {...register("password")}
-                                        className="px-5  border-border text-secondary-foreground placeholder:text-secondary-foreground/30 focus:border-emerald-500 focus:ring-emerald-500"
+                                        className="px-5  border-border focus:border-emerald-500 focus:ring-emerald-500"
                                     />
                                     {errors.password && (
                                         <p className="text-sm text-destructive pt-1 pl-1 italic">
@@ -112,7 +112,7 @@ export function LoginForm({ className, ...props }) {
                                 <div className='flex items-center justify-between text-sm'>
                                     <label className='flex items-center space-x-2 cursor-pointer text-gray-300'>
                                         <input type='checkbox' className='rounded border-emerald-900 bg-black/50' />
-                                        <span className="text-secondary-foreground">Remember me</span>
+                                        <span className="text-muted-foreground">Remember me</span>
                                     </label>
                                     <Dialog
                                         open={open}
@@ -154,7 +154,7 @@ export function LoginForm({ className, ...props }) {
                                     variant="outline"
                                     type="button"
                                     onClick={loginWithGoogle}
-                                    className="cursor-pointer w-full py-4 border-border text-secondary-foreground transition-all rounded-xl font-bold"
+                                    className="cursor-pointer w-full py-4 border-border  transition-all rounded-xl font-bold"
                                 >
                                     <svg
                                         className="mr-2 h-4 w-4 text-red-500"
@@ -171,7 +171,7 @@ export function LoginForm({ className, ...props }) {
                             </Field>
 
                             {/* Login link */}
-                            <FieldDescription className="text-center text-secondary-foreground">
+                            <FieldDescription className="text-center ">
                                 Bạn đã có tài khoản?{" "}
                                 <Link
                                     to="/signup"
@@ -194,7 +194,7 @@ export function LoginForm({ className, ...props }) {
                 </CardContent>
             </Card>
 
-            <FieldDescription className="px-6 text-center text-secondary-foreground">
+            <FieldDescription className="px-6 text-center ">
                 Bằng cách tiếp tục, bạn đồng ý với{" "}
                 <a href="#" className="text-accent font-bold">
                     Điều khoản dịch vụ

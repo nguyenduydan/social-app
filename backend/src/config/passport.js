@@ -12,20 +12,48 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                // Find existing user
+                const email = profile.emails?.[0]?.value;
+                const photoUrl = profile.photos?.[0]?.value;
+
                 let user = await User.findOne({ googleId: profile.id });
+
+                // Nếu chưa có, kiểm tra theo email
+                if (!user && email) {
+                    user = await User.findOne({ email });
+                    if (user) {
+                        user.googleId = profile.id;
+                        // Cập nhật avatar nếu chưa có
+                        if (!user.avatar?.url && photoUrl) {
+                            user.avatar = { url: photoUrl };
+                        }
+                        await user.save();
+                    }
+                }
+
+                // Nếu vẫn chưa có, tạo mới
                 if (!user) {
                     user = await User.create({
                         googleId: profile.id,
                         displayName: profile.displayName,
-                        email: profile.emails[0].value,
+                        email,
                         role: "user",
-                        avatar: profile.photos[0].value,
+                        avatar: {
+                            url: photoUrl,
+                            publicId: null,
+                        },
                     });
+                } else {
+                    // Nếu user đã tồn tại nhưng avatar khác -> cập nhật
+                    if (photoUrl && user.avatar?.url !== photoUrl) {
+                        user.avatar = { url: photoUrl };
+                        await user.save();
+                    }
                 }
+
                 return done(null, user);
-            } catch (err) {
-                return done(err, null);
+            } catch (error) {
+                console.error("Google OAuth error:", error);
+                return done(error, null);
             }
         }
     )

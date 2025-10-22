@@ -1,9 +1,20 @@
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useContext, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router';
 
 const ScrollContext = createContext(null);
 
 export const ScrollProvider = ({ children }) => {
     const scrollRef = useRef(null);
+    const location = useLocation();
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }, [location.pathname]);
 
     return (
         <ScrollContext.Provider value={scrollRef}>
