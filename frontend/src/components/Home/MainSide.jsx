@@ -16,7 +16,7 @@ const MainSide = ({ className }) => {
         <div className={`${className}`}>
             <div className="flex flex-col items-center w-full px-2 sm:px-4 md:px-6 space-y-6 pb-6">
                 {/* Ô tạo bài viết */}
-                <Card className="w-full max-w-2xl md:max-w-3xl mt-4 border border-border/60 shadow-sm rounded-2xl">
+                <Card className="w-full max-w-xl md:max-w-3xl mt-4 border border-border/60 shadow-sm rounded-2xl">
                     <CardContent className="flex items-center gap-3 p-4 w-full">
                         {/* Avatar */}
                         <Avatar className="size-10 sm:size-12 shrink-0 ring-2 ring-primary/10 transition-all duration-300 hover:scale-105">
@@ -37,7 +37,7 @@ const MainSide = ({ className }) => {
                                     hover:bg-muted hover:text-foreground
                                     transition-all duration-200
                                     rounded-full px-4 py-3
-                                    text-sm sm:text-base
+                                    text-xs sm:text-base
                                     shadow-inner dark:shadow-inner
                                     h-auto
                                 ">

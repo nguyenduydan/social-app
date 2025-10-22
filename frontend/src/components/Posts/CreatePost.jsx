@@ -96,7 +96,7 @@ const CreatePost = ({ onOpen, onClose }) => {
             <div className="px-6 pt-4 pb-2">
                 <div className="flex items-center gap-3">
                     <Avatar className="size-12 transition-all duration-300">
-                        <AvatarImage src={user.avatar.url || ""} alt={user?.displayName || "user"} />
+                        <AvatarImage src={user.avatar?.url || ""} alt={user?.displayName || "user"} />
                         <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                             <User />
                         </AvatarFallback>

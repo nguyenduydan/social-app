@@ -47,13 +47,11 @@ const FeedCard = ({ post }) => {
                     </div>
                 </CardHeader>
 
-                {/* Description */}
-                <CardDescription className="px-8 pb-3 text-sm sm:text-base">
-                    {post.content}
-                </CardDescription>
-
                 {/* Image */}
                 <CardContent className="p-0">
+                    <div className="px-8 pb-3 text-sm sm:text-base">
+                        {post.content}
+                    </div>
                     <div className="w-full overflow-hidden">
                         {post.media?.length > 0 && <PostMedia media={post.media} />}
                     </div>

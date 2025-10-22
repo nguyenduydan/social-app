@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 import InfoUserCard from './InfoUserCard';
-import { cn } from '@/lib/utils';
-import { Dialog, DialogTrigger } from '../ui/dialog';
-import { Button } from '../ui/button';
-import CreatePost from '../Posts/CreatePost';
-import { Plus } from 'lucide-react';
+// import { cn } from '@/lib/utils';
+// import { Dialog, DialogTrigger } from '../ui/dialog';
+// import { Button } from '../ui/button';
+// import CreatePost from '../Posts/CreatePost';
+// import { Plus } from 'lucide-react';
 
 const LeftSide = ({ className }) => {
-    const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
 
     return (
         <div className={`${className}`}>

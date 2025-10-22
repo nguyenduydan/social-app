@@ -13,12 +13,12 @@ const Home = () => {
                 </div>
 
                 {/* Feeds - Scrollable Center */}
-                <main className="col-span-12 md:col-span-8 lg:col-span-6">
+                <main className="col-span-12 md:col-span-7 lg:col-span-6">
                     <MainSide />
                 </main>
 
                 {/* ListFriend and message - Fixed Right */}
-                <div className="hidden md:flex md:col-span-4 lg:col-span-3 h-screen overflow-y-auto sticky top-0">
+                <div className="hidden md:block md:col-span-5 lg:col-span-3 h-screen overflow-y-auto sticky top-0">
                     <RightSide />
                 </div>
             </div>

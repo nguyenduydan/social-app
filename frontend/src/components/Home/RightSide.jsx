@@ -36,11 +36,11 @@ const RightSide = () => {
     ];
 
     return (
-        <div className="hidden xl:flex flex-col w-full">
+        <div className="flex flex-col w-full">
             {/* --- Gợi ý theo dõi --- */}
             <Card className="p-4 bg-background rounded-none border-none">
                 <h3 className="font-semibold text-lg px-4">Gợi ý theo dõi</h3>
-                <ScrollArea className="h-[170px]">
+                <ScrollArea className="h-[165px]">
                     <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">
                         {recommended.map((user) => (
                             <div key={user.id} className="flex items-center justify-between group">
@@ -92,8 +92,8 @@ const RightSide = () => {
                                     </Button>
                                     <Button
                                         size="sm"
-                                        variant="secondary"
-                                        className="text-xs font-medium"
+                                        variant="outline"
+                                        className="text-xs font-medium text-destructive"
                                     >
                                         Từ chối
                                     </Button>
@@ -108,7 +108,7 @@ const RightSide = () => {
 
             <Card className="p-4 bg-background rounded-none shadow-none">
                 <h3 className="font-semibold text-lg px-4">Danh sách bạn bè</h3>
-                <ScrollArea className="h-[380px]">
+                <ScrollArea className="h-[360px]">
                     <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">
                         {friends.map((f) => (
                             <div key={f.id} className="flex flex-row items-center text-left">

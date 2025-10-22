@@ -29,7 +29,7 @@ const NavLink = ({ item }) => {
             to={item.path}
             onClick={handleClick}
             className={`
-                relative flex w-15 h-10 md:w-12 md:h-12 my-1 justify-center items-center
+                relative flex w-12 h-10 md:w-12 md:h-12 my-1 justify-center items-center
                 rounded-full cursor-pointer transition-all duration-300 ease-out
                 ${isActive
                     ? `
