@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { api } from "@/lib/axios";
 import { toast } from "sonner";
 import { authService } from "@/services/authService";
+import { tokenManager } from "@/lib/tokenManager";
 
 export const useAuthStore = create((set, get) => ({
     user: null, // Dữ liệu user
@@ -24,13 +24,14 @@ export const useAuthStore = create((set, get) => ({
         })),
 
     //clear state - mục đích để tái sử dụng
-    clearState: () => {
-        set({ accessToken: null, user: null, loading: false });
+    setAccessToken: (accessToken) => {
+        tokenManager.setToken(accessToken);
+        set({ accessToken });
     },
 
-
-    setAccessToken: (accessToken) => {
-        set({ accessToken });
+    clearState: () => {
+        tokenManager.clearToken();
+        set({ accessToken: null, user: null, loading: false });
     },
 
     // Reset lại flow forgot password
@@ -42,25 +43,29 @@ export const useAuthStore = create((set, get) => ({
         }),
 
     refresh: async () => {
+        const { isRefreshing, setAccessToken, fetchMe, clearState } = get();
+
+        if (isRefreshing) return;
+
         try {
-            set({ loading: true });
-            const { user, fetchMe, setAccessToken } = get();
+            set({ isRefreshing: true, loading: true });
 
             const accessToken = await authService.refresh();
-
             setAccessToken(accessToken);
+
+            const user = get().user;
             if (!user) {
                 await fetchMe();
             }
-
         } catch (error) {
             console.log("Error refreshing token:", error);
             toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-            get().clearState();
+            clearState();
         } finally {
-            set({ loading: false });
+            set({ isRefreshing: false, loading: false });
         }
     },
+
 
     // Kiểm tra Auth khi reload
     fetchMe: async () => {
@@ -136,7 +141,7 @@ export const useAuthStore = create((set, get) => ({
 
         set({ loading: true });
         try {
-            const res = await api.post("/auth/forgot-password", { email: formData.email });
+            const res = await authService.forgotPassword(formData.email);
             toast.success(res.data?.message || "Reset code sent!");
             set({ step: 2 }); // Chuyển sang bước nhập mã
             get().startCooldown();
@@ -160,10 +165,7 @@ export const useAuthStore = create((set, get) => ({
 
         set({ loading: true });
         try {
-            const res = await api.post("/auth/verify-reset-code", {
-                email: formData.email,
-                code: formData.code,
-            });
+            const res = await authService.verifyResetCode(formData.email, formData.code);
             toast.success(res.data?.message || "Code verified successfully");
             set({ step: 3 });
         } catch (error) {
@@ -190,10 +192,7 @@ export const useAuthStore = create((set, get) => ({
 
         set({ loading: true });
         try {
-            const res = await api.patch("/auth/reset-password", {
-                email: formData.email,
-                newPassword: formData.newPassword,
-            });
+            const res = await authService.resetPassword(formData.email, formData.newPassword);
             toast.success(res.data?.message || "Password reset successfully");
             get().resetFlow();
         } catch (error) {

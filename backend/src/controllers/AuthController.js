@@ -1,7 +1,8 @@
-import { createUser, signinUser, logoutUser, refreshAccessToken, updatePassword } from "../services/AuthService.js";
+import { createUser, signinUser, logoutUser, refreshAccessToken, updatePassword, handleOauthCallback } from "../services/AuthService.js";
 import { attachAuthCookies, clearAuthCookies, generateAccessToken, generateRefreshToken, generateResetCode } from "../lib/utils.js";
 import { ENV } from "../config/env.js";
 import sendResetCode from "../config/sendMail.js";
+import passport from "passport";
 
 const resetCodes = {};
 
@@ -78,26 +79,22 @@ export const refreshToken = async (req, res) => {
     }
 };
 
-export const oauthCallback = async (req, res) => {
-    try {
-        const user = req.user;
-        if (!user) {
-            return res.redirect(`${ENV.CLIENT_URL}/login`);
+export const oauthCallback = (req, res, next) => {
+    passport.authenticate(
+        "google",
+        { session: false },
+        async (err, user) => {
+            if (err || !user) {
+                console.error("Google OAuth failed:", err);
+                return res.redirect(`${ENV.CLIENT_URL}/signin`);
+            }
+
+            const { accessToken, refreshToken } = await handleOauthCallback({ oauthUser: user });
+            attachAuthCookies(res, accessToken, refreshToken);
+
+            return res.redirect(ENV.CLIENT_URL);
         }
-
-        // Generate tokens
-        const accessToken = generateAccessToken(user._id);
-        const refreshToken = generateRefreshToken(user._id);
-
-        // Attach cookies
-        attachAuthCookies(res, accessToken, refreshToken);
-
-        // Redirect to frontend
-        return res.redirect(ENV.CLIENT_URL);
-    } catch (error) {
-        console.error("Error in oauthCallback:", error);
-        return res.redirect(`${ENV.CLIENT_URL}/login?error=oauth_failed`);
-    }
+    )(req, res, next);
 };
 
 export const forgotPassword = async (req, res) => {

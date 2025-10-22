@@ -1,29 +1,19 @@
-import React from 'react';
-import Navbar from './Navbar';
 import { Outlet } from 'react-router';
-import Navigation from './Navigation';
-import { useScrollToTop } from '@/hooks/useScrollToTop';
+import Navigation from '../navigation/Navigation';
 import { useScrollRef } from '@/contexts/ScrollContext';
-import ScrollToTop from '../common/ScrollToTop';
 
 const MainLayout = () => {
     const scrollRef = useScrollRef();
-    const showScrollTop = useScrollToTop(scrollRef);
-
-    const handleScrollTop = () => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
-        }
-    };
 
     return (
-        <div>
-            <Navbar />
+        <div className="fixed inset-0 flex flex-col">
             <Navigation />
-            <main className="h-screen overflow-y-auto">
+            <main
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto scrollbar-hide"
+            >
                 <Outlet />
             </main>
-            <ScrollToTop showScrollTop={showScrollTop} onScrollTop={handleScrollTop} />
         </div>
     );
 };

@@ -83,6 +83,25 @@ export const signinUser = async ({ email, password }) => {
     }
 };
 
+export const handleOauthCallback = async ({ oauthUser }) => {
+    try {
+        // Generate tokens
+        const accessToken = generateAccessToken(oauthUser._id);
+        const refreshToken = generateRefreshToken(oauthUser._id);
+        // Create session
+        await Session.create({
+            userId: oauthUser._id,
+            refreshToken,
+            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRE)
+        });
+        return { user: oauthUser, accessToken, refreshToken };
+    } catch (error) {
+        console.error("Error in handleOauthCallback:", error.message);
+        throw error.status ? error : createError(error.message || "Failed OAuth login", 500);
+    }
+};
+
+
 export const logoutUser = async (refreshToken) => {
     try {
         if (!refreshToken) {

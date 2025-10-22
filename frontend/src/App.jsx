@@ -1,7 +1,6 @@
-import { BrowserRouter } from 'react-router';
 import { Toaster } from './components/ui/sonner';
 import "@/assets/global.css";
-import { Route, Routes } from 'react-router';
+import { Route, Routes, BrowserRouter } from 'react-router';
 import MainLayout from './components/layout/MainLayout';
 //Pages
 import LoginPage from '@/pages/LoginPage';
@@ -21,24 +20,26 @@ const App = () => {
   }, [applyTheme]);
 
   return (
-    <ScrollProvider>
+    <>
       <Toaster richColors />
       <BrowserRouter>
-        <Routes>
-          {/* public routes */}
-          <Route path='/signin' element={<LoginPage />} />
-          <Route path='/signup' element={<SignupPage />} />
+        <ScrollProvider>
+          <Routes>
+            {/* public routes */}
+            <Route path='/signin' element={<LoginPage />} />
+            <Route path='/signup' element={<SignupPage />} />
 
-          {/* protect routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
-              <Route path='/' element={<HomePage />} />
-              <Route path='/profile' element={<ProfilePage />} />
+            {/* protect routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<MainLayout />}>
+                <Route path='/' element={<HomePage />} />
+                <Route path='/profile' element={<ProfilePage />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
+          </Routes>
+        </ScrollProvider>
       </BrowserRouter>
-    </ScrollProvider>
+    </>
   );
 };
 

@@ -30,8 +30,9 @@ export const attachAuthCookies = (res, accessToken, refreshToken) => {
     const isProd = APP_ENV === "production";
     const cookieOptions = {
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: isProd ? "none" : "lax",
         secure: isProd,
+        path: "/",
     };
 
     // res.cookie("accessToken", accessToken, {

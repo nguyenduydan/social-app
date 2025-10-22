@@ -1,7 +1,6 @@
 import { useAuthStore } from '@/store/useAuthStore';
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router';
-import LoadingPage from '../common/loaders/loadingPage';
 import CuberLoader from '../common/loaders/cuberLoader';
 
 const ProtectedRoute = () => {

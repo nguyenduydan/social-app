@@ -19,6 +19,9 @@ export const useScrollStatus = (scrollRef = null, threshold = 10, idleDelay = 15
     useEffect(() => {
         const element = scrollRef?.current || window;
 
+        // Kiểm tra element có tồn tại không
+        if (!element) return;
+
         const handleScroll = () => {
             const currentY = scrollRef?.current ? scrollRef.current.scrollTop : window.scrollY;
 
@@ -49,9 +52,18 @@ export const useScrollStatus = (scrollRef = null, threshold = 10, idleDelay = 15
         };
 
         element.addEventListener("scroll", handleScroll, { passive: true });
+
         return () => {
             element.removeEventListener("scroll", handleScroll);
-            clearTimeout(timeoutRef.current);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+            // Reset tất cả state khi unmount
+            setIsScrolling(false);
+            setIsScrollingDown(false);
+            setIsScrollingUp(false);
+            setScrollY(0);
+            lastScrollY.current = 0;
         };
     }, [scrollRef, threshold, idleDelay]);
 

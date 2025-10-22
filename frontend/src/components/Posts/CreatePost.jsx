@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     DialogContent,
     DialogHeader,
@@ -19,7 +19,7 @@ const options = [
     { value: "private", label: "Chỉ mình tôi" },
 ];
 
-const CreatePost = ({ onClose }) => {
+const CreatePost = ({ onOpen, onClose }) => {
     const { createPost, creatingPost } = usePostStore();
     const { user } = useAuthStore();
 
@@ -28,6 +28,15 @@ const CreatePost = ({ onClose }) => {
     const [visibility, setVisibility] = useState("public");
     const [charCount, setCharCount] = useState(0);
     const maxChars = 500;
+
+    useEffect(() => {
+        if (onOpen) {
+            setContent("");
+            setMedia([]);
+            setCharCount(0);
+            setVisibility("public");
+        }
+    }, [onOpen]);
 
     const handleTextChange = (e) => {
         const text = e.target.value;
@@ -77,7 +86,7 @@ const CreatePost = ({ onClose }) => {
         <DialogContent className="w-full md:min-w-lg p-0 gap-0 border-0">
             {/* Header */}
             <DialogHeader className="px-6 py-4 border-b border-gray-200 relative">
-                <DialogTitle className="text-xl font-bold text-gray-900">
+                <DialogTitle className="text-xl font-bold">
                     Tạo bài viết
                 </DialogTitle>
                 <DialogDescription />
@@ -87,13 +96,13 @@ const CreatePost = ({ onClose }) => {
             <div className="px-6 pt-4 pb-2">
                 <div className="flex items-center gap-3">
                     <Avatar className="size-12 transition-all duration-300">
-                        <AvatarImage src={user.avatar} alt={user.displayName} />
+                        <AvatarImage src={user.avatar.url || ""} alt={user?.displayName || "user"} />
                         <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                             <User />
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
-                        <h3 className="font-semibold">{user.displayName}</h3>
+                        <h3 className="font-semibold">{user?.displayName || "Người dùng"}</h3>
                         <CustomSelect
                             options={options}
                             value={visibility}
@@ -106,33 +115,34 @@ const CreatePost = ({ onClose }) => {
             {/* Form */}
             <form onSubmit={handleSubmit}>
                 {/* Text Area */}
-                <div className="px-6 py-2">
+                <div className="inline-block w-full px-6 py-2 " >
                     <textarea
                         value={content}
-                        onChange={handleTextChange}
-                        placeholder="Bạn đang nghĩ gì?"
-                        className="w-full min-h-10 text-gray-900 bg-transparent placeholder-gray-400 resize-none focus:outline-none text-lg"
-                        autoFocus
-                        disabled={creatingPost}
+                        onChange={(e) => {
+                            handleTextChange(e);
+                            e.target.style.height = "auto";
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        placeholder={`${user?.displayName || "Bạn"} đang nghĩ gì?`}
+                        className="w-full max-h-30 bg-transparent placeholder-gray-400 resize-none focus:outline-none text-lg"
+                        rows={1}
                     />
-                    <div className="">
-                        <div className="flex justify-end">
-                            <span
-                                className={`text-sm ${charCount > maxChars * 0.9
-                                    ? "text-red-500"
-                                    : "text-gray-400"
-                                    }`}
-                            >
-                                {charCount}/{maxChars}
-                            </span>
-                        </div>
+                    <div className="flex justify-end">
+                        <span
+                            className={`text-sm ${charCount > maxChars * 0.9
+                                ? "text-red-500"
+                                : "text-gray-400"
+                                }`}
+                        >
+                            {charCount}/{maxChars}
+                        </span>
                     </div>
                 </div>
 
                 {/* Media Preview */}
                 {media.length > 0 && (
                     <div
-                        className={`px-6 mb-4 grid gap-3 ${media.length === 1
+                        className={`scrollbar-custom px-6 mb-4 grid gap-3 max-h-[250px] md:max-h-[400px] overflow-y-auto  ${media.length === 1
                             ? "grid-cols-1"
                             : media.length === 2
                                 ? "grid-cols-2"
@@ -140,7 +150,7 @@ const CreatePost = ({ onClose }) => {
                             }`}
                     >
                         {media.map((item, idx) => (
-                            <div key={idx} className="relative group w-full max-h-[500px] overflow-y-auto rounded-lg">
+                            <div key={idx} className="relative group w-full rounded-lg">
                                 {item.file.type.startsWith("video/") ? (
                                     <video
                                         src={item.preview}
@@ -161,9 +171,9 @@ const CreatePost = ({ onClose }) => {
                                     disabled={creatingPost}
                                     variant="ghost"
                                     onClick={() => handleRemoveMedia(idx)}
-                                    className="absolute top-2 right-2 h-10 hover:bg-destructive rounded-full transition opacity-0 group-hover:opacity-100"
+                                    className="absolute top-2 right-2 h-6 w-0 p-0 hover:bg-destructive rounded-full transition "
                                 >
-                                    <XCircle className="text-white size-5" />
+                                    <XCircle className="text-white size-5 p-0" />
                                 </Button>
                             </div>
                         ))}
@@ -174,13 +184,13 @@ const CreatePost = ({ onClose }) => {
                 {/* Media Options */}
                 <div className="px-6 py-2 border border-gray-200 mx-6 rounded-lg mb-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium">
                             Thêm vào bài viết
                         </span>
                         <div className="flex items-center gap-2">
                             <label
                                 htmlFor="media-upload"
-                                className="cursor-pointer hover:bg-gray-200 px-3 py-3 rounded-full transition-colors"
+                                className="cursor-pointer hover:bg-gray-200/50 dark:hover:bg-gray-200/20 px-3 py-3 rounded-full transition-colors"
                             >
                                 <Image className="text-primary size-6" />
                             </label>
@@ -201,13 +211,19 @@ const CreatePost = ({ onClose }) => {
                 <div className="px-6 pb-4">
                     <Button
                         type="submit"
-                        disabled={(!content.trim() && media.length !== 0) || creatingPost}
-                        className={`w-full py-5 text-lg rounded-lg font-semibold transition-all ${content.trim() || media.length
+                        disabled={(!content.trim() && media.length === 0) || creatingPost}
+                        className={`w-full py-5 text-lg rounded-lg shadow-md font-semibold transition-all ${content.trim() || media.length
                             ? "bg-primary hover:brightness-130 text-white cursor-pointer"
-                            : "bg-muted text-gray-400 cursor-not-allowed"
+                            : "bg-neutral-300 hover:bg-neutral-300 dark:bg-muted dark:hover:bg-muted text-gray-400 cursor-not-allowed"
                             }`}
                     >
-                        {creatingPost ? (<><Spinner /> Đang đăng...</>) : "Đăng"}
+                        {creatingPost ? (
+                            <>
+                                <Spinner /> Đang đăng...
+                            </>
+                        ) : (
+                            "Đăng"
+                        )}
                     </Button>
                 </div>
             </form>
