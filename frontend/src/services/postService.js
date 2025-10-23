@@ -15,6 +15,11 @@ export const postService = {
         return res.data;
     },
 
+    getById: async (postId) => {
+        const res = await api.get(`/posts/${postId}`);
+        return res.data;
+    },
+
     delete: async (postId) => {
         const res = await api.delete(`/posts/${postId}`);
         return res.data;

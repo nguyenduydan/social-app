@@ -2,7 +2,11 @@
 const PostMedia = ({ media }) => {
     if (!media?.length) return null;
 
-    // Nếu chỉ có 1 ảnh -> full width
+    const handleMediaClick = (e) => {
+        // Ngăn không cho click vào video control lan lên cha
+        e.stopPropagation();
+    };
+
     if (media.length === 1) {
         const m = media[0];
         return (
@@ -13,6 +17,8 @@ const PostMedia = ({ media }) => {
                         controls
                         crossOrigin="anonymous"
                         className="w-full h-auto max-h-[600px] object-contain"
+                        onClick={handleMediaClick}
+                        onTouchStart={handleMediaClick}
                     />
                 ) : (
                     <img
@@ -20,6 +26,7 @@ const PostMedia = ({ media }) => {
                         alt="media-single"
                         crossOrigin="anonymous"
                         className="w-full h-auto max-h-[600px] object-contain"
+                    // cho phép click mở detail
                     />
                 )}
             </div>
@@ -29,16 +36,16 @@ const PostMedia = ({ media }) => {
     // Nếu nhiều hơn 1 ảnh -> gallery 2 cột
     return (
         <div
-            className={`
+            className="
         grid gap-1 mt-3 overflow-hidden
         grid-cols-2
         max-h-[600px]
-      `}
+      "
         >
             {media.slice(0, 4).map((m, idx) => (
                 <div
                     key={idx}
-                    className={`relative overflow-hidden bg-muted flex items-center justify-center`}
+                    className="relative overflow-hidden bg-muted flex items-center justify-center"
                 >
                     {m.type === "video" ? (
                         <video
@@ -46,6 +53,8 @@ const PostMedia = ({ media }) => {
                             controls
                             crossOrigin="anonymous"
                             className="w-full h-auto max-h-[400px] object-contain"
+                            onClick={handleMediaClick}
+                            onTouchStart={handleMediaClick}
                         />
                     ) : (
                         <img
@@ -56,7 +65,6 @@ const PostMedia = ({ media }) => {
                         />
                     )}
 
-                    {/* Overlay “+N” nếu có hơn 4 ảnh */}
                     {idx === 3 && media.length > 4 && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xl font-semibold">
                             +{media.length - 4}
@@ -67,5 +75,6 @@ const PostMedia = ({ media }) => {
         </div>
     );
 };
+
 
 export default PostMedia;

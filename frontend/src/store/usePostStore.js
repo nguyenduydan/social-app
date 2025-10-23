@@ -5,6 +5,7 @@ import { create } from "zustand";
 
 export const usePostStore = create((set, get) => ({
     posts: [],
+    post: null,
     loading: false,
     loadingMore: false,
     creatingPost: false,
@@ -37,7 +38,6 @@ export const usePostStore = create((set, get) => ({
         }
     },
 
-
     createPost: async (data) => {
         try {
             set({ creatingPost: true });
@@ -68,6 +68,16 @@ export const usePostStore = create((set, get) => ({
             toast.error("Tạo bài viết thất bại!");
         } finally {
             set({ creatingPost: false });
+        }
+    },
+
+    getPostById: async (postId) => {
+        try {
+            const postDetail = postService.getById(postId);
+            set({ post: postDetail });
+        } catch (error) {
+            console.error("Error in getPostById:", error);
+            toast.error("Lấy bài viết không thành công!");
         }
     },
 

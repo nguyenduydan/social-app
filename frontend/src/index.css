@@ -84,8 +84,9 @@
 
     /* pattern craft */
     --gradient-green: radial-gradient(125% 125% at 50% 10%,
-        hsla(0, 0%, 100%, 1) 40%,
-        hsla(142, 76%, 36%, 0.521) 100%);
+        hsla(142, 76%, 49%, 1) 0%,
+          hsla(142, 76%, 36%, 0.4) 50%,
+          transparent 100%);
 
     /* Shadows */
     --shadow-soft: 0 8px 32px -8px hsl(0 0% 0% / 0.08);
@@ -164,9 +165,10 @@
         hsla(0, 0%, 12%, 0.95) 0%,
         hsla(0, 0%, 8%, 0.9) 100%);
 
-    --gradient-green: radial-gradient(125% 125% at 50% 10%,
-        hsla(0, 0%, 0%, 1) 40%,
-        hsla(142, 71%, 45%, 0.2) 100%);
+    --gradient-green: radial-gradient(circle at 50% 20%,
+        hsla(142, 76%, 25%, 0.9) 0%,
+        hsla(142, 76%, 15%, 0.85) 30%,
+        hsla(0,0%,0%,0.9));
 
     /* Dark shadows with glow */
     --shadow-soft: 0 8px 32px -8px hsl(0 0% 0% / 0.5);

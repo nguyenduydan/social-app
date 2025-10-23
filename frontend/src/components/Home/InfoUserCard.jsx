@@ -38,11 +38,11 @@ const InfoUserCard = () => {
                                     alt={user?.displayName || "User avatar"}
                                     className="object-cover"
                                 />
-                                <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                                <AvatarFallback className="text-5xl bg-gradient-chat text-muted">
                                     {user?.displayName?.charAt(0) || "?"}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="absolute bottom-0 right-0 size-6 bg-status-online rounded-full border-4 border-background" />
+                            <div className="absolute bottom-1 right-2 size-6 bg-status-online rounded-full border-4 border-background" />
                         </div>
                     </div>
                 </CardHeader>

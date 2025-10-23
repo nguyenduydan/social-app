@@ -19,9 +19,8 @@ const Switch = ({ className }) => {
             />
 
             <span
-                className={`flex items-center justify-center w-8 h-8 md:h-12 md:w-12 rounded-full transition-all duration-300 hover:text-foreground hover:bg-secondary/30 dark:hover:bg-muted/60
-                        hover:shadow-[0_0_5px_0px_rgba(0,0,0,0.3)]
-                        hover:scale-105 active:scale-75 ${className}`}
+                className={`flex items-center justify-center w-6 h-6 md:w-10 md:h-10 rounded-full transition-all duration-300 hover:text-foreground
+                        hover:scale-110 active:scale-75 ${className}`}
             >
                 {/* Mặt trăng (Dark Mode) */}
                 <Moon

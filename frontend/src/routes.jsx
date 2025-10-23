@@ -1,34 +1,34 @@
-import { Home, MessageSquareText, Settings, User } from "lucide-react";
+import { Home, MessageSquareText, Search, Settings, User } from "lucide-react";
 import HomePage from "@/pages/HomePage";
 import Profile from "./pages/ProfilePage";
 
 const routes = [
     {
-        name: "Home",
+        name: "Trang chủ",
         layout: "/client",
         path: "/",
         icon: <Home className="size-4 md:size-6" />,
         element: <HomePage />
     },
     {
-        name: "Messages",
+        name: "Tin nhắn",
         layout: "/client",
         path: "/messages",
         icon: <MessageSquareText className="size-4 md:size-6" />,
         element: <HomePage />
     },
     {
-        name: "Profile",
+        name: "Cá nhân",
         layout: "/client",
         path: "/profile",
         icon: <User className="size-4 md:size-6" />,
         element: <Profile />
     },
     {
-        name: "Settings",
+        name: "Tìm kiếm",
         layout: "/client",
-        path: "/settings",
-        icon: <Settings className="size-4 md:size-6" />,
+        path: "/search",
+        icon: <Search className="size-4 md:size-6" />,
         element: <HomePage />
     },
 ];
