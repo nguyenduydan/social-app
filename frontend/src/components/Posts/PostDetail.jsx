@@ -17,6 +17,7 @@ import { getTimeAgo } from "@/lib/calculatorTime";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
+import { DialogDescription, DialogTitle } from "../ui/dialog";
 
 const PostDetail = ({ post }) => {
     const [liked, setLiked] = useState(false);
@@ -93,12 +94,12 @@ const PostDetail = ({ post }) => {
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col leading-tight">
-                            <p className="font-semibold text-sm sm:text-base">
+                            <DialogTitle className="font-semibold text-sm sm:text-base">
                                 {post.author?.displayName || "Người dùng"}
-                            </p>
-                            <p className="text-xs text-gray-500">
+                            </DialogTitle>
+                            <DialogDescription className="text-xs text-gray-500">
                                 {getTimeAgo(post.createdAt)}
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
                 </div>

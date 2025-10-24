@@ -124,6 +124,20 @@ export const usePostStore = create((set, get) => ({
         }
     },
 
+    updateVisibility: async ({ postId, visibility }) => {
+        try {
+            set({ updatingPost: true });
+            await postService.updatePostVisibility(postId, visibility);
+            await get().fetchPosts();
+            toast.success("Cập nhật bài viết thành công!");
+        } catch (error) {
+            console.error("Lỗi updatePost:", error);
+            toast.error("Cập nhật bài viết thất bại!");
+        } finally {
+            set({ updatingPost: false });
+        }
+    },
+
     deletePost: async (postId) => {
         const promise = (async () => {
             await postService.delete(postId);

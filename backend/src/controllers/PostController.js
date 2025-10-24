@@ -1,4 +1,4 @@
-import { createPostService, deletePostService, getFeeds, getPostByIdService, updatePostService } from "../services/PostService.js";
+import { createPostService, deletePostService, getFeeds, getPostByIdService, updatePostService, updatePostStatusService } from "../services/PostService.js";
 
 export const getFeed = async (req, res) => {
     try {
@@ -101,6 +101,27 @@ export const updatePost = async (req, res) => {
         res
             .status(error.status || 500)
             .json({ message: error.message || "Internal server error" });
+    }
+};
+
+export const updateStatus = async (req, res, next) => {
+    try {
+        const userId = req.user?._id || req.body.userId;
+        const { postId, visibility } = req.body;
+
+        const updatedPost = await updatePostStatusService({
+            postId,
+            userId,
+            visibility,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Post visibility updated successfully",
+            post: updatedPost,
+        });
+    } catch (error) {
+        next(error);
     }
 };
 

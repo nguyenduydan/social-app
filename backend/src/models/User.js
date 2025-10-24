@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
+        username: {
+            type: String,
+            unique: true,
+            trim: false,
+            maxlength: 100,
+        },
         email: {
             type: String,
             unique: true,
@@ -29,7 +35,9 @@ const userSchema = new mongoose.Schema(
         },
         phone: {
             type: String,
-            sparse: true //-- cho phep null
+            sparse: true,
+            trim: true,
+            match: [/^\+?[0-9]{7,15}$/, "Invalid phone number"],
         },
         avatar: {
             url: String, // link CDN de hien thi hinh
@@ -52,6 +60,11 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ googleId: 1 });
+userSchema.index({ phone: 1 });
 
 const User = mongoose.model("User", userSchema);
 

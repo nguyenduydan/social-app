@@ -62,7 +62,7 @@ function CustomSelect({
                 disabled={disabled}
                 data-slot="custom-select-trigger"
                 className={cn(
-                    "border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 h-9 w-full min-w-[200px] flex items-center justify-between rounded-md border bg-transparent px-3 py-2 pr-9 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed",
+                    "border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 h-9 w-full min-w-[120px] flex items-center justify-between rounded-md border bg-transparent px-3 py-2 pr-9 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed",
                     "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
                     "hover:bg-accent/50",
                     isOpen && "border-ring ring-ring/50 ring-[3px]",
@@ -88,7 +88,7 @@ function CustomSelect({
                 <div
                     data-slot="custom-select-dropdown"
                     className={cn(
-                        "absolute z-50 mt-1 w-full min-w-[200px] overflow-hidden rounded-md border border-input bg-popover shadow-lg animate-in fade-in-0 zoom-in-95"
+                        "absolute z-50 mt-1 w-full min-w-[120px] overflow-hidden rounded-md border border-input bg-popover shadow-lg animate-in fade-in-0 zoom-in-95"
                     )}
                 >
                     <div className="max-h-[300px] overflow-y-auto p-1 space-y-1">

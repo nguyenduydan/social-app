@@ -31,15 +31,28 @@ import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { usePostStore } from "@/store/usePostStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import PostMedia from "./PostMedia";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostDetail from "./PostDetail";
 import UpdatePost from "./UpdatePost";
+import { CustomSelect } from "../common/customSelect";
+
+const options = [
+    { value: "public", label: "Công khai" },
+    { value: "friends", label: "Bạn bè" },
+    { value: "private", label: "Chỉ mình tôi" },
+];
+
 
 const FeedCard = ({ post }) => {
     const { user } = useAuthStore();
-    const { deletePost } = usePostStore();
+    const { deletePost, updateVisibility } = usePostStore();
     const [isPostDetail, setIsPostDetail] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
+    const [visibility, setVisibility] = useState("public");
+
+    useEffect(() => {
+        setVisibility(post.visibility);
+    }, [post.visibility]);
 
     const handleDeletePost = () => {
         deletePost(post._id);
@@ -69,7 +82,13 @@ const FeedCard = ({ post }) => {
                             className="flex flex-10 py-5 items-center space-x-3 cursor-pointer"
                             onClick={handleOpenDetail}
                         >
-                            <Avatar className="size-12">
+                            <Avatar
+                                className="size-12"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // navigate(`/profile/${post.author?._id}`); // ví dụ điều hướng sang trang cá nhân
+                                }}
+                            >
                                 <AvatarImage
                                     src={post.author?.avatar?.url}
                                     alt={post.author?.displayName}
@@ -80,13 +99,35 @@ const FeedCard = ({ post }) => {
                                     <User />
                                 </AvatarFallback>
                             </Avatar>
+
                             <div className="flex flex-col leading-tight">
-                                <p className="font-bold text-sm sm:text-base hover:underline">
+                                <p
+                                    className="font-bold text-sm sm:text-base hover:underline"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // navigate(`/profile/${post.author?._id}`);
+                                    }}
+                                >
                                     {post.author?.displayName || "Người dùng"}
                                 </p>
-                                <p className="text-xs text-gray-500">
-                                    {getTimeAgo(post.createdAt)}
-                                </p>
+
+                                <div
+                                    className="flex gap-2 items-center"
+                                    onClick={(e) => e.stopPropagation()} // để không mở chi tiết khi bấm select
+                                >
+                                    <CustomSelect
+                                        className="w-[50px]"
+                                        options={options}
+                                        value={visibility}
+                                        onChange={(value) => {
+                                            if (post.author?._id !== user?._id) return;
+                                            setVisibility(value);
+                                            updateVisibility({ postId: post._id, visibility: value });
+                                        }}
+                                        disabled={post.author?._id !== user?._id}
+                                    />
+                                    <p className="text-xs text-gray-500">{getTimeAgo(post.createdAt)}</p>
+                                </div>
                             </div>
                         </div>
 

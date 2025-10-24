@@ -26,6 +26,10 @@ export const postService = {
         });
         return res.data;
     },
+    updatePostVisibility: async (postId, visibility) => {
+        const res = await api.patch("/posts/status", { postId, visibility });
+        return res.data;
+    },
 
     delete: async (postId) => {
         const res = await api.delete(`/posts/${postId}`);

@@ -215,6 +215,41 @@ export const updatePostService = async ({
     }
 };
 
+export const updatePostStatusService = async ({ postId, userId, visibility }) => {
+    try {
+        if (!postId) throw createError("Post ID is required", 400);
+        if (!userId) throw createError("User ID is required", 400);
+        if (!visibility) throw createError("Visibility is required", 400);
+
+        const allowed = ["public", "friends", "private"];
+        if (!allowed.includes(visibility)) {
+            throw createError("Invalid visibility type", 400);
+        }
+
+        // Tìm post
+        const post = await Post.findById(postId);
+        if (!post) throw createError("Post not found", 404);
+
+        // Kiểm tra quyền chỉnh sửa
+        if (post.author.toString() !== userId.toString()) {
+            throw createError("You are not authorized to update this post", 403);
+        }
+
+        // Cập nhật và lưu
+        post.visibility = visibility;
+        await post.save();
+
+        return post;
+    } catch (error) {
+        console.error("❌ Error in deletePostService:", error);
+        throw createError(
+            error.message || "Failed to delete post",
+            error.status || 500
+        );
+    }
+
+};
+
 export const deletePostService = async (postId, userId) => {
     try {
         if (!postId) throw createError("Post ID is required", 400);
