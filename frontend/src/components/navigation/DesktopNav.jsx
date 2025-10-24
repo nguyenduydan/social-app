@@ -34,9 +34,9 @@ const DesktopNav = () => {
                         : "max-w-5xl w-full rounded-full"
                 )}
             >
-                <div className="flex items-center justify-between gap-10 w-full">
+                <div className="flex items-center justify-between w-full">
                     {/* Logo */}
-                    <div className="flex items-center space-x-1 mr-5 cursor-default">
+                    <div className="flex items-center space-x-1 mr-5 cursor-default flex-1">
                         <img
                             src={logo}
                             className="h-8 w-8 md:h-10 md:w-10"
@@ -47,23 +47,24 @@ const DesktopNav = () => {
                         </span>
                     </div>
 
-                    {/* Routes */}
-                    <div className="flex gap-10">
-                        {routes.map((item, idx) => (
-                            <Tooltip key={idx}>
-                                <TooltipTrigger>
-                                    <NavLink item={item} isAtTop={isAtTop} />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{item.name}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        ))}
+                    {/* Routes — luôn nằm giữa */}
+                    <div className="flex justify-center flex-1">
+                        <div className="flex gap-10">
+                            {routes.map((item, idx) => (
+                                <Tooltip key={idx}>
+                                    <TooltipTrigger>
+                                        <NavLink item={item} isAtTop={isAtTop} />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{item.name}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-5">
-                        {/* Create Post */}
+                    <div className="flex items-center gap-5 justify-end flex-1">
                         {!isAtTop && (
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
@@ -76,21 +77,12 @@ const DesktopNav = () => {
                                 <CreatePost onOpen={open} onClose={() => setOpen(false)} />
                             </Dialog>
                         )}
-
-                        {/* Notification */}
                         <IconButton icon={<Bell />} label="Thông báo" />
-
-                        {/* Dark Mode */}
                         <Switch />
-
-                        {/* Logout */}
-                        <IconButton
-                            icon={<LogOut />}
-                            label="Đăng xuất"
-                            onClick={signOut}
-                        />
+                        <IconButton icon={<LogOut />} label="Đăng xuất" onClick={signOut} />
                     </div>
                 </div>
+
             </div>
         </nav>
     );

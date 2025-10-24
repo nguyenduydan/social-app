@@ -1,4 +1,4 @@
-import { uploadToCloudinary, deleteOnCloudinary } from "../lib/useCloudinary.js";
+import { uploadToCloudinary, deleteOnCloudinary, deleteMultipleOnCloudinary } from "../lib/useCloudinary.js";
 import Post from "../models/Post.js";
 import { createError } from "../lib/utils.js";
 import User from "../models/User.js";
@@ -131,7 +131,14 @@ export const getPostByIdService = async (postId) => {
     }
 };
 
-export const updatePostService = async (postId, userId, data) => {
+export const updatePostService = async ({
+    postId,
+    userId,
+    content,
+    visibility,
+    existingMedia = [],
+    newMedia = [],
+}) => {
     try {
         if (!postId) throw createError("Post ID is required", 400);
         if (!userId) throw createError("User ID is required", 400);
@@ -140,31 +147,71 @@ export const updatePostService = async (postId, userId, data) => {
         const post = await Post.findById(postId);
         if (!post) throw createError("Post not found", 404);
 
-        // Kiểm tra quyền sở hữu
+        // Kiểm tra quyền
         if (post.author.toString() !== userId.toString()) {
             throw createError("You are not authorized to edit this post", 403);
         }
 
-        // Cập nhật các trường được phép
-        const allowedFields = ["content", "images", "visibility"];
-        allowedFields.forEach((field) => {
-            if (data[field] !== undefined) {
-                post[field] = data[field];
-            }
-        });
+        // Cập nhật nội dung và chế độ hiển thị
+        if (content !== undefined) post.content = content;
+        if (visibility !== undefined) post.visibility = visibility;
 
+        // Xác định media bị xóa
+        const removedMedia = post.media.filter(
+            (m) => !existingMedia.includes(m._id.toString())
+        );
+
+        // Xóa media bị loại trên Cloudinary
+        if (removedMedia.length > 0) {
+            // console.log(`🗑️ Removing ${removedMedia.length} old media...`);
+            await Promise.allSettled(
+                removedMedia.map((m) => deleteOnCloudinary(m))
+            );
+        }
+
+        // Giữ lại media còn dùng
+        post.media = post.media.filter((m) =>
+            existingMedia.includes(m._id.toString())
+        );
+
+        // Upload media mới
+        if (newMedia.length > 0) {
+            const uploadedMedia = await Promise.all(
+                newMedia.map(async (item) => {
+                    const { buffer, mimetype } = item;
+                    let processedBuffer = buffer;
+
+                    // Nén video nếu cần
+                    if (mimetype.startsWith("video/")) {
+                        processedBuffer = await compressVideo(buffer);
+                    }
+
+                    // Convert buffer → base64 → Cloudinary
+                    const base64 = processedBuffer.toString("base64");
+                    const dataUrl = `data:${mimetype};base64,${base64}`;
+
+                    const uploaded = await uploadToCloudinary(dataUrl, "social_media");
+
+                    return {
+                        url: uploaded.secure_url,
+                        public_id: uploaded.public_id,
+                        type: uploaded.resource_type,
+                    };
+                })
+            );
+
+            post.media.push(...uploadedMedia);
+        }
+
+        // 💾 Lưu và populate
         const updatedPost = await post.save();
-
-        // Populate lại author sau khi update
         await updatedPost.populate("author", "displayName avatar");
 
+        // console.log(`✅ Post ${postId} updated successfully`);
         return updatedPost;
     } catch (error) {
-        console.error("Error in updatePostService:", error);
-        throw createError(
-            error.message || "Failed to update post",
-            error.status || 500
-        );
+        console.error("❌ Error in updatePostService:", error);
+        throw createError(error.message || "Failed to update post", 500);
     }
 };
 
@@ -184,7 +231,7 @@ export const deletePostService = async (postId, userId) => {
 
         // Xóa media trên Cloudinary nếu có
         if (post.media?.length) {
-            await deleteOnCloudinary(post.media);
+            await deleteMultipleOnCloudinary(post.media);
         }
 
         // Xóa bài viết trong DB

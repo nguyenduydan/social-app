@@ -34,7 +34,7 @@ const NavLink = ({ item, isAtTop }) => {
                 isActive
                     ? "bg-primary-glow dark:bg-primary-glow text-secondary font-semibold shadow-[0_0_6px_rgba(0,0,0,0.3)] dark:shadow-[0_0_6px_rgba(255,255,255,0.1)] scale-105"
                     : "text-foreground/60 dark:text-foreground/70 hover:text-foreground hover:bg-secondary/30 dark:hover:bg-muted/50 hover:shadow-[0_0_5px_rgba(0,0,0,0.25)] hover:scale-105 active:scale-90",
-                isAtTop ? "px-2 lg:px-5 h-10 rounded-xl" : "px-2 w-10 h-10 md:w-12 md:h-12 rounded-full"
+                isAtTop ? "px-2 lg:px-4 h-10 rounded-xl" : "px-2 w-10 h-10 md:w-12 md:h-12 rounded-full"
             )}
         >
             <div className="flex items-center gap-2 px-2">

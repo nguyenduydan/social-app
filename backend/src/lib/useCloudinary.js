@@ -17,41 +17,42 @@ export const uploadToCloudinary = async (filePath, folder = "uploads") => {
     }
 };
 
+
 export const deleteOnCloudinary = async (media) => {
     try {
-        // Cho phép truyền string hoặc object
-        let publicId, type, url;
+        if (!media) return;
 
-        if (typeof media === "string") {
-            publicId = media;
-        } else if (Array.isArray(media)) {
-            // Nếu là mảng -> xử lý từng phần tử
-            for (const item of media) {
-                await deleteOnCloudinary(item);
-            }
+        // Cho phép truyền string, object, hoặc array
+        if (Array.isArray(media)) {
+            await deleteMultipleOnCloudinary(media);
             return;
-        } else if (typeof media === "object" && media !== null) {
-            ({ publicId, type, url } = media);
         }
 
-        const cloudId = publicId || extractPublicId(url);
+        let public_id, resourceType, url;
 
+        if (typeof media === "string") {
+            public_id = media;
+        } else if (typeof media === "object") {
+            public_id = media.public_id || media.publicId;
+            url = media.url;
+            resourceType =
+                media.type?.includes("video") || url?.includes("/video/")
+                    ? "video"
+                    : "image";
+        }
+
+        const cloudId = public_id || extractPublicId(url);
         if (!cloudId) {
             console.warn("⚠️ No valid Cloudinary ID found to delete:", media);
             return;
         }
 
-        const resourceType =
-            type?.includes("video") || url?.includes("/video/")
-                ? "video"
-                : "image";
-
         const result = await cloudinary.uploader.destroy(cloudId, {
-            resource_type: resourceType,
+            resource_type: resourceType || "image",
         });
 
         if (result.result === "ok") {
-            console.log(`✅ Deleted ${resourceType}: ${cloudId}`);
+            console.log(`✅ Deleted ${resourceType || "image"}: ${cloudId}`);
         } else {
             console.warn(`⚠️ Delete result: ${result.result} (${cloudId})`);
         }
@@ -61,11 +62,17 @@ export const deleteOnCloudinary = async (media) => {
 };
 
 /**
- * 🗑️ Xoá nhiều file Cloudinary
- * @param {Array} mediaList - Danh sách media [{ publicId, type, url }]
+ * Xóa nhiều file Cloudinary song song
  */
 export const deleteMultipleOnCloudinary = async (mediaList = []) => {
-    for (const media of mediaList) {
-        await deleteOnCloudinary(media);
+    if (!Array.isArray(mediaList) || mediaList.length === 0) return;
+
+    const results = await Promise.allSettled(
+        mediaList.map((item) => deleteOnCloudinary(item))
+    );
+
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length) {
+        console.warn(`⚠️ ${failed.length} Cloudinary deletions failed.`);
     }
 };

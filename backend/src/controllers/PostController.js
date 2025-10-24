@@ -62,19 +62,45 @@ export const getPostById = async (req, res) => {
 
 export const updatePost = async (req, res) => {
     try {
-        const postId = req.params?.id;
         const userId = req.user?._id;
-        const data = req.body;
+        const postId = req.params.id;
+        const { content, visibility, existingMedia } = req.body;
+        const files = req.files || [];
 
-        const updatedPost = await updatePostService(postId, userId, data);
+        if (!userId) {
+            return res.status(404).json({ message: "UserId not found" });
+        }
 
-        res.status(200).json({
-            post: updatedPost,
+        if (!postId) {
+            return res.status(400).json({ message: "Post ID is required" });
+        }
+
+        // Chuẩn hóa media mới để service xử lý
+        const media = files.map((file) => ({
+            buffer: file.buffer,
+            mimetype: file.mimetype,
+            originalname: file.originalname,
+        }));
+
+        const updatedPost = await updatePostService({
+            postId,
+            userId,
+            content,
+            visibility,
+            existingMedia: Array.isArray(existingMedia)
+                ? existingMedia
+                : existingMedia
+                    ? [existingMedia]
+                    : [],
+            newMedia: media,
         });
+
+        res.status(200).json(updatedPost);
     } catch (error) {
-        res.status(error.status || 500).json({
-            error: error.message || "Failed to update post",
-        });
+        console.error("Error in updatePost:", error);
+        res
+            .status(error.status || 500)
+            .json({ message: error.message || "Internal server error" });
     }
 };
 

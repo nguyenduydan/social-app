@@ -93,7 +93,7 @@ const PostMedia = ({ media, onOpenDetail }) => {
                     )}
 
                     {idx === 3 && media.length > 4 && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xl font-semibold">
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xl font-semibold " onClick={onOpenDetail}>
                             +{media.length - 4}
                         </div>
                     )}

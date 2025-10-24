@@ -19,24 +19,32 @@ const options = [
     { value: "private", label: "Chỉ mình tôi" },
 ];
 
-const UpadatePost = ({ onOpen, onClose }) => {
-    const { createPost, creatingPost } = usePostStore();
+const UpdatePost = ({ post, onOpen, onClose }) => {
+    const { updatePost, updatingPost } = usePostStore();
     const { user } = useAuthStore();
 
     const [content, setContent] = useState("");
-    const [media, setMedia] = useState([]); // chỉ lưu file local
+    const [media, setMedia] = useState([]); // chứa media cũ + mới
     const [visibility, setVisibility] = useState("public");
     const [charCount, setCharCount] = useState(0);
     const maxChars = 500;
 
+    // Khởi tạo dữ liệu từ bài viết ban đầu
     useEffect(() => {
-        if (onOpen) {
-            setContent("");
-            setMedia([]);
-            setCharCount(0);
-            setVisibility("public");
+        if (onOpen && post) {
+            setContent(post.content || "");
+            setCharCount(post.content?.length || 0);
+            setVisibility(post.visibility || "public");
+            setMedia(
+                post.media?.map((m) => ({
+                    id: m._id, // media cũ có id
+                    url: m.url,
+                    type: m.type,
+                    isNew: false, // đánh dấu là media cũ
+                })) || []
+            );
         }
-    }, [onOpen]);
+    }, [onOpen, post]);
 
     const handleTextChange = (e) => {
         const text = e.target.value;
@@ -48,13 +56,13 @@ const UpadatePost = ({ onOpen, onClose }) => {
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-
         setMedia((prev) => [
             ...prev,
             ...selectedFiles.map((file) => ({
-                file, // giữ gốc để upload
+                file,
                 preview: URL.createObjectURL(file),
                 type: file.type.startsWith("video/") ? "video" : "image",
+                isNew: true, // đánh dấu là media mới
             })),
         ]);
     };
@@ -68,26 +76,34 @@ const UpadatePost = ({ onOpen, onClose }) => {
         if (!content.trim() && media.length === 0) return;
 
         try {
+            // Tách media cũ và mới
+            const existingMedia = media.filter((m) => !m.isNew);
+            const newMedia = media.filter((m) => m.isNew);
 
-            // Call API to create post
-            await createPost({ content, media, visibility });
+            // Gửi dữ liệu theo đúng format store định nghĩa
+            await updatePost({
+                postId: post._id,
+                data: {
+                    content,
+                    visibility,
+                    existingMedia, // giữ lại media cũ
+                    newMedia,      // upload thêm media mới
+                },
+            });
 
-            setContent("");
-            setMedia([]);
-            setCharCount(0);
-            setVisibility("public");
             onClose?.();
         } catch (error) {
-            console.error("Tạo bài viết thất bại:", error);
+            console.error("Cập nhật bài viết thất bại:", error);
         }
     };
+
 
     return (
         <DialogContent className="w-full md:min-w-lg p-0 gap-0 border-0">
             {/* Header */}
             <DialogHeader className="px-6 py-4 border-b border-gray-200 relative">
                 <DialogTitle className="text-xl font-bold">
-                    Tạo bài viết
+                    Cập nhật bài viết
                 </DialogTitle>
                 <DialogDescription />
             </DialogHeader>
@@ -115,7 +131,7 @@ const UpadatePost = ({ onOpen, onClose }) => {
             {/* Form */}
             <form onSubmit={handleSubmit}>
                 {/* Text Area */}
-                <div className="inline-block w-full px-6 py-2 " >
+                <div className="inline-block w-full px-6 py-2">
                     <textarea
                         value={content}
                         onChange={(e) => {
@@ -123,7 +139,7 @@ const UpadatePost = ({ onOpen, onClose }) => {
                             e.target.style.height = "auto";
                             e.target.style.height = `${e.target.scrollHeight}px`;
                         }}
-                        placeholder={`${user?.displayName || "Bạn"}, bạn đang nghĩ gì thế?`}
+                        placeholder="Cập nhật nội dung bài viết của bạn..."
                         className="w-full max-h-30 bg-transparent placeholder-gray-400 resize-none focus:outline-none text-lg"
                         rows={1}
                     />
@@ -151,27 +167,27 @@ const UpadatePost = ({ onOpen, onClose }) => {
                     >
                         {media.map((item, idx) => (
                             <div key={idx} className="relative group w-full rounded-lg">
-                                {item.file.type.startsWith("video/") ? (
+                                {item.type === "video" ? (
                                     <video
-                                        src={item.preview}
+                                        src={item.url || item.preview}
                                         className="w-full h-auto object-contain rounded-lg"
                                         muted
                                         controls
-                                        disabled={creatingPost}
+                                        disabled={updatingPost}
                                     />
                                 ) : (
                                     <img
-                                        src={item.preview}
+                                        src={item.url || item.preview}
                                         alt={`preview-${idx}`}
                                         className="w-full h-auto object-contain rounded-lg"
                                     />
                                 )}
                                 <Button
                                     type="button"
-                                    disabled={creatingPost}
+                                    disabled={updatingPost}
                                     variant="ghost"
                                     onClick={() => handleRemoveMedia(idx)}
-                                    className="absolute top-2 right-2 h-6 w-0 p-0 hover:bg-destructive rounded-full transition "
+                                    className="absolute top-2 right-2 h-6 w-0 p-0 hover:bg-destructive rounded-full transition"
                                 >
                                     <XCircle className="text-white size-5 p-0" />
                                 </Button>
@@ -179,7 +195,6 @@ const UpadatePost = ({ onOpen, onClose }) => {
                         ))}
                     </div>
                 )}
-
 
                 {/* Media Options */}
                 <div className="px-6 py-2 border border-gray-200 mx-6 rounded-lg mb-4">
@@ -201,7 +216,7 @@ const UpadatePost = ({ onOpen, onClose }) => {
                                 multiple
                                 onChange={handleFileChange}
                                 className="hidden"
-                                disabled={creatingPost}
+                                disabled={updatingPost}
                             />
                         </div>
                     </div>
@@ -211,18 +226,18 @@ const UpadatePost = ({ onOpen, onClose }) => {
                 <div className="px-6 pb-4">
                     <Button
                         type="submit"
-                        disabled={(!content.trim() && media.length === 0) || creatingPost}
+                        disabled={(!content.trim() && media.length === 0) || updatingPost}
                         className={`w-full py-5 text-lg rounded-lg shadow-md font-semibold transition-all ${content.trim() || media.length
                             ? "bg-primary hover:brightness-130 text-white cursor-pointer"
                             : "bg-neutral-300 hover:bg-neutral-300 dark:bg-muted dark:hover:bg-muted text-gray-400 cursor-not-allowed"
                             }`}
                     >
-                        {creatingPost ? (
+                        {updatingPost ? (
                             <>
-                                <Spinner /> Đang đăng...
+                                <Spinner /> Đang cập nhật...
                             </>
                         ) : (
-                            "Đăng"
+                            "Cập nhật"
                         )}
                     </Button>
                 </div>
@@ -231,4 +246,4 @@ const UpadatePost = ({ onOpen, onClose }) => {
     );
 };
 
-export default UpadatePost;
+export default UpdatePost;

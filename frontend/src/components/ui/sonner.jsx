@@ -24,9 +24,7 @@ const Toaster = ({ ...props }) => {
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       style={{
-        "--normal-bg": "var(--popover)",
-        "--normal-text": "var(--popover-foreground)",
-        "--border-radius": "9999px", // bo tròn kiểu pill
+        "--border-radius": "9999px",
       }}
       toastOptions={{
         duration: 3000,

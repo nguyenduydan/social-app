@@ -62,11 +62,11 @@ const FeedCard = ({ post }) => {
 
             <Card className="py-0 bg-card gap-2 shadow-md border-0 rounded-2xl transition-all duration-300">
                 {/* Header */}
-                <CardHeader className="py-5 px-5 rounded-t-2xl hover:bg-muted">
+                <CardHeader className="rounded-t-2xl hover:bg-muted">
                     <div className="flex justify-between items-center">
                         {/* Left: Avatar + Info (click mở detail) */}
                         <div
-                            className="flex flex-10 items-center space-x-3 cursor-pointer"
+                            className="flex flex-10 py-5 items-center space-x-3 cursor-pointer"
                             onClick={handleOpenDetail}
                         >
                             <Avatar className="size-12">
@@ -109,17 +109,17 @@ const FeedCard = ({ post }) => {
                                     >
                                         <DropdownMenuItem
                                             onClick={() => setUpdateOpen(true)}
-                                            className="flex items-center text-sm"
+                                            className="flex items-center text-sm group"
                                         >
-                                            <Edit className="mr-2 h-4 w-4 text-accent" />
+                                            <Edit className="mr-2 h-4 w-4 text-accent group-hover:text-muted" />
                                             Sửa
                                         </DropdownMenuItem>
 
                                         <DropdownMenuItem
                                             onClick={handleDeletePost}
-                                            className="text-destructive flex items-center text-sm"
+                                            className="flex items-center text-sm group"
                                         >
-                                            <Trash className="mr-2 h-4 w-4" />
+                                            <Trash className="mr-2 h-4 w-4 text-destructive group-hover:text-muted" />
                                             Xóa
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>

@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/", getFeed); // Get personalized feed
 router.get("/:id", getPostById); //get detail post
 router.post("/", upload.array("media", 10), createPost);//create post
-router.put("/:id", updatePost); //update post
+router.put("/:id", upload.array("media", 10), updatePost);
 router.delete("/:id", deletePost); //delete post
 router.post("/:id/like"); // like/unlike post
 router.post("/:id/comment"); // add comment

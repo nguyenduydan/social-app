@@ -20,6 +20,13 @@ export const postService = {
         return res.data;
     },
 
+    update: async ({ postId, formData }) => {
+        const res = await api.put(`/posts/${postId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+        return res.data;
+    },
+
     delete: async (postId) => {
         const res = await api.delete(`/posts/${postId}`);
         return res.data;

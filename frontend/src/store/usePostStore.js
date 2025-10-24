@@ -9,6 +9,7 @@ export const usePostStore = create((set, get) => ({
     loading: false,
     loadingMore: false,
     creatingPost: false,
+    updatingPost: false,
     pagination: {
         currentPage: 1,
         totalPages: 1,
@@ -73,7 +74,7 @@ export const usePostStore = create((set, get) => ({
 
     getPostById: async (postId) => {
         try {
-            const postDetail = postService.getById(postId);
+            const postDetail = await postService.getById(postId);
             set({ post: postDetail });
         } catch (error) {
             console.error("Error in getPostById:", error);
@@ -81,14 +82,59 @@ export const usePostStore = create((set, get) => ({
         }
     },
 
-    deletePost: async (postId) => {
+    updatePost: async ({ postId, data }) => {
         try {
+            set({ updatingPost: true });
+
+            const { content, visibility, existingMedia = [], newMedia = [] } = data;
+
+            const formData = new FormData();
+            formData.append("content", content || "");
+            formData.append("visibility", visibility || "public");
+
+            // Gửi danh sách media cũ (ID) để BE biết giữ lại
+            existingMedia.forEach((m) => {
+                if (m.id) formData.append("existingMedia[]", m.id);
+            });
+
+            // Nén ảnh mới (nếu có)
+            for (const item of newMedia) {
+                let file = item.file instanceof File ? item.file : item;
+                if (!file) continue;
+
+                if (file.type.startsWith("image/")) {
+                    file = await compressImage(file);
+                }
+
+                formData.append("media", file);
+            }
+
+            // Gửi lên API
+            await postService.update({ postId, formData });;
+
+            // Refresh lại danh sách bài viết
+            await get().fetchPosts();
+
+            toast.success("Cập nhật bài viết thành công!");
+        } catch (error) {
+            console.error("Lỗi updatePost:", error);
+            toast.error("Cập nhật bài viết thất bại!");
+        } finally {
+            set({ updatingPost: false });
+        }
+    },
+
+    deletePost: async (postId) => {
+        const promise = (async () => {
             await postService.delete(postId);
             await get().fetchPosts(); // refresh lại danh sách
-            toast.success("Đã xóa bài viết!");
-        } catch (error) {
-            console.error("Error in deletePost:", error);
-            toast.error("Xóa bài viết không thành công!");
-        }
-    }
+        })();
+
+        await toast.promise(promise, {
+            loading: "Đang xóa bài viết...",
+            success: "Đã xóa bài viết!",
+            error: "Xóa bài viết không thành công!",
+        });
+    },
+
 }));
