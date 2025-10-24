@@ -11,6 +11,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useThemeStore } from './store/useThemeStore';
 import { useEffect } from 'react';
 import { ScrollProvider } from './contexts/ScrollContext';
+import NotFound from './pages/NotFound';
 
 const App = () => {
   const applyTheme = useThemeStore((s) => s.applyTheme); //only use applyTheme method
@@ -28,12 +29,13 @@ const App = () => {
             {/* public routes */}
             <Route path='/signin' element={<LoginPage />} />
             <Route path='/signup' element={<SignupPage />} />
+            <Route path='*' element={<NotFound />} />
 
             {/* protect routes */}
             <Route element={<ProtectedRoute />}>
               <Route element={<MainLayout />}>
                 <Route path='/' element={<HomePage />} />
-                <Route path='/profile' element={<ProfilePage />} />
+                <Route path='/profile/:username?' element={<ProfilePage />} />
               </Route>
             </Route>
           </Routes>

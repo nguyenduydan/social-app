@@ -203,7 +203,7 @@ export const updatePostService = async ({
             post.media.push(...uploadedMedia);
         }
 
-        // 💾 Lưu và populate
+        // Lưu và populate
         const updatedPost = await post.save();
         await updatedPost.populate("author", "displayName avatar");
 

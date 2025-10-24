@@ -1,6 +1,6 @@
 import { useState, cloneElement } from "react";
-import { Menu, Bell, Edit, LogOut, X } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import { Bell, Edit, LogOut, X } from "lucide-react";
+import { Dialog, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ import Switch from "../ui/switch";
 const DesktopNav = () => {
     const scrollRef = useScrollRef();
     const { isAtTop } = useScrollStatus(scrollRef, 5, 400);
-    const { signOut } = useAuthStore();
+    const { signOut, user } = useAuthStore();
     const [open, setOpen] = useState(false);
 
     return (
@@ -50,16 +50,25 @@ const DesktopNav = () => {
                     {/* Routes — luôn nằm giữa */}
                     <div className="flex justify-center flex-1">
                         <div className="flex gap-10">
-                            {routes.map((item, idx) => (
-                                <Tooltip key={idx}>
-                                    <TooltipTrigger>
-                                        <NavLink item={item} isAtTop={isAtTop} />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{item.name}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            ))}
+                            {routes.map((item, idx) => {
+                                if (item.path === "/profile" && !user?.username) return null; // chặn render khi chưa có user
+
+                                const path =
+                                    item.path === "/profile" && user?.username
+                                        ? `/profile/${user.username}` // resolve path thật
+                                        : item.path;
+
+                                return (
+                                    <Tooltip key={idx}>
+                                        <TooltipTrigger>
+                                            <NavLink item={{ ...item, path }} isAtTop={isAtTop} />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{item.name}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                );
+                            })}
                         </div>
                     </div>
 

@@ -31,7 +31,7 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const userId = req.user?._id;
-        const { username, displayName, bio, phone } = req.body;
+        const { username, displayName, bio, phone, location, birthDay, linkSocialOther } = req.body;
 
         if (!userId) throw createError("User ID is required", 400);
 
@@ -41,6 +41,9 @@ export const updateUser = async (req, res) => {
             displayName,
             bio,
             phone,
+            location,
+            birthDay,
+            linkSocialOther
         });
 
         res.status(200).json({
@@ -53,9 +56,8 @@ export const updateUser = async (req, res) => {
 };
 export const uploadAvatar = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const file = req.file;
-
+        const userId = req.user?._id;
+        const file = req.body;
         if (!userId) {
             return res.status(404).json({ message: "User ID not found" });
         }
@@ -66,7 +68,7 @@ export const uploadAvatar = async (req, res) => {
 
         // Call update function for avatar
         const userUpdated = await updateUserAvatar({
-            id: userId,
+            userId,
             file: file
         });
 
@@ -80,11 +82,10 @@ export const uploadAvatar = async (req, res) => {
     }
 };
 
-
 export const uploadCoverPhoto = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const file = req.file;
+        const userId = req.user?._id;
+        const file = req.body;
 
         if (!userId) {
             return res.status(404).json({ message: "User ID not found" });
@@ -96,7 +97,7 @@ export const uploadCoverPhoto = async (req, res) => {
 
         // Call update function for cover photo
         const userUpdated = await updateUserCoverPhoto({
-            id: userId,
+            userId: userId,
             file: file
         });
 

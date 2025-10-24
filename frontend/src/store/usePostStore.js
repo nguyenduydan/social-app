@@ -144,7 +144,7 @@ export const usePostStore = create((set, get) => ({
             await get().fetchPosts(); // refresh lại danh sách
         })();
 
-        await toast.promise(promise, {
+        toast.promise(promise, {
             loading: "Đang xóa bài viết...",
             success: "Đã xóa bài viết!",
             error: "Xóa bài viết không thành công!",

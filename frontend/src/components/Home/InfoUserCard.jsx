@@ -1,8 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { FieldSeparator } from '../ui/field';
 import { useAuthStore } from '@/store/useAuthStore';
+import { Link } from 'react-router';
 
 const InfoUserCard = () => {
     const { user } = useAuthStore();
@@ -50,7 +50,10 @@ const InfoUserCard = () => {
                 <CardContent className="pt-10 pb-6">
                     {/* User name */}
                     <div className="text-center space-y-1 mb-4">
-                        <CardTitle className="text-2xl font-bold">{user?.displayName}</CardTitle>
+                        <CardTitle className="text-2xl font-bold"><Link to={`/profile/${user?.username}`} className="hover:underline">{user?.displayName}</Link></CardTitle>
+                        <CardDescription className="text-sm text-foreground/70">
+                            @{user?.username || ""}
+                        </CardDescription>
                         <CardDescription className="text-sm text-foreground/70">
                             {user?.createdAt
                                 ? `Tham gia từ ${new Date(user.createdAt).toLocaleDateString("vi-VN")}`
@@ -83,9 +86,6 @@ const InfoUserCard = () => {
                     </p>
                     {/* info */}
                     <div className='flex flex-col gap-5'>
-                        <p>
-                            <strong>Ngày sinh:</strong> {user?.dateOfBirth || "not provided"}
-                        </p>
                         <p>
                             <strong>Email:</strong> {user?.email || "not provided"}
                         </p>

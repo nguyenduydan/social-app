@@ -9,5 +9,14 @@ export const userService = {
         const res = await api.put(`/users/${id}`, data);
         return res.data;
     },
+    uploadAvatar: async (file) => {
+        const res = await api.patch("/users/upload-avatar", { avatar: file });
+        return res.data;
+    },
+    uploadCoverPhoto: async (file) => {
+        const res = await api.patch("/users/upload-cover", file);
+        return res.data;
+    },
+
 };
 

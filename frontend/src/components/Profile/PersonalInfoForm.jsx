@@ -9,6 +9,10 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserStore } from "@/store/useUserStore";
+import { Spinner } from "../ui/spinner";
+import { DateOfBirthField } from "../common/DatePickerField";
+import { useNavigate } from "react-router";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const infoSchema = z.object({
     username: z
@@ -25,17 +29,34 @@ const infoSchema = z.object({
             "Số điện thoại không hợp lệ"
         ),
     bio: z.string().max(500, "Mô tả không quá 500 ký tự").optional(),
+    location: z.string().optional(),
+    birthDay: z
+        .date()
+        .optional()
+        .refine(
+            (val) => {
+                if (!val) return true;
+                const now = new Date();
+                return val < now && val.getFullYear() > 1900;
+            },
+            "Ngày sinh không hợp lệ"
+        ),
 });
 
 const PersonalInfoForm = ({ user }) => {
+    const navigate = useNavigate();
+    const { user: currentUser } = useAuthStore();
     const [isEditing, setIsEditing] = useState(false);
-    const { updateUserInfo } = useUserStore();
+    const { updateUserInfo, updating } = useUserStore();
+
+    const isOwner = currentUser?._id === user?._id;
 
     const {
         register,
         handleSubmit,
         reset,
-        formState: { errors, isSubmitting },
+        control,
+        formState: { errors },
     } = useForm({
         resolver: zodResolver(infoSchema),
         defaultValues: {
@@ -43,22 +64,25 @@ const PersonalInfoForm = ({ user }) => {
             displayName: user?.displayName || "",
             phone: user?.phone || "",
             bio: user?.bio || "",
+            location: user?.location || "",
+            birthDay: user?.birthDay ? new Date(user.birthDay) : undefined,
         },
     });
 
-    // Reset form khi user thay đổi (vd sau reload)
     useEffect(() => {
         reset({
             username: user?.username || "",
             displayName: user?.displayName || "",
             phone: user?.phone || "",
             bio: user?.bio || "",
+            location: user?.location || "",
+            birthDay: user?.birthDay ? new Date(user.birthDay) : undefined,
         });
     }, [user, reset]);
 
     const onSubmit = async (values) => {
         try {
-            await updateUserInfo(user._id, values);
+            await updateUserInfo(user._id, values, navigate);
             setIsEditing(false);
         } catch (error) {
             console.error("Update failed:", error);
@@ -72,41 +96,36 @@ const PersonalInfoForm = ({ user }) => {
                     <CardTitle>Thông tin người dùng</CardTitle>
                     <CardDescription>Cập nhật thông tin cá nhân của bạn</CardDescription>
                 </div>
-                {!isEditing ? (
+                {isOwner && !isEditing && (
                     <Button onClick={() => setIsEditing(true)} className="gap-2">
                         <Edit className="h-4 w-4" />
                         Chỉnh sửa
                     </Button>
-                ) : null}
+                )}
             </CardHeader>
 
             <CardContent className="space-y-4">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Username */}
                         <div className="space-y-2">
                             <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                {...register("username")}
-                                disabled={!isEditing}
-                            />
+                            <Input id="username" {...register("username")} disabled={!isEditing} />
                             {errors.username && (
                                 <p className="text-sm text-red-500">{errors.username.message}</p>
                             )}
                         </div>
 
+                        {/* Display name */}
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Tên hiển thị</Label>
-                            <Input
-                                id="displayName"
-                                {...register("displayName")}
-                                disabled={!isEditing}
-                            />
+                            <Input id="displayName" {...register("displayName")} disabled={!isEditing} />
                             {errors.displayName && (
                                 <p className="text-sm text-red-500">{errors.displayName.message}</p>
                             )}
                         </div>
 
+                        {/* Phone */}
                         <div className="space-y-2">
                             <Label htmlFor="phone">Số điện thoại</Label>
                             <Input id="phone" {...register("phone")} disabled={!isEditing} />
@@ -115,6 +134,19 @@ const PersonalInfoForm = ({ user }) => {
                             )}
                         </div>
 
+                        {/* Date of birth (đã tách riêng) */}
+                        <DateOfBirthField control={control} disabled={!isEditing} />
+
+                        {/* Location */}
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="location">Địa chỉ</Label>
+                            <Input id="location" {...register("location")} disabled={!isEditing} />
+                            {errors.location && (
+                                <p className="text-sm text-red-500">{errors.location.message}</p>
+                            )}
+                        </div>
+
+                        {/* Bio */}
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="bio">Giới thiệu</Label>
                             <Textarea
@@ -143,9 +175,15 @@ const PersonalInfoForm = ({ user }) => {
                                 <X className="h-4 w-4" />
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="gap-2">
+                            <Button type="submit" disabled={updating} className="gap-2">
                                 <Save className="h-4 w-4" />
-                                {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
+                                {updating ? (
+                                    <>
+                                        <Spinner /> Đang lưu...
+                                    </>
+                                ) : (
+                                    "Lưu thay đổi"
+                                )}
                             </Button>
                         </div>
                     )}

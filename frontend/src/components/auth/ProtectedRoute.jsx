@@ -1,7 +1,8 @@
 import { useAuthStore } from '@/store/useAuthStore';
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router';
-import CuberLoader from '../common/loaders/cuberLoader';
+import CuberLoader from '../common/loaders/CuberLoader';
+import LoadPage from '../common/loaders/LoadPage';
 
 const ProtectedRoute = () => {
     const { accessToken, user, loading, refresh, fetchMe } = useAuthStore();
@@ -23,7 +24,7 @@ const ProtectedRoute = () => {
     }, []);
 
     if (starting || loading) {
-        return <CuberLoader />;
+        return <LoadPage />;
     }
 
     if (!accessToken) {

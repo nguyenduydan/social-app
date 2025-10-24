@@ -24,21 +24,30 @@ const MobileNav = () => {
     const [open, setOpen] = useState(false);
     const scrollRef = useScrollRef();
     const { isScrolling, isAtTop } = useScrollStatus(scrollRef, 5, 400);
-    const { signOut } = useAuthStore();
+    const { signOut, user } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
 
     return (
         <nav
             className={`fixed bottom-0 left-0 right-0
-                       bg-secondary/40 dark:bg-neutral-900/50 backdrop-blur-lg
+                       bg-secondary/50 dark:bg-neutral-900/50 backdrop-blur
                        border-t border-border/30 shadow-[0_-2px_5px_rgba(0,0,0,0.15)]
                        z-50 px-4 flex justify-between items-center gap-3 ${isScrolling ? "translate-y-20 scale-50" : "scale-100 translate-0"} transition-all duration-300`}
         >
             {/* Routes (các tab điều hướng chính) */}
             <div className="flex justify-evenly flex-1">
-                {routes.map((item, idx) => (
-                    <NavLink key={idx} item={item} />
-                ))}
+                {routes.map((item, idx) => {
+                    if (item.path === "/profile" && !user?.username) return null; // chặn render khi chưa có user
+
+                    const path =
+                        item.path === "/profile" && user?.username
+                            ? `/profile/${user.username}` // resolve path thật
+                            : item.path;
+
+                    return (
+                        <NavLink key={idx} item={{ ...item, path }} isAtTop={isAtTop} />
+                    );
+                })}
             </div>
             <div className="h-10 w-[1px] bg-background rounded-full" />
 

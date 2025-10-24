@@ -1,4 +1,5 @@
-import { uploadToCloudinary } from "../lib/useCloudinary.js";
+import { ENV } from "../config/env.js";
+import { deleteOnCloudinary, uploadToCloudinary } from "../lib/useCloudinary.js";
 import { createError } from "../lib/utils.js";
 import User from "../models/User.js";
 
@@ -24,21 +25,24 @@ export const getCurrentUser = async (userId) => {
 
 export const updateUserInfo = async (data) => {
     try {
-        const { id, username, displayName, bio, phone } = data;
+        const {
+            id,
+            username,
+            displayName,
+            bio,
+            phone,
+            location,
+            birthDay,
+            linkSocialOther,
+        } = data;
 
-        // Build update object with only provided fields
-        const updateFields = {
-            ...(username !== undefined && { username }),
-            ...(displayName !== undefined && { displayName }),
-            ...(bio !== undefined && { bio }),
-            ...(phone !== undefined && { phone }),
-        };
-
-        // Get current user to handle image deletion
+        // Lấy user hiện tại
         const currentUser = await User.findById(id);
         if (!currentUser) {
             throw createError("User not found", 404);
         }
+
+        // Nếu username thay đổi, check trùng
         if (username && username !== currentUser.username) {
             const existingUser = await User.findOne({ username });
             if (existingUser) {
@@ -46,7 +50,23 @@ export const updateUserInfo = async (data) => {
             }
         }
 
-        // Update user in database
+        // Tự động tạo link cá nhân dựa trên username (ưu tiên username mới nếu có)
+        const personalLinkUsername = username || currentUser.username;
+        const linkPersonal = `${ENV.CLIENT_URL}/profile/${personalLinkUsername}`;
+
+        // Chỉ build các field có giá trị
+        const updateFields = {
+            ...(username !== undefined && { username }),
+            ...(displayName !== undefined && { displayName }),
+            ...(bio !== undefined && { bio }),
+            ...(phone !== undefined && { phone }),
+            ...(location !== undefined && { location }),
+            ...(birthDay !== undefined && { birthDay }),
+            linkPersonal,
+            ...(linkSocialOther !== undefined && { linkSocialOther }),
+        };
+
+        // Cập nhật database
         const userUpdated = await User.findByIdAndUpdate(
             id,
             updateFields,
@@ -56,90 +76,84 @@ export const updateUserInfo = async (data) => {
         return userUpdated;
     } catch (error) {
         console.error("Error in update:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to updater", 500);
+        throw error.status ? error : createError(error.message || "Failed to update user", 500);
     }
 };
 
-export const updateUserAvatar = async (data) => {
+export const updateUserAvatar = async ({
+    userId,
+    file, // ảnh base64 từ FE
+}) => {
     try {
-        const { id, file } = data;
+        if (!userId) throw createError("User ID is required", 400);
+        if (!file) throw createError("Avatar image is required", 400);
 
-        if (!id) {
-            throw createError("User ID is required", 400);
+        // Tìm người dùng
+        const user = await User.findById(userId);
+        if (!user) throw createError("User not found", 404);
+
+        // Xoá avatar cũ trên Cloudinary nếu có
+        if (user.avatar?.publicId) {
+            await deleteOnCloudinary(user.avatar);
         }
 
-        // Get current user
-        const currentUser = await User.findById(id);
-        if (!currentUser) {
-            throw createError("User not found", 404);
+        //  Upload ảnh mới lên Cloudinary
+        const fileData = typeof file === "string" ? file : file.avatar;
+        const uploaded = await uploadToCloudinary(fileData, "avatars");
+
+        if (!uploaded?.secure_url) {
+            throw createError("Failed to upload image to Cloudinary", 500);
         }
 
-        // Delete old avatar from Cloudinary if exists
-        if (currentUser.avatar?.publicId) {
-            await deleteOnCloudinary(currentUser.avatar);
-        }
+        // Cập nhật thông tin người dùng trong DB
+        user.avatar = {
+            url: uploaded.secure_url,
+            publicId: uploaded.public_id,
+        };
 
-        // Upload new avatar to Cloudinary
-        const uploadedAvatar = await uploadToCloudinary(file, 'avatars');
+        const updatedUser = await user.save();
 
-        // Update user with new avatar
-        const userUpdated = await User.findByIdAndUpdate(
-            id,
-            {
-                avatar: {
-                    url: uploadedAvatar.secure_url,
-                    publicId: uploadedAvatar.public_id
-                }
-            },
-            { new: true, runValidators: true }
-        );
-
-        return userUpdated;
-
+        // Trả kết quả
+        return updatedUser;
     } catch (error) {
-        console.error("Error in updateUserAvatar:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to upload avatar", 500);
+        console.error("❌ Error in updateUserAvatar:", error);
+        throw createError(error.message || "Failed to update avatar", 500);
     }
 };
 
-export const updateUserCoverPhoto = async (data) => {
+export const updateUserCoverPhoto = async ({ userId, file }) => {
     try {
-        const { id, file } = data;
+        if (!userId) throw createError("User ID is required", 400);
+        if (!file) throw createError("Cover photo image is required", 400);
 
-        if (!id) {
-            throw createError("User ID is required", 400);
+        // Lấy user hiện tại
+        const user = await User.findById(userId);
+        if (!user) throw createError("User not found", 404);
+
+        // Xoá ảnh cover cũ nếu có
+        if (user.coverPhoto?.publicId) {
+            await deleteOnCloudinary(user.coverPhoto);
         }
 
-        // Get current user
-        const currentUser = await User.findById(id);
-        if (!currentUser) {
-            throw createError("User not found", 404);
+        // Upload ảnh cover mới lên Cloudinary
+        const fileData = typeof file === "string" ? file : file.coverPhoto;
+        const uploaded = await uploadToCloudinary(fileData, "coverPhotos");
+
+        if (!uploaded?.secure_url) {
+            throw createError("Failed to upload cover photo to Cloudinary", 500);
         }
 
-        // Delete old cover photo from Cloudinary if exists
-        if (currentUser.coverPhoto?.publicId) {
-            await deleteOnCloudinary(currentUser.avatar);
-        }
+        // Cập nhật DB
+        user.coverPhoto = {
+            url: uploaded.secure_url,
+            publicId: uploaded.public_id,
+        };
 
-        // Upload new cover photo to Cloudinary
-        const uploadedCoverPhoto = await uploadToCloudinary(file, 'coverPhoto');
+        const updatedUser = await user.save();
 
-        // Update user with new cover photo
-        const userUpdated = await User.findByIdAndUpdate(
-            id,
-            {
-                coverPhoto: {
-                    url: uploadedCoverPhoto.secure_url,
-                    publicId: uploadedCoverPhoto.public_id
-                }
-            },
-            { new: true, runValidators: true }
-        );
-
-        return userUpdated;
-
+        return updatedUser;
     } catch (error) {
-        console.error("Error in updateUserCoverPhoto:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to upload cover photo", 500);
+        console.error("❌ Error in updateUserCoverPhoto:", error);
+        throw createError(error.message || "Failed to update cover photo", 500);
     }
 };

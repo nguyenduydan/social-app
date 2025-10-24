@@ -40,6 +40,22 @@ const userSchema = new mongoose.Schema(
             trim: true,
             match: [/^\+?[0-9]{7,15}$/, "Invalid phone number"],
         },
+        location: {
+            type: String,
+        },
+        birthDay: {
+            type: Date
+        },
+        linkPersonal: {
+            type: String,
+            unique: true,
+            required: true,
+            trim: true
+        },
+        linkSocialOther: {
+            type: String,
+            trim: String
+        },
         avatar: {
             url: String, // link CDN de hien thi hinh
             publicId: String //--cloudinary de xoa hinh
@@ -61,11 +77,6 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
-
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ googleId: 1 }, { sparse: true });
-userSchema.index({ phone: 1 }, { sparse: true });
 
 
 userSchema.pre("save", async function (next) {

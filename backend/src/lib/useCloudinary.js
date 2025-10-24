@@ -1,13 +1,24 @@
 import cloudinary from "../config/cloudinary.js";
 import { extractPublicId } from "./utils.js";
 
-export const uploadToCloudinary = async (filePath, folder = "uploads") => {
+export const uploadToCloudinary = async (file, folder = "uploads") => {
     try {
-        const result = await cloudinary.uploader.upload(filePath, {
+        // Nếu file là object, lấy ra base64 string
+        const fileData =
+            typeof file === "object" && file?.avatar
+                ? file.avatar
+                : typeof file === "object" && file?.cover
+                    ? file.cover
+                    : file;
+
+        if (typeof fileData !== "string") {
+            throw new Error("Invalid file data: must be a base64 string or file URL");
+        }
+
+        const result = await cloudinary.uploader.upload(fileData, {
             folder,
-            resource_type: "auto", // ảnh hoặc video đều được
-            eager: [{ quality: "auto", format: "mp4" }],
-            eager_async: true
+            resource_type: "auto", // ảnh hoặc video
+            transformation: [{ quality: "auto" }],
         });
 
         return result;

@@ -17,12 +17,13 @@ export const useAuthStore = create((set, get) => ({
         newPassword: "",
         confirmPassword: "",
     },
+
     // Cập nhật formData
     setFormData: (data) =>
         set((state) => ({
             formData: { ...state.formData, ...data },
         })),
-
+    setUser: (user) => set({ user }),
     //clear state - mục đích để tái sử dụng
     setAccessToken: (accessToken) => {
         tokenManager.setToken(accessToken);

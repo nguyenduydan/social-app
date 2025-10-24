@@ -35,6 +35,7 @@ import { useEffect, useState } from "react";
 import PostDetail from "./PostDetail";
 import UpdatePost from "./UpdatePost";
 import { CustomSelect } from "../common/customSelect";
+import { useNavigate } from "react-router";
 
 const options = [
     { value: "public", label: "Công khai" },
@@ -49,6 +50,7 @@ const FeedCard = ({ post }) => {
     const [isPostDetail, setIsPostDetail] = useState(false);
     const [updateOpen, setUpdateOpen] = useState(false);
     const [visibility, setVisibility] = useState("public");
+    const navigate = useNavigate();
 
     useEffect(() => {
         setVisibility(post.visibility);
@@ -105,7 +107,9 @@ const FeedCard = ({ post }) => {
                                     className="font-bold text-sm sm:text-base hover:underline"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        // navigate(`/profile/${post.author?._id}`);
+                                        navigate(`/profile/${post.author?.username}`, {
+                                            state: { userId: post.author?._id },
+                                        });
                                     }}
                                 >
                                     {post.author?.displayName || "Người dùng"}
