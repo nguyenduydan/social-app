@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema(
         username: {
             type: String,
             unique: true,
-            trim: false,
+            required: true,
+            trim: true,
             maxlength: 100,
         },
         email: {
@@ -61,10 +62,49 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ googleId: 1 });
-userSchema.index({ phone: 1 });
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ googleId: 1 }, { sparse: true });
+userSchema.index({ phone: 1 }, { sparse: true });
+
+
+userSchema.pre("save", async function (next) {
+    if (!this.username || this.username.trim().length === 0) {
+        let base = "";
+
+        if (this.displayName) {
+            // chuyển sang lowercase và bỏ ký tự không phải chữ/số
+            base = this.displayName
+                .normalize("NFD") // tách dấu tiếng Việt
+                .replace(/[\u0300-\u036f]/g, "") // bỏ dấu
+                .replace(/[^a-zA-Z0-9]/g, "") // chỉ giữ chữ & số
+                .toLowerCase();
+        } else if (this.email) {
+            base = this.email
+                .split("@")[0]
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .toLowerCase();
+        } else {
+            base = "user";
+        }
+
+        // cắt ngắn nếu quá dài
+        base = base.slice(0, 20);
+
+        let usernameCandidate = base;
+        let counter = 0;
+
+        while (await mongoose.models.User.findOne({ username: usernameCandidate })) {
+            counter++;
+            usernameCandidate = `${base}${Math.floor(Math.random() * 10000)}`;
+            if (counter > 5) break;
+        }
+
+        this.username = usernameCandidate;
+    }
+
+    next();
+});
 
 const User = mongoose.model("User", userSchema);
 

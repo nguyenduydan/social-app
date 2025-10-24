@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Camera, Edit2, Mail, MapPin, Phone } from 'lucide-react';
@@ -54,7 +54,10 @@ const ProfileHeader = ({ user }) => {
                     </CardHeader>
 
                     <div className="flex-1 text-left pl-10 space-y-5">
-                        <h1 className="text-3xl font-bold mt-2">{user?.displayName || "Nguyen Van A"}</h1>
+                        <div className='flex items-center gap-4'>
+                            <h1 className="text-3xl font-bold">{user?.displayName || "Nguyen Van A"}</h1>
+                            <CardDescription className="text-base">@{user?.username || "username"}</CardDescription>
+                        </div>
                         <div className='flex justify-between items-center gap-10'>
                             {stats.map((stat) => (
                                 <Badge

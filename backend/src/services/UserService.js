@@ -24,15 +24,14 @@ export const getCurrentUser = async (userId) => {
 
 export const updateUserInfo = async (data) => {
     try {
-        const { id, displayName, bio, phone, avatar, coverPhoto } = data;
+        const { id, username, displayName, bio, phone } = data;
 
         // Build update object with only provided fields
         const updateFields = {
+            ...(username !== undefined && { username }),
             ...(displayName !== undefined && { displayName }),
             ...(bio !== undefined && { bio }),
             ...(phone !== undefined && { phone }),
-            ...(avatar !== undefined && { avatar }),
-            ...(coverPhoto !== undefined && { coverPhoto })
         };
 
         // Get current user to handle image deletion
@@ -40,35 +39,11 @@ export const updateUserInfo = async (data) => {
         if (!currentUser) {
             throw createError("User not found", 404);
         }
-
-        // Handle avatar upload
-        if (avatar) {
-            // Delete old avatar from Cloudinary if exists
-            if (currentUser.avatar?.publicId) {
-                await deleteOnCloudinary(currentUser.avatar);
+        if (username && username !== currentUser.username) {
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
+                throw createError("Username already exists", 409);
             }
-
-            // Upload new avatar
-            const uploadedAvatar = await uploadToCloudinary(avatar, 'avatar');
-            updateFields.avatar = {
-                url: uploadedAvatar.secure_url,
-                publicId: uploadedAvatar.public_id
-            };
-        }
-
-        // Handle cover photo upload
-        if (coverPhoto) {
-            // Delete old cover photo from Cloudinary if exists
-            if (currentUser.coverPhoto?.publicId) {
-                await deleteOnCloudinary(currentUser.avatar);
-            }
-
-            // Upload new cover photo
-            const uploadedCoverPhoto = await uploadToCloudinary(coverPhoto, 'coverPhoto');
-            updateFields.coverPhoto = {
-                url: uploadedCoverPhoto.secure_url,
-                publicId: uploadedCoverPhoto.public_id
-            };
         }
 
         // Update user in database

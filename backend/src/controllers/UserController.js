@@ -30,30 +30,27 @@ export const getUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     try {
-        const { displayName, bio, phone } = req.body;
-        const userId = req.params.id;
+        const userId = req.user?._id;
+        const { username, displayName, bio, phone } = req.body;
 
-        if (!userId) {
-            return res.status(404).json({ message: "User ID not found" });
-        }
+        if (!userId) throw createError("User ID is required", 400);
 
-        // Call update function with user info
         const userUpdated = await updateUserInfo({
             id: userId,
+            username,
             displayName,
             bio,
-            phone
+            phone,
         });
 
-        return res.status(200).json({
-            user: userUpdated
+        res.status(200).json({
+            user: userUpdated,
         });
     } catch (error) {
-        console.error("Error in updateUser: ", error);
         res.status(error.status || 500).json({ message: error.message });
+        console.log("Error in updateUser: ", error);
     }
 };
-
 export const uploadAvatar = async (req, res) => {
     try {
         const userId = req.user._id;
