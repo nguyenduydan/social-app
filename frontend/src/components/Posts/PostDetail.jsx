@@ -12,7 +12,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Heart, Share2, User } from "lucide-react";
+import { Heart, MessageCircle, Share2, User } from "lucide-react";
 import { getTimeAgo } from "@/lib/calculatorTime";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -122,6 +122,15 @@ const PostDetail = ({ post }) => {
                         />
                         <span>Thích</span>
                     </Button>
+                    <Button
+                        variant="ghost"
+                        className={cn(
+                            "flex items-center space-x-2 text-gray-400 hover:text-blue-600 transition",
+                        )}
+                    >
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Bình luận</span>
+                    </Button>
 
                     <Button
                         variant="ghost"
@@ -131,7 +140,7 @@ const PostDetail = ({ post }) => {
                         <span>Chia sẻ</span>
                     </Button>
                 </div>
-                <ScrollArea className="max-h-[40vh] lg:max-h-[70vh]">
+                <ScrollArea className="max-h-[65vh]">
                     {/* Comments Section */}
                     <div className="flex-1 h-[100vh] overflow-y-auto p-5 space-y-4">
                         {post.comments?.length > 0 ? (
@@ -160,7 +169,7 @@ const PostDetail = ({ post }) => {
                 </ScrollArea>
 
                 {/* Comment Input */}
-                <div className="border-t border-muted px-5 py-3 flex items-center gap-3">
+                <div className="hidden md:flex border-t border-muted px-5 py-3 items-center gap-3">
                     <Avatar className="size-8">
                         <AvatarImage src={post.author?.avatar?.url} />
                         <AvatarFallback>

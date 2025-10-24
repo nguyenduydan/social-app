@@ -40,6 +40,7 @@ const MobileNav = () => {
                     <NavLink key={idx} item={item} />
                 ))}
             </div>
+            <div className="h-10 w-[1px] bg-background rounded-full" />
 
             {/* Nút tạo bài viết (ở giữa hoặc cuối) */}
             {!isAtTop && (

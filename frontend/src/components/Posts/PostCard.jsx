@@ -141,12 +141,11 @@ const FeedCard = ({ post }) => {
                 {/* Nội dung + Ảnh */}
                 <CardContent
                     className="p-0 cursor-pointer select-none"
-                    onClick={handleOpenDetail}
                 >
                     <div className="px-8 pb-3 text-sm sm:text-base">{post.content}</div>
                     {post.media?.length > 0 && (
                         <div className="w-full overflow-hidden">
-                            <PostMedia media={post.media} />
+                            <PostMedia media={post.media} onOpenDetail={handleOpenDetail} />
                         </div>
                     )}
                 </CardContent>
