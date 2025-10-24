@@ -9,32 +9,87 @@ This repository contains the source code for a social networking application tha
 ## Technologies
 
 ### Frontend
-- React.js with Vite
-- Fast Refresh for development
-- ESLint for code quality
+- React.js with Vite for rapid development
+- Fast Refresh for seamless development experience
+- ESLint for code quality assurance
 - Modern React features and hooks
+- Responsive UI components
+- State management (Redux/Context API)
+- React Router for navigation
 
 ### Backend
-- [Backend technology stack will be added]
-- [Database details will be added]
+- Node.js with Express.js framework
+- MongoDB for database with Mongoose ODM
+- JWT for secure authentication
+- Socket.io for real-time features
+- Express-validator for input validation
+- Multer for file uploads
+- Bcrypt for password hashing
+- Cors for cross-origin resource sharing
+- Morgan for HTTP request logging
+
+### DevOps & Tools
+- Docker for containerization
+- Redis for caching and session management
+- Jest for unit and integration testing
+- ESLint for code quality
+- Prettier for code formatting
+- Swagger/OpenAPI for API documentation
+- PM2 for process management
+- GitHub Actions for CI/CD
 
 ## Features
 
-- User authentication and profiles
+### User Management
+- User registration and authentication
+- Profile customization
+  - Profile pictures
+  - Bio and personal information
+  - Custom user settings
+- Social connections
+  - Follow/Unfollow functionality
+  - Friend requests
+  - Blocking capabilities
+
+### Content Features
 - Post creation and sharing
-- Social interactions (likes, comments, follows)
-- Real-time updates
-- Responsive design
-- Fast Refresh during development
-- Modern development environment
+  - Text posts
+  - Image uploads
+  - Rich media embedding
+- Social interactions
+  - Likes and reactions
+  - Comments with threading
+  - Post sharing
+- Feed customization
+  - Personalized news feed
+  - Trending content
+  - Content filtering
+
+### Real-time Features
+- Live notifications
+- Real-time chat
+- Active status indicators
+- Instant updates for likes and comments
+
+### Security Features
+- Secure authentication with JWT
+- Data encryption
+- Privacy settings
+- Content moderation tools
+- Rate limiting
+- XSS protection
+- CSRF protection
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (version 14 or higher)
-- npm or yarn package manager
-- [Additional prerequisites will be added]
+- npm (v6+) or yarn (v1.22+)
+- MongoDB (v4.4+)
+- Redis (v6+)
+- Docker (optional)
+- Git
 
 ### Installation
 
@@ -62,11 +117,22 @@ yarn install
 
 4. Configure environment variables:
 Create a `.env` file in both frontend and backend directories:
-```bash
-# Frontend .env example
-VITE_API_URL=http://localhost:3000
 
-# Backend .env will be added
+Frontend `.env`:
+```bash
+VITE_API_URL=http://localhost:3000
+VITE_WEBSOCKET_URL=ws://localhost:3000
+VITE_PUBLIC_URL=http://localhost:5173
+VITE_MEDIA_URL=http://localhost:3000/media
+```
+
+Backend `.env`:
+```bash
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/social-app
+JWT_SECRET=your_jwt_secret
+REDIS_URL=redis://localhost:6379
+CORS_ORIGIN=http://localhost:5173
 ```
 
 5. Start the development servers:
@@ -82,15 +148,49 @@ yarn dev
 For backend:
 ```bash
 cd backend
-# Start command will be added
+npm run dev
+# or
+yarn dev
 ```
 
 ## Development
 
-- Frontend dev server runs on `http://localhost:5173` with HMR
-- Backend server configuration will be added
-- ESLint is configured for code quality
-- TypeScript support can be added for better type safety
+### Frontend Development
+- Development server runs on `http://localhost:5173`
+- Hot Module Replacement (HMR) enabled
+- ESLint configured for code quality
+- TypeScript support available
+- Component development with Storybook (planned)
+
+### Backend Development
+- API server runs on `http://localhost:3000`
+- Auto-restart with nodemon
+- API testing with Postman/Insomnia
+- Swagger documentation available at `/api-docs`
+- Database seeding scripts available
+
+### Code Style
+- Follow React best practices
+- Use functional components
+- Implement proper error handling
+- Write meaningful comments
+- Follow the established folder structure
+
+### Testing
+- Unit tests with Jest
+- Integration tests
+- End-to-end tests (planned)
+- API tests with Supertest
+- Accessibility testing
+
+### Performance Considerations
+- Code splitting
+- Lazy loading
+- Image optimization
+- Caching strategies
+- Bundle size optimization
+- Database indexing
+- Redis caching
 
 ## Contributing
 
@@ -102,6 +202,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### Code Review Process
+1. Ensure all tests pass
+2. Follow the code style guidelines
+3. Update documentation as needed
+4. Request review from maintainers
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -112,4 +218,4 @@ Duy Dan Nguyen - [@nguyenduydan](https://github.com/nguyenduydan)
 
 Project Link: [https://github.com/nguyenduydan/social-app](https://github.com/nguyenduydan/social-app)
 
-Last Updated: 2025-10-24
+Last Updated: 2025-10-24 21:50:14
