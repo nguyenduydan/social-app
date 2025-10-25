@@ -2,12 +2,11 @@ import { createPostService, deletePostService, getFeeds, getPostByIdService, upd
 
 export const getFeed = async (req, res) => {
     try {
-        const userId = req.user?._id;
-        if (!userId) return res.status(404).json({ message: "UserId not found" });
-        const feeds = await getFeeds(userId, req.query);
+        const feeds = await getFeeds(req.query);
         return res.status(200).json(feeds);
     } catch (error) {
-
+        console.error("Error in getFeed:", error);
+        res.status(error.status || 500).json({ message: error.message || "Internal server error" });
     }
 };
 

@@ -49,21 +49,14 @@ export const createPostService = async ({ userId, content, media = [], visibilit
     }
 };
 
-export const getFeeds = async (userId, query = {}) => {
+export const getFeeds = async (query = {}) => {
     try {
-        if (!userId) throw createError("User ID is required", 400);
-
-        //Lấy danh sách following
-        const user = await User.findById(userId).select("following");
-        const usersToInclude = [userId, ...(user?.following || [])];
-
-        //Xử lý pagination
+        // Pagination xử lý chuẩn
         const { page, limit, skip } = getPaginationParams(query);
 
-        //Lấy danh sách bài viết
+        // Lấy bài viết (chỉ loại trừ private)
         const posts = await Post.find({
-            // author: { $in: usersToInclude }, // toán tử so sánh trong MongoDB, dùng để kiểm tra xem giá trị của một trường có nằm trong một danh sách
-            visibility: { $ne: "private" }, //Khác giá trị
+            visibility: { $ne: "private" },
         })
             .populate("author", "displayName avatar")
             .sort({ createdAt: -1 })
@@ -71,41 +64,31 @@ export const getFeeds = async (userId, query = {}) => {
             .limit(limit)
             .lean();
 
-        // Tính số lượng comment;
-        const formattedPosts = posts.map(post => ({
+        // Format dữ liệu trả về
+        const formattedPosts = posts.map((post) => ({
             ...post,
-            commentCount: post.comments?.length || 0, // chỉ lấy số lượng comment
-            comments: undefined, // loại bỏ mảng comments để nhẹ hơn
+            commentCount: post.comments?.length || 0,
             likeCount: post.likes?.length || 0,
+            comments: undefined, // loại bỏ mảng comments để giảm tải
         }));
 
-        //Tổng số bài viết
+        // Tổng số bài viết (vẫn lọc theo visibility)
         const total = await Post.countDocuments({
-            author: { $in: usersToInclude },
             visibility: { $ne: "private" },
         });
 
-        const metadata = getPaginationMetadata(total, page, limit);
-
-        //Nếu không có bài viết
-        if (!formattedPosts || formattedPosts.length === 0) {
-            return {
-                posts: [],
-                pagination: metadata,
-                message: "No posts found in your feed.",
-            };
-        }
+        // Tạo metadata phân trang
+        const pagination = getPaginationMetadata(total, page, limit);
 
         return {
             posts: formattedPosts,
-            pagination: metadata,
+            pagination,
         };
     } catch (error) {
         console.error("Error in getFeeds:", error);
         throw createError(error.message || "Failed to getFeeds", error.status || 500);
     }
 };
-
 export const getPostByIdService = async (postId) => {
     try {
         // Tìm bài viết theo ID + populate đầy đủ thông tin liên quan

@@ -80,28 +80,23 @@ const userSchema = new mongoose.Schema(
 
 
 userSchema.pre("save", async function (next) {
+    // --- Generate username nếu chưa có ---
     if (!this.username || this.username.trim().length === 0) {
         let base = "";
 
         if (this.displayName) {
-            // chuyển sang lowercase và bỏ ký tự không phải chữ/số
             base = this.displayName
-                .normalize("NFD") // tách dấu tiếng Việt
-                .replace(/[\u0300-\u036f]/g, "") // bỏ dấu
-                .replace(/[^a-zA-Z0-9]/g, "") // chỉ giữ chữ & số
-                .toLowerCase();
-        } else if (this.email) {
-            base = this.email
-                .split("@")[0]
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[^a-zA-Z0-9]/g, "")
                 .toLowerCase();
+        } else if (this.email) {
+            base = this.email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
         } else {
             base = "user";
         }
 
-        // cắt ngắn nếu quá dài
         base = base.slice(0, 20);
-
         let usernameCandidate = base;
         let counter = 0;
 
@@ -114,8 +109,17 @@ userSchema.pre("save", async function (next) {
         this.username = usernameCandidate;
     }
 
+    // --- Generate linkPersonal nếu chưa có ---
+    if (!this.linkPersonal || this.linkPersonal.trim().length === 0) {
+        const linkPersonal = `${ENV.CLIENT_URL}/profile/${personalLinkUsername}`;
+        // Có thể dùng username hoặc id để đảm bảo unique
+        const safeUsername = this.username || "user";
+        this.linkPersonal = `https://yourdomain.com/${safeUsername}`;
+    }
+
     next();
 });
+
 
 const User = mongoose.model("User", userSchema);
 

@@ -36,8 +36,8 @@ const PostList = () => {
             {Array.isArray(posts) && posts.length > 0 ? (
                 posts.map((post, idx) => (
                     <div
-                        key={post._id}
-                        ref={idx === posts.length - 1 ? lastElementRef : null} // 👈 ref ở phần tử cuối
+                        key={idx}
+                        ref={idx === posts.length - 1 ? lastElementRef : null}
                     >
                         <PostCard post={post} />
                     </div>
