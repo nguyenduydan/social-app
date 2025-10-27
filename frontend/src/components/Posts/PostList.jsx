@@ -17,13 +17,18 @@ const PostList = () => {
         }
     }, [pagination, loading, loadingMore, fetchPosts]);
 
-    const { lastElementRef } = useInfiniteScroll(loadMore, pagination.hasNextPage, loading);
+    const { lastElementRef } = useInfiniteScroll(
+        loadMore,
+        pagination.hasNextPage,
+        loading,
+        { rootMargin: "500px" }
+    );
 
-    // Loading UI
-    if (loading) {
+    // Loading UI - Initial load
+    if (loading && posts.length === 0) {
         return (
             <div className="space-y-6">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(4)].map((_, i) => (
                     <FeedCardSkeleton key={i} />
                 ))}
             </div>
@@ -32,24 +37,36 @@ const PostList = () => {
 
     // Danh sách bài viết
     return (
-        <div className="space-y-4 ">
+        <div className="space-y-4 min-h-[400px]">
             {Array.isArray(posts) && posts.length > 0 ? (
-                posts.map((post, idx) => (
-                    <div
-                        key={idx}
-                        ref={idx === posts.length - 1 ? lastElementRef : null}
-                    >
-                        <PostCard post={post} />
-                    </div>
-                ))
-            ) : (
-                <div className="text-center text-gray-500 py-10">Chưa có bài viết nào.</div>
-            )}
-            {loadingMore && (
-                <div className="space-y-4 mt-4">
-                    {[...Array(4)].map((_, i) => (
-                        <FeedCardSkeleton key={`loading-more-${i}`} />
+                <>
+                    {posts.map((post, idx) => (
+                        <div
+                            key={post._id}
+                            ref={idx === posts.length - 1 ? lastElementRef : null}
+                            className="animate-in fade-in duration-300"
+                        >
+                            <PostCard post={post} />
+                        </div>
                     ))}
+
+                    {/* Loading more skeleton - smooth transition */}
+                    {loadingMore && (
+                        <div className="space-y-4">
+                            {[...Array(2)].map((_, i) => (
+                                <div
+                                    key={`loading-more-${i}`}
+                                    className="animate-in fade-in duration-200"
+                                >
+                                    <FeedCardSkeleton />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="text-center text-gray-500 py-10">
+                    Chưa có bài viết nào.
                 </div>
             )}
         </div>

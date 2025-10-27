@@ -55,13 +55,13 @@ export const signinUser = async ({ email, password }) => {
         // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
-            throw createError("Email or password is not correct", 401);
+            throw createError("Email hoặc mật khẩu không đúng", 401);
         }
 
         // Compare passwords
         const isPasswordCorrect = await comparePassword(password, user.password);
         if (!isPasswordCorrect) {
-            throw createError("Email or password is not correct", 401);
+            throw createError("Email hoặc mật khẩu không đúng", 401);
         }
 
         // Generate tokens

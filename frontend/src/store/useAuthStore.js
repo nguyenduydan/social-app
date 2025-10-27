@@ -108,7 +108,7 @@ export const useAuthStore = create((set, get) => ({
             toast.success("Đăng nhập thành công!");
         } catch (error) {
             console.log("Error in login:", error);
-            toast.error("Đăng nhập thất bại");
+            toast.error(error.response?.data?.message || "Đăng nhập thất bại");
         } finally {
             set({ loading: false });
         }

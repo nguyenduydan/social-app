@@ -93,7 +93,21 @@ const InfoUserCard = () => {
                             <strong>Địa chỉ:</strong> {user?.location || "Unknown"}
                         </p>
                         <p>
-                            <strong>Mạng xã hội khác:</strong> {user?.socialLinks?.join(", ") || "Not linked"}
+                            <strong>Mạng xã hội khác:</strong>{" "}
+                            {user?.linkSocialOther ? (
+                                <a
+                                    href={user.linkSocialOther.startsWith("http")
+                                        ? user.linkSocialOther
+                                        : `https://${user.linkSocialOther}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    {user.linkSocialOther}
+                                </a>
+                            ) : (
+                                <span className="text-gray-500 italic">Chưa liên kết</span>
+                            )}
                         </p>
                     </div>
 

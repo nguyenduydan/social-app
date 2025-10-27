@@ -69,7 +69,7 @@ const ProfileHeader = ({ user }) => {
                                     <div className="absolute inset-0 w-full h-full bg-gradient-primary" />
                                 )}
 
-                                {/* ✅ Nút thay ảnh bìa (chỉ chủ sở hữu) */}
+                                {/* Nút thay ảnh bìa (chỉ chủ sở hữu) */}
                                 {isOwner && (
                                     <>
                                         <button
@@ -103,7 +103,7 @@ const ProfileHeader = ({ user }) => {
                                         </AvatarFallback>
                                     </Avatar>
 
-                                    {/* ✅ Nút thay avatar (chỉ chủ sở hữu) */}
+                                    {/* Nút thay avatar (chỉ chủ sở hữu) */}
                                     {isOwner && (
                                         <>
                                             <button
@@ -133,6 +133,11 @@ const ProfileHeader = ({ user }) => {
                                 </h1>
                                 <CardDescription className="text-sm md:text-base">
                                     @{user?.username || "username"}
+                                </CardDescription>
+                                <CardDescription className="italic">
+                                    {user?.createdAt
+                                        ? `Tham gia từ ${new Date(user.createdAt).toLocaleDateString("vi-VN")}`
+                                        : "Ngày tham gia không xác định"}
                                 </CardDescription>
                             </div>
 

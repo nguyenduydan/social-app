@@ -58,7 +58,7 @@ export const getFeeds = async (query = {}) => {
         const posts = await Post.find({
             visibility: { $ne: "private" },
         })
-            .populate("author", "displayName avatar")
+            .populate("author", "displayName avatar username")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)

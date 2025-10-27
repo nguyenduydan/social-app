@@ -21,65 +21,66 @@ import { DialogDescription, DialogTitle } from "../ui/dialog";
 
 const PostDetail = ({ post }) => {
     const [liked, setLiked] = useState(false);
+    const hasMedia = post.media && post.media.length > 0;
 
     const toggleLike = () => setLiked(!liked);
 
     return (
         <div
             className={cn(
-                "grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-0 h-full w-full",
-                "overflow-hidden rounded-2xl"
+                "grid gap-0 h-full w-full overflow-hidden rounded-2xl",
+                hasMedia ? "grid-cols-1 lg:grid-cols-[2fr_1fr]" : "grid-cols-1"
             )}
         >
-            {/* LEFT: Media (Image / Video / Carousel) */}
-            <div className="relative bg-black flex justify-center items-center">
-                {post.media?.length > 1 ? (
-                    <Carousel className="h-full flex justify-center items-center bg-card-foreground dark:bg-card">
-                        <CarouselContent>
-                            {post.media.map((m, i) => (
-                                <CarouselItem key={i} className="flex justify-center items-center">
-                                    {m.type?.startsWith("video") ? (
-                                        <video
-                                            src={m.url}
-                                            className="w-auto max-h-[300px] lg:max-h-[900px] object-contain"
-                                            controls
-                                            crossOrigin="anonymous"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={m.url}
-                                            alt=""
-                                            className="w-full lg:h-full max-h-[500px] object-contain"
-                                        />
-                                    )}
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/60 backdrop-blur-sm" />
-                        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/60 backdrop-blur-sm" />
-                    </Carousel>
-                ) : post.media?.length === 1 ? (
-                    post.media[0].type?.startsWith("video") ? (
-                        <video
-                            controls
-                            src={post.media[0].url}
-                            autoPlay
-                            className="max-h-[500px] lg:max-h-[900px] w-auto object-contain"
-                        />
+            {/* LEFT: Media (Image / Video / Carousel) - Only show if media exists */}
+            {hasMedia && (
+                <div className="relative bg-black flex justify-center items-center">
+                    {post.media.length > 1 ? (
+                        <Carousel className="h-full flex justify-center items-center bg-card-foreground dark:bg-card">
+                            <CarouselContent>
+                                {post.media.map((m, i) => (
+                                    <CarouselItem key={i} className="flex justify-center items-center">
+                                        {m.type?.startsWith("video") ? (
+                                            <video
+                                                src={m.url}
+                                                className="w-auto max-h-[300px] lg:max-h-[900px] object-contain"
+                                                controls
+                                                crossOrigin="anonymous"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={m.url}
+                                                alt=""
+                                                className="w-full lg:h-full max-h-[500px] object-contain"
+                                            />
+                                        )}
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/60 backdrop-blur-sm" />
+                            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/60 backdrop-blur-sm" />
+                        </Carousel>
                     ) : (
-                        <img
-                            src={post.media[0].url}
-                            alt=""
-                            className="w-full max-h-[500px] lg:h-full object-contain "
-                        />
-                    )
-                ) : (
-                    <div className="text-muted-foreground">Không có ảnh/video</div>
-                )}
-            </div>
+                        post.media[0].type?.startsWith("video") ? (
+                            <video
+                                controls
+                                src={post.media[0].url}
+                                autoPlay
+                                className="max-h-[500px] lg:max-h-[900px] w-auto object-contain"
+                            />
+                        ) : (
+                            <img
+                                src={post.media[0].url}
+                                alt=""
+                                className="w-full max-h-[500px] lg:h-full object-contain"
+                            />
+                        )
+                    )}
+                </div>
+            )}
 
             {/* RIGHT: Info + Comments */}
-            <div className="flex flex-col justify-between gap-0 space-y-0  bg-background overflow-hidden">
+            <div className="flex flex-col justify-between gap-0 space-y-0 bg-background overflow-hidden">
                 <div className="flex justify-between items-center px-5 py-4">
                     {/* User Info */}
                     <div className="flex items-center space-x-3">
@@ -125,9 +126,7 @@ const PostDetail = ({ post }) => {
                     </Button>
                     <Button
                         variant="ghost"
-                        className={cn(
-                            "flex items-center space-x-2 text-gray-400 hover:text-blue-600 transition",
-                        )}
+                        className="flex items-center space-x-2 text-muted-foreground hover:text-blue-600 transition"
                     >
                         <MessageCircle className="w-5 h-5" />
                         <span>Bình luận</span>
@@ -141,9 +140,9 @@ const PostDetail = ({ post }) => {
                         <span>Chia sẻ</span>
                     </Button>
                 </div>
-                <ScrollArea className="max-h-[65vh]">
+                <ScrollArea className="flex-1">
                     {/* Comments Section */}
-                    <div className="flex-1 h-[100vh] overflow-y-auto p-5 space-y-4">
+                    <div className="p-5 space-y-4">
                         {post.comments?.length > 0 ? (
                             post.comments.map((c, i) => (
                                 <Card key={i} className="bg-secondary/20 border-none shadow-none">

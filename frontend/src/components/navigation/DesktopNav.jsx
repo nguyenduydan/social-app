@@ -51,11 +51,11 @@ const DesktopNav = () => {
                     <div className="flex justify-center flex-1">
                         <div className="flex gap-10">
                             {routes.map((item, idx) => {
-                                if (item.path === "/profile" && !user?.username) return null; // chặn render khi chưa có user
-
                                 const path =
-                                    item.path === "/profile" && user?.username
-                                        ? `/profile/${user.username}` // resolve path thật
+                                    item.path === "/profile"
+                                        ? user?.username
+                                            ? `/profile/${user.username}`
+                                            : "/profile" // fallback khi chưa có username
                                         : item.path;
 
                                 return (

@@ -46,7 +46,7 @@ const ProfileMain = ({ user }) => {
     ];
 
     return (
-        <div className="md:container mx-auto max-w-5xl space-y-5 bg-card shadow-lg pb-20 md:pb-40 rounded-md overflow-hidden">
+        <div className="container max-w-full md:max-w-5xl px-0 space-y-5 bg-card shadow-lg pb-20 md:pb-40 overflow-hidden">
             {/* Header vẫn hiển thị avatar, cover, tên... */}
             <ProfileHeader user={user} />
 

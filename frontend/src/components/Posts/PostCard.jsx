@@ -36,6 +36,7 @@ import PostDetail from "./PostDetail";
 import UpdatePost from "./UpdatePost";
 import { CustomSelect } from "../common/customSelect";
 import { useNavigate } from "react-router";
+import { cn } from "@/lib/utils";
 
 const options = [
     { value: "public", label: "Công khai" },
@@ -69,7 +70,12 @@ const FeedCard = ({ post }) => {
             {/* Dialog hiển thị chi tiết bài viết */}
             <Dialog open={isPostDetail} onOpenChange={setIsPostDetail}>
                 <DialogContent
-                    className="min-w-sm md:min-w-2xl lg:min-w-7xl h-[900px] md:mx-0 p-0 overflow-hidden border-none rounded-2xl"
+                    className={cn(
+                        "md:mx-0 p-0 overflow-hidden border-none rounded-2xl",
+                        post?.media && post.media.length > 0
+                            ? "min-w-sm md:min-w-2xl lg:min-w-7xl h-[900px]"
+                            : "max-w-sm md:max-w-xl h-[600px]"
+                    )}
                 >
                     <PostDetail post={post} onClose={() => setIsPostDetail(false)} />
                 </DialogContent>
@@ -88,7 +94,7 @@ const FeedCard = ({ post }) => {
                                 className="size-12"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    // navigate(`/profile/${post.author?._id}`); // ví dụ điều hướng sang trang cá nhân
+                                    navigate(`/profile/${post.author?.username}`);
                                 }}
                             >
                                 <AvatarImage
@@ -185,7 +191,7 @@ const FeedCard = ({ post }) => {
                 </CardHeader>
                 {/* Nội dung + Ảnh */}
                 <CardContent
-                    className="p-0 cursor-pointer select-none"
+                    className="p-0"
                 >
                     <div className="px-8 pb-3 text-sm sm:text-base">{post.content}</div>
                     {post.media?.length > 0 && (

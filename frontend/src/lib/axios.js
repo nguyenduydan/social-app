@@ -35,30 +35,43 @@ api.interceptors.response.use(
         // Giới hạn retry
         originalRequest._retryCount = originalRequest._retryCount || 0;
 
+        const { accessToken } = useAuthStore.getState();
+
+        // Nếu chưa login thì KHÔNG gọi refresh
+        if (!accessToken && originalRequest._retryCount === 0) {
+            useAuthStore.getState().clearState();
+            return Promise.reject(error);
+        }
+
         // Nếu lỗi 403 (token hết hạn)
-        if (error.response?.status === 403 && originalRequest._retryCount < 3) {
+        if (
+            [401, 403].includes(error.response?.status) &&
+            originalRequest._retryCount < 3
+        ) {
             originalRequest._retryCount += 1;
 
             try {
-                // Nếu chưa có refreshPromise => tạo mới
                 if (!refreshPromise) {
+                    // Gọi refresh token chỉ 1 lần cho tất cả request đang pending
                     refreshPromise = api
                         .post("/auth/refresh", {}, { withCredentials: true })
                         .then((res) => {
                             const newAccessToken = res.data.accessToken;
-                            useAuthStore.getState().setAccessToken(newAccessToken);
+                            useAuthStore
+                                .getState()
+                                .setAccessToken(newAccessToken);
                             return newAccessToken;
                         })
                         .catch((err) => {
+                            console.error("Refresh token failed:", err);
                             useAuthStore.getState().clearState();
                             throw err;
                         })
                         .finally(() => {
-                            refreshPromise = null; // clear lock
+                            refreshPromise = null;
                         });
                 }
 
-                // Đợi refresh xong
                 const newAccessToken = await refreshPromise;
 
                 // Retry lại request gốc với token mới

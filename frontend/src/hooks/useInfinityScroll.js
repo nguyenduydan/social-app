@@ -8,9 +8,15 @@ import { useEffect, useRef } from "react";
  * @param {object} options - Tuỳ chỉnh IntersectionObserver (threshold, rootMargin,...)
  * @returns {object} { lastElementRef }
  */
-export const useInfiniteScroll = (callback, canLoadMore, loading, options = {}) => {
+export const useInfiniteScroll = (
+    callback,
+    canLoadMore,
+    loading,
+    options = {}
+) => {
     const observer = useRef(null);
     const lastElementRef = useRef(null);
+    const debounceRef = useRef(null);
 
     useEffect(() => {
         if (!canLoadMore || loading) return;
@@ -18,28 +24,33 @@ export const useInfiniteScroll = (callback, canLoadMore, loading, options = {}) 
         const el = lastElementRef.current;
         if (!el) return;
 
+        if (observer.current) observer.current.disconnect();
+
         observer.current = new IntersectionObserver(
             (entries) => {
                 const first = entries[0];
                 if (first.isIntersecting) {
-                    callback(); // Gọi API load thêm
+                    // 👇 debounce 300ms để tránh gọi liên tục
+                    if (debounceRef.current) clearTimeout(debounceRef.current);
+                    debounceRef.current = setTimeout(() => {
+                        callback();
+                    }, 300);
                 }
             },
             {
                 root: options.root || null,
-                rootMargin: options.rootMargin || "0px",
-                threshold: options.threshold || 1.0,
+                rootMargin: options.rootMargin || "300px",
+                threshold: options.threshold || 0.1,
             }
         );
 
         observer.current.observe(el);
 
         return () => {
-            if (observer.current && el) {
-                observer.current.unobserve(el);
-            }
+            if (observer.current && el) observer.current.unobserve(el);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
         };
-    }, [callback, canLoadMore, loading]);
+    }, [callback, canLoadMore, loading, options.root, options.rootMargin, options.threshold]);
 
     return { lastElementRef };
 };

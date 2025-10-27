@@ -27,10 +27,20 @@ export const usePostStore = create((set, get) => ({
             const res = await postService.getAll(page);
             const postsArray = Array.isArray(res.posts) ? res.posts : [];
 
-            set((state) => ({
-                posts: append ? [...state.posts, ...postsArray] : postsArray,
-                pagination: res.pagination || {},
-            }));
+            set((state) => {
+                // Nối bài cũ + mới nếu append, ngược lại thì reset
+                const combined = append ? [...state.posts, ...postsArray] : postsArray;
+
+                // Lọc trùng theo _id
+                const uniquePosts = combined.filter(
+                    (p, index, self) => index === self.findIndex((t) => t._id === p._id)
+                );
+
+                return {
+                    posts: uniquePosts,
+                    pagination: res.pagination || {},
+                };
+            });
         } catch (error) {
             console.error("Error in fetchPosts:", error);
             toast.error("Không thể tải bài viết!");

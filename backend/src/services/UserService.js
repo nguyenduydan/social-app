@@ -46,7 +46,7 @@ export const updateUserInfo = async (data) => {
         if (username && username !== currentUser.username) {
             const existingUser = await User.findOne({ username });
             if (existingUser) {
-                throw createError("Username already exists", 409);
+                throw createError("Username đã tồn tại", 409);
             }
         }
 

@@ -1,26 +1,41 @@
-import { useAuthStore } from '@/store/useAuthStore';
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router';
-import CuberLoader from '../common/loaders/CuberLoader';
-import LoadPage from '../common/loaders/LoadPage';
+import { useAuthStore } from "@/store/useAuthStore";
+import React, { useEffect, useState } from "react";
+import { Navigate, Outlet } from "react-router";
+import LoadPage from "../common/loaders/LoadPage";
 
 const ProtectedRoute = () => {
     const { accessToken, user, loading, refresh, fetchMe } = useAuthStore();
     const [starting, setStarting] = useState(true);
 
     const init = async () => {
-        if (!accessToken) {
-            await refresh();
-        }
+        try {
+            const hasLoggedInBefore = localStorage.getItem("loggedIn") === "true";
 
-        if (accessToken && !user) {
-            await fetchMe();
+            // Nếu chưa từng đăng nhập thì không gọi refresh
+            if (!accessToken && !hasLoggedInBefore) {
+                setStarting(false);
+                return;
+            }
+
+            // Nếu đã login trước đó nhưng token hết hạn → refresh
+            if (!accessToken && hasLoggedInBefore) {
+                await refresh();
+            }
+
+            // Nếu có token mà chưa có user info → fetch
+            if (useAuthStore.getState().accessToken && !user) {
+                await fetchMe();
+            }
+        } catch (err) {
+            console.error("ProtectedRoute init error:", err);
+        } finally {
+            setStarting(false);
         }
-        setStarting(false);
     };
 
     useEffect(() => {
         init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (starting || loading) {
@@ -28,19 +43,10 @@ const ProtectedRoute = () => {
     }
 
     if (!accessToken) {
-        return (
-            <Navigate
-                to="/signin"
-                replace
-            />
-        );
+        return <Navigate to="/signin" replace />;
     }
 
-    return (
-        <>
-            <Outlet />
-        </>
-    );
+    return <Outlet />;
 };
 
 export default ProtectedRoute;

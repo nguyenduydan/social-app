@@ -10,7 +10,7 @@ export const postService = {
         return res.data;
     },
 
-    getAll: async (page = 1, limit = 2) => {
+    getAll: async (page = 1, limit = 4) => {
         const res = await api.get(`/posts?page=${page}&limit=${limit}`);
         return res.data;
     },

@@ -41,6 +41,21 @@ const infoSchema = z.object({
             },
             "Ngày sinh không hợp lệ"
         ),
+    linkSocialOther: z
+        .string()
+        .optional()
+        .refine(
+            (val) => {
+                if (!val) return true;
+                try {
+                    new URL(val);
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            "URL không hợp lệ (ví dụ: https://example.com)"
+        )
 });
 
 const PersonalInfoForm = ({ user }) => {
@@ -48,6 +63,7 @@ const PersonalInfoForm = ({ user }) => {
     const { user: currentUser } = useAuthStore();
     const [isEditing, setIsEditing] = useState(false);
     const { updateUserInfo, updating } = useUserStore();
+    const maxChars = 500;
 
     const isOwner = currentUser?._id === user?._id;
 
@@ -56,6 +72,7 @@ const PersonalInfoForm = ({ user }) => {
         handleSubmit,
         reset,
         control,
+        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(infoSchema),
@@ -66,8 +83,10 @@ const PersonalInfoForm = ({ user }) => {
             bio: user?.bio || "",
             location: user?.location || "",
             birthDay: user?.birthDay ? new Date(user.birthDay) : undefined,
+            linkSocialOther: user?.linkSocialOther || "",
         },
     });
+
 
     useEffect(() => {
         reset({
@@ -79,6 +98,9 @@ const PersonalInfoForm = ({ user }) => {
             birthDay: user?.birthDay ? new Date(user.birthDay) : undefined,
         });
     }, [user, reset]);
+
+    const bioValue = watch("bio") || "";
+    const charCount = bioValue.length;
 
     const onSubmit = async (values) => {
         try {
@@ -94,7 +116,6 @@ const PersonalInfoForm = ({ user }) => {
             <CardHeader className="flex justify-between items-center">
                 <div>
                     <CardTitle>Thông tin người dùng</CardTitle>
-                    <CardDescription>Cập nhật thông tin cá nhân của bạn</CardDescription>
                 </div>
                 {isOwner && !isEditing && (
                     <Button onClick={() => setIsEditing(true)} className="gap-2">
@@ -110,7 +131,7 @@ const PersonalInfoForm = ({ user }) => {
                         {/* Username */}
                         <div className="space-y-2">
                             <Label htmlFor="username">Username</Label>
-                            <Input id="username" {...register("username")} disabled={!isEditing} />
+                            <Input id="username" {...register("username")} disabled={!isEditing} placeholder="user1" />
                             {errors.username && (
                                 <p className="text-sm text-red-500">{errors.username.message}</p>
                             )}
@@ -119,7 +140,7 @@ const PersonalInfoForm = ({ user }) => {
                         {/* Display name */}
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Tên hiển thị</Label>
-                            <Input id="displayName" {...register("displayName")} disabled={!isEditing} />
+                            <Input id="displayName" {...register("displayName")} disabled={!isEditing} placeholder="Nguyen Van A" />
                             {errors.displayName && (
                                 <p className="text-sm text-red-500">{errors.displayName.message}</p>
                             )}
@@ -128,37 +149,65 @@ const PersonalInfoForm = ({ user }) => {
                         {/* Phone */}
                         <div className="space-y-2">
                             <Label htmlFor="phone">Số điện thoại</Label>
-                            <Input id="phone" {...register("phone")} disabled={!isEditing} />
+                            <Input id="phone" {...register("phone")} disabled={!isEditing} placeholder="Số điệnt thoại (ex: 0123456789)" />
                             {errors.phone && (
                                 <p className="text-sm text-red-500">{errors.phone.message}</p>
                             )}
                         </div>
 
-                        {/* Date of birth (đã tách riêng) */}
+                        {/* Date of birth */}
                         <DateOfBirthField control={control} disabled={!isEditing} />
+
+                        {/* LinkSocialOther */}
+                        <div className="space-y-2">
+                            <Label htmlFor="linkSocialOther">Liên kết mạng xã hội khác</Label>
+                            <Input id="linkSocialOther" {...register("linkSocialOther")} disabled={!isEditing} placeholder="https://example.com/yourprofile" type="url" />
+                            {errors.linkSocialOther && (
+                                <p className="text-sm text-red-500">{errors.linkSocialOther.message}</p>
+                            )}
+                        </div>
+
+                        {/* Mail */}
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" value={currentUser.email} disabled={true} />
+                        </div>
 
                         {/* Location */}
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="location">Địa chỉ</Label>
-                            <Input id="location" {...register("location")} disabled={!isEditing} />
+                            <Input id="location" {...register("location")} disabled={!isEditing} placeholder="Ví dụ: Nha Trang, Khánh Hòa" />
                             {errors.location && (
                                 <p className="text-sm text-red-500">{errors.location.message}</p>
                             )}
                         </div>
 
+
                         {/* Bio */}
-                        <div className="space-y-2 md:col-span-2">
+                        <div className="space-y-2 md:col-span-2 relative">
                             <Label htmlFor="bio">Giới thiệu</Label>
                             <Textarea
                                 id="bio"
                                 {...register("bio")}
                                 disabled={!isEditing}
                                 className="min-h-[80px]"
+                                placeholder="Mô tả bản thân"
                             />
+                            <div className="absolute bottom-2 right-4">
+                                <span
+                                    className={`text-sm ${charCount > maxChars * 0.9
+                                        ? "text-red-500"
+                                        : "text-gray-400"
+                                        }`}
+                                >
+                                    {charCount}/{maxChars}
+                                </span>
+                            </div>
                             {errors.bio && (
                                 <p className="text-sm text-red-500">{errors.bio.message}</p>
                             )}
                         </div>
+
                     </div>
 
                     {isEditing && (
