@@ -106,9 +106,11 @@ export const useAuthStore = create((set, get) => ({
             get().setAccessToken(accessToken);
             await get().fetchMe();
             toast.success("Đăng nhập thành công!");
+            return { success: true };
         } catch (error) {
             console.log("Error in login:", error);
             toast.error(error.response?.data?.message || "Đăng nhập thất bại");
+            return { success: false };
         } finally {
             set({ loading: false });
         }

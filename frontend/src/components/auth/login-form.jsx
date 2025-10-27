@@ -46,8 +46,12 @@ export function LoginForm({ className, ...props }) {
     const onSubmit = async (data) => {
         const { email, password } = data;
 
-        await signIn(email, password);
-        navigate("/");
+        const result = await signIn(email, password);
+
+        // Nếu đăng nhập thành công, điều hướng
+        if (result?.success) {
+            navigate("/");
+        }
     };
 
 
@@ -109,11 +113,7 @@ export function LoginForm({ className, ...props }) {
                                 </div>
                             </Field>
                             <Field>
-                                <div className='flex items-center justify-between text-sm'>
-                                    <label className='flex items-center space-x-2 cursor-pointer text-gray-300'>
-                                        <input type='checkbox' className='rounded border-emerald-900 bg-black/50' />
-                                        <span className="text-muted-foreground">Remember me</span>
-                                    </label>
+                                <div className='flex items-center justify-end text-sm'>
                                     <Dialog
                                         open={open}
                                         onOpenChange={(isOpen) => {
@@ -125,7 +125,7 @@ export function LoginForm({ className, ...props }) {
                                             className='text-primary transition-colors cursor-pointer'
                                             onClick={() => setOpen(true)}
                                         >
-                                            Forgot password?
+                                            Quên mật khẩu?
                                         </DialogTrigger>
 
                                         <ResetPassword onClose={() => setOpen(false)} />

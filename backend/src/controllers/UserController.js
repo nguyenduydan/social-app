@@ -1,39 +1,35 @@
 import { userService } from "../services/UserService.js";
+import { createError } from "../lib/utils.js";
 
-export const test = async (req, res) => {
-    return res.sendStatus(204);
-};
-
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
     try {
-        if (!req.user._id) return res.status(404).json({ message: "No userId" });
+        if (!req.user?._id) throw createError(404, "No userId");
+
         const user = await userService.getCurrentUser(req.user._id);
         res.status(200).json({ user });
     } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-        console.log("Error in getMe: ", error);
+        next(error);
     }
 };
 
-export const getUser = async (req, res) => {
+export const getUser = async (req, res, next) => {
     try {
         const userId = req.params.id;
-        if (!userId) return res.status(404).json({ message: "No userId" });
+        if (!userId) throw createError(404, "No userId");
 
         const user = await userService.getCurrentUser(userId);
         res.status(200).json({ user });
     } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-        console.log("Error in getUser: ", error);
+        next(error);
     }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
     try {
         const userId = req.user?._id;
         const { username, displayName, bio, phone, location, birthDay, linkSocialOther } = req.body;
 
-        if (!userId) throw createError("User ID is required", 400);
+        if (!userId) throw createError(400, "User ID is required");
 
         const userUpdated = await userService.updateInfo({
             id: userId,
@@ -43,70 +39,49 @@ export const updateUser = async (req, res) => {
             phone,
             location,
             birthDay,
-            linkSocialOther
+            linkSocialOther,
         });
 
-        res.status(200).json({
-            user: userUpdated,
-        });
+        res.status(200).json({ user: userUpdated });
     } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-        console.log("Error in updateUser: ", error);
+        next(error);
     }
 };
-export const uploadAvatar = async (req, res) => {
+
+export const uploadAvatar = async (req, res, next) => {
     try {
         const userId = req.user?._id;
         const file = req.body;
-        if (!userId) {
-            return res.status(404).json({ message: "User ID not found" });
-        }
 
-        if (!file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
+        if (!userId) throw createError(404, "User ID not found");
+        if (!file) throw createError(400, "No file uploaded");
 
-        // Call update function for avatar
         const userUpdated = await userService.updateAvatar({
             userId,
-            file: file
+            file,
         });
 
-        return res.status(200).json({
-            user: userUpdated
-        });
-
+        res.status(200).json({ user: userUpdated });
     } catch (error) {
-        console.error("Error in uploadAvatar: ", error);
-        res.status(error.status || 500).json({ message: error.message });
+        next(error);
     }
 };
 
-export const uploadCoverPhoto = async (req, res) => {
+export const uploadCoverPhoto = async (req, res, next) => {
     try {
         const userId = req.user?._id;
         const file = req.body;
 
-        if (!userId) {
-            return res.status(404).json({ message: "User ID not found" });
-        }
+        if (!userId) throw createError(404, "User ID not found");
+        if (!file) throw createError(400, "No file uploaded");
 
-        if (!file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-
-        // Call update function for cover photo
         const userUpdated = await userService.updateCoverPhoto({
-            userId: userId,
-            file: file
+            userId,
+            file,
         });
 
-        return res.status(200).json({
-            user: userUpdated
-        });
-
+        res.status(200).json({ user: userUpdated });
     } catch (error) {
-        console.error("Error in uploadCoverPhoto: ", error);
-        res.status(error.status || 500).json({ message: error.message });
+        next(error);
     }
 };

@@ -12,6 +12,8 @@ import postRoutes from "./routes/post.route.js";
 import friendRoutes from "./routes/friend.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { protectRoute } from "./middlewares/auth.middleware.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { logLine } from "./lib/utils.js";
 
 const app = express();
 
@@ -37,15 +39,19 @@ app.use("/api/posts", postRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/messages", messageRoutes);
 
+// middleware xử lý lỗi chung
+app.use(errorHandler);
+
+
 connectDB()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`>> Server running on port: ${PORT}`);
-            console.log(`>> Server running on host: http://localhost:${PORT}`);
+            logLine(`>> Server running on port: ${PORT}`);
+            logLine(`>> Server running on host: http://localhost:${PORT}`);
         });
     })
     .catch((error) => {
-        console.error("❌ Failed to start server:", error);
+        logLine("❌ Failed to start server:", error);
         process.exit(1);
     })
 

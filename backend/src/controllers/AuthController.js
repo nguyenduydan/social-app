@@ -7,16 +7,19 @@ import {
 import { ENV } from "../config/env.js";
 import sendResetCode from "../config/sendMail.js";
 import passport from "passport";
+import { createError } from "../lib/utils.js";
 
-
-const resetCodes = {}; // Dùng cho quên mật khẩu (lưu tạm code trong RAM)
+const resetCodes = {}; // Lưu tạm code quên mật khẩu trong RAM
 
 // ===============================
 // ĐĂNG KÝ NGƯỜI DÙNG
 // ===============================
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
     try {
         const { firstName, lastName, email, password } = req.body;
+        if (!email || !password)
+            throw createError(400, "Email và mật khẩu là bắt buộc");
+
         const { accessToken, refreshToken } = await authService.register({
             firstName,
             lastName,
@@ -25,27 +28,20 @@ export const signup = async (req, res) => {
         });
 
         attachAuthCookies(res, accessToken, refreshToken);
-        res.sendStatus(204); // ✅ Thành công, không trả data
+        res.sendStatus(204);
     } catch (error) {
-        console.error("Error in signup:", error);
-        res.status(error.status || 500).json({
-            message: error.message || "Internal server error",
-        });
+        next(error);
     }
 };
 
 // ===============================
 // ĐĂNG NHẬP
 // ===============================
-export const signin = async (req, res) => {
+export const signin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res
-                .status(400)
-                .json({ message: "Email và mật khẩu không được để trống" });
-        }
+        if (!email || !password)
+            throw createError(400, "Email và mật khẩu không được để trống");
 
         const { user, accessToken, refreshToken } = await authService.signin({
             email,
@@ -55,17 +51,14 @@ export const signin = async (req, res) => {
         attachAuthCookies(res, accessToken, refreshToken);
         res.status(200).json({ user, accessToken });
     } catch (error) {
-        console.error("Error in signin:", error);
-        res.status(error.status || 500).json({
-            message: error.message || "Internal server error",
-        });
+        next(error);
     }
 };
 
 // ===============================
 // ĐĂNG XUẤT
 // ===============================
-export const logout = async (req, res) => {
+export const logout = async (req, res, next) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
         if (refreshToken) {
@@ -74,63 +67,57 @@ export const logout = async (req, res) => {
         }
         res.sendStatus(204);
     } catch (error) {
-        console.error("Error in logout:", error);
-        res.status(error.status || 500).json({
-            message: error.message || "Internal server error",
-        });
+        next(error);
     }
 };
 
 // ===============================
 // LÀM MỚI ACCESS TOKEN
 // ===============================
-export const refreshToken = async (req, res) => {
+export const refreshToken = async (req, res, next) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
-        if (!refreshToken) {
-            return res.status(401).json({ message: "No token provided" });
-        }
+        if (!refreshToken) throw createError(401, "Không có token refresh");
 
         const newAccessToken = await authService.refresh(refreshToken);
         res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
-        console.error("Error in refreshToken:", error);
-        res.status(error.status || 500).json({ message: error.message });
+        next(error);
     }
 };
 
 // ===============================
-//  GOOGLE OAUTH CALLBACK
+// GOOGLE OAUTH CALLBACK
 // ===============================
 export const oauthCallback = (req, res, next) => {
     passport.authenticate("google", { session: false }, async (err, user) => {
-        if (err || !user) {
-            console.error("Google OAuth failed:", err);
-            return res.redirect(`${ENV.CLIENT_URL}/signin`);
+        try {
+            if (err || !user) {
+                console.error("Google OAuth failed:", err);
+                return res.redirect(`${ENV.CLIENT_URL}/signin`);
+            }
+
+            const { accessToken, refreshToken } = await authService.oauthSignin({
+                oauthUser: user,
+            });
+            attachAuthCookies(res, accessToken, refreshToken);
+
+            return res.redirect(ENV.CLIENT_URL);
+        } catch (error) {
+            next(error);
         }
-
-        const { accessToken, refreshToken } = await authService.oauthSignin({
-            oauthUser: user,
-        });
-        attachAuthCookies(res, accessToken, refreshToken);
-
-        return res.redirect(ENV.CLIENT_URL);
     })(req, res, next);
 };
 
 // ===============================
 // QUÊN MẬT KHẨU - GỬI MÃ XÁC NHẬN
 // ===============================
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
-
-        if (!email) {
-            return res.status(400).json({ message: "Email is required" });
-        }
+        if (!email) throw createError(400, "Email là bắt buộc");
 
         const resetCode = generateResetCode();
-
         resetCodes[email] = {
             code: resetCode,
             expiresAt: Date.now() + 60 * 1000, // 1 phút
@@ -139,59 +126,53 @@ export const forgotPassword = async (req, res) => {
         await sendResetCode(email, resetCode);
 
         res.status(200).json({
-            message: "Reset code sent to email",
+            message: "Mã xác nhận đã được gửi tới email",
             email,
         });
     } catch (error) {
-        console.error("Error in forgotPassword:", error);
-        res.status(500).json({ error: "Failed to send reset code" });
+        next(error);
     }
 };
 
 // ===============================
 // XÁC MINH MÃ KHÔI PHỤC
 // ===============================
-export const verifyResetCode = async (req, res) => {
+export const verifyResetCode = async (req, res, next) => {
     try {
         const { email, code } = req.body;
+        if (!email || !code)
+            throw createError(400, "Cần cung cấp email và mã xác nhận");
 
-        if (!email || !code) {
-            return res
-                .status(400)
-                .json({ message: "Email and code are required" });
-        }
+        const record = resetCodes[email];
+        if (!record) throw createError(400, "Không tìm thấy yêu cầu khôi phục");
 
-        if (!resetCodes[email]) {
-            return res.status(400).json({ message: "No reset request found" });
-        }
-
-        if (resetCodes[email].expiresAt < Date.now()) {
+        if (record.expiresAt < Date.now()) {
             delete resetCodes[email];
-            return res.status(400).json({ message: "Reset code expired" });
+            throw createError(400, "Mã xác nhận đã hết hạn");
         }
 
-        if (resetCodes[email].code !== code) {
-            return res.status(400).json({ message: "Invalid reset code" });
-        }
+        if (record.code !== code)
+            throw createError(400, "Mã xác nhận không hợp lệ");
 
-        res.status(200).json({ message: "Code verified successfully" });
+        res.status(200).json({ message: "Mã hợp lệ" });
     } catch (error) {
-        console.error("Error in verifyResetCode:", error);
-        res.status(500).json({ error: "Failed to verify code" });
+        next(error);
     }
 };
 
 // ===============================
 // ĐẶT LẠI MẬT KHẨU
 // ===============================
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res, next) => {
     try {
         const { email, newPassword } = req.body;
+        if (!email || !newPassword)
+            throw createError(400, "Email và mật khẩu mới là bắt buộc");
+
         const result = await authService.updatePassword(email, newPassword);
-        delete resetCodes[email]; // clear code đã dùng
+        delete resetCodes[email];
         res.status(200).json(result);
     } catch (error) {
-        console.error("Error in resetPassword:", error);
-        res.status(error.status || 500).json({ message: error.message });
+        next(error);
     }
 };
