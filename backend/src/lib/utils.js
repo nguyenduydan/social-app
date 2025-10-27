@@ -81,6 +81,7 @@ export const extractPublicId = (url) => {
     return match ? match[1] : null;
 };
 
+// Logger
 export const colors = {
     reset: "\x1b[0m",
     red: "\x1b[31m",

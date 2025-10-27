@@ -17,7 +17,7 @@ export const errorHandler = (err, req, res, next) => {
         console.log("\n");
 
         logLine(`❌ [${req.method}] ${req.originalUrl}`, colorForStatus);
-        logLine(`→ Status: ${statusCode}`, colors.yellow);
+        logLine(`→ Status: ${statusCode}`, colorForStatus);
         logLine(`→ Message: ${message}`, colors.cyan);
 
         if (err.stack) {
@@ -31,7 +31,7 @@ export const errorHandler = (err, req, res, next) => {
     } else {
         // Production
         const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
-        console.error(`[${time}] ❌ [${req.method}] ${req.originalUrl} — ${message}`);
+        console.error(`${colors.gray}[${time}]${colors.reset} ${colorForStatus}❌ [${req.method}] ${req.originalUrl} — ${message}${colors.reset}`);
     }
 
     // JSON return client

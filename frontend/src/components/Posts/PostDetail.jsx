@@ -28,13 +28,13 @@ const PostDetail = ({ post }) => {
     return (
         <div
             className={cn(
-                "grid gap-0 h-full w-full overflow-hidden rounded-2xl",
-                hasMedia ? "grid-cols-1 lg:grid-cols-[2fr_1fr]" : "grid-cols-1"
+                "grid gap-0 h-full w-full overflow-hidden",
+                hasMedia ? "grid-cols-1 lg:grid-cols-[3fr_1fr]" : "grid-cols-1"
             )}
         >
             {/* LEFT: Media (Image / Video / Carousel) - Only show if media exists */}
             {hasMedia && (
-                <div className="relative bg-black flex justify-center items-center">
+                <div className="relative bg-black flex items-center">
                     {post.media.length > 1 ? (
                         <Carousel className="h-full flex justify-center items-center bg-card-foreground dark:bg-card">
                             <CarouselContent>

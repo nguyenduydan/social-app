@@ -15,7 +15,6 @@ export class UserService {
             if (!user) throw createError("User not found", 404);
             return user;
         } catch (error) {
-            console.error("❌ Error in UserService.getCurrentUser:", error.message);
             throw createError(error.message || "Failed to get user", error.status || 500);
         }
     }
@@ -68,7 +67,6 @@ export class UserService {
 
             return userUpdated;
         } catch (error) {
-            console.error("❌ Error in UserService.updateInfo:", error.message);
             throw createError(error.message || "Failed to update user", error.status || 500);
         }
     }
@@ -105,7 +103,6 @@ export class UserService {
             const updatedUser = await user.save();
             return updatedUser;
         } catch (error) {
-            console.error("❌ Error in UserService.updateAvatar:", error.message);
             throw createError(error.message || "Failed to update avatar", error.status || 500);
         }
     }
@@ -142,7 +139,6 @@ export class UserService {
             const updatedUser = await user.save();
             return updatedUser;
         } catch (error) {
-            console.error("❌ Error in UserService.updateCoverPhoto:", error.message);
             throw createError(error.message || "Failed to update cover photo", error.status || 500);
         }
     }

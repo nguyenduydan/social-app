@@ -4,12 +4,16 @@ import path from "path";
 import { fileURLToPath } from "url";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import ffprobeInstaller from "@ffprobe-installer/ffprobe";
+import { colors, logLine } from "./utils.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Nén video bằng FFmpeg (ổn định, có kiểm tra audio)
+/**
+ * Nén video bằng FFmpeg (có log màu + timestamp đẹp)
+ */
 export const compressVideo = async (buffer) => {
     const tempInput = path.join(__dirname, `temp_input_${Date.now()}.mp4`);
     const tempOutput = path.join(__dirname, `temp_output_${Date.now()}.mp4`);
@@ -18,9 +22,9 @@ export const compressVideo = async (buffer) => {
         // Ghi file tạm
         fs.writeFileSync(tempInput, buffer);
         const inputSizeMB = fs.statSync(tempInput).size / 1024 / 1024;
-        console.log(`📥 Video input size: ${inputSizeMB.toFixed(2)} MB`);
+        logLine(`📥 Input video size: ${inputSizeMB.toFixed(2)} MB`, colors.cyan);
 
-        // Kiểm tra metadata để xác định có audio hay không
+        // Kiểm tra metadata để xem có audio không
         const metadata = await new Promise((resolve, reject) => {
             ffmpeg.ffprobe(tempInput, (err, data) => {
                 if (err) reject(err);
@@ -28,51 +32,49 @@ export const compressVideo = async (buffer) => {
             });
         });
 
-        const hasAudio = metadata.streams.some(
-            (s) => s.codec_type === "audio"
-        );
+        const hasAudio = metadata.streams.some((s) => s.codec_type === "audio");
+        logLine(`🎧 Audio stream detected: ${hasAudio ? "✅ Yes" : "❌ No"}`, hasAudio ? colors.green : colors.red);
 
-        console.log(`🎧 Audio stream detected: ${hasAudio ? "✅ Yes" : "❌ No"}`);
-
+        // Chạy nén video
         await new Promise((resolve, reject) => {
-            let command = ffmpeg(tempInput)
-                .outputOptions([
-                    "-c:v libx264",         // video codec
-                    "-preset veryfast",     // encode nhanh
-                    "-crf 23",              // CRF cao hơn -> nhẹ hơn (~65% giảm size)
-                    "-vf scale=-2:1080",     // giảm còn 1080p, giữ tỉ lệ
-                    "-movflags +faststart"  // giúp video play sớm khi stream
-                ]);
+            let command = ffmpeg(tempInput).outputOptions([
+                "-c:v libx264",
+                "-preset veryfast",
+                "-crf 23",
+                "-vf scale=-2:1080",
+                "-movflags +faststart",
+            ]);
 
             if (hasAudio) {
                 command = command.outputOptions(["-c:a aac", "-b:a 96k"]);
             } else {
-                command = command.noAudio(); // nếu không có âm thanh
+                command = command.noAudio();
             }
 
             command
                 .on("start", (cmd) => {
-                    console.log("🚀 FFmpeg started:");
-                    console.log(cmd);
+                    logLine("🚀 FFmpeg started", colors.yellow);
+                    logLine(cmd, colors.gray);
                 })
                 .on("end", () => {
-                    console.log("✅ FFmpeg compression finished");
+                    logLine("✅ FFmpeg compression finished", colors.green);
                     resolve();
                 })
                 .on("error", (err) => {
-                    console.error("❌ FFmpeg compression error:", err.message);
+                    logLine(`❌ FFmpeg compression error: ${err.message}`, colors.red);
                     reject(err);
                 })
                 .save(tempOutput);
         });
 
-        // Kiểm tra kết quả nén
+        // Kết quả nén
         const inputSize = fs.statSync(tempInput).size;
         const outputSize = fs.statSync(tempOutput).size;
-        console.log("📊 Compression result:");
-        console.log("- Before:", (inputSize / 1024 / 1024).toFixed(2), "MB");
-        console.log("- After:", (outputSize / 1024 / 1024).toFixed(2), "MB");
-        console.log("- Compression ratio:", ((outputSize / inputSize) * 100).toFixed(2), "%");
+
+        logLine("📊 Compression result:", colors.cyan);
+        logLine(`- Before: ${(inputSize / 1024 / 1024).toFixed(2)} MB`, colors.gray);
+        logLine(`- After: ${(outputSize / 1024 / 1024).toFixed(2)} MB`, colors.gray);
+        logLine(`- Ratio: ${((outputSize / inputSize) * 100).toFixed(2)}%`, colors.yellow);
 
         const compressedBuffer = fs.readFileSync(tempOutput);
 
@@ -82,7 +84,7 @@ export const compressVideo = async (buffer) => {
 
         return compressedBuffer;
     } catch (error) {
-        console.error("Video compression failed:", error.message);
+        logLine(`💥 Video compression failed: ${error.message}`, colors.red);
         if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput);
         if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput);
         return buffer; // fallback nếu nén lỗi

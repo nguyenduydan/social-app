@@ -25,7 +25,6 @@ export class PostService {
             const savedPost = await newPost.save();
             return savedPost;
         } catch (error) {
-            console.error("❌ Error in PostService.create:", error);
             throw createError(error.message || "Failed to create post", 500);
         }
     }
@@ -58,7 +57,6 @@ export class PostService {
 
             return { posts: formattedPosts, pagination };
         } catch (error) {
-            console.error("❌ Error in PostService.getFeeds:", error);
             throw createError(error.message || "Failed to get feeds", 500);
         }
     }
@@ -80,7 +78,6 @@ export class PostService {
 
             return post;
         } catch (error) {
-            console.error("❌ Error in PostService.getById:", error);
             throw createError(error.message || "Failed to get post", 500);
         }
     }
@@ -124,7 +121,6 @@ export class PostService {
 
             return updatedPost;
         } catch (error) {
-            console.error("❌ Error in PostService.update:", error);
             throw createError(error.message || "Failed to update post", 500);
         }
     }
@@ -151,7 +147,6 @@ export class PostService {
 
             return post;
         } catch (error) {
-            console.error("❌ Error in PostService.updateVisibility:", error);
             throw createError(error.message || "Failed to update post visibility", 500);
         }
     }
@@ -174,7 +169,6 @@ export class PostService {
             await Post.findByIdAndDelete(postId);
             return { message: "Post deleted successfully" };
         } catch (error) {
-            console.error("❌ Error in PostService.delete:", error);
             throw createError(error.message || "Failed to delete post", 500);
         }
     }

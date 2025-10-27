@@ -5,6 +5,12 @@ const PostMedia = ({ media, onOpenDetail }) => {
 
     const stopPropagation = (e) => e.stopPropagation();
 
+    // Hàm dừng tất cả video trong DOM (chỉ trong component này)
+    const pauseAllVideos = () => {
+        const videos = document.querySelectorAll("video");
+        videos.forEach((v) => v.pause());
+    };
+
     const VideoPlayer = ({ src }) => {
         const videoRef = useRef(null);
 
@@ -39,12 +45,14 @@ const PostMedia = ({ media, onOpenDetail }) => {
                     className="w-full h-auto max-h-[600px] object-contain"
                     onClick={stopPropagation}
                 />
+
+                {/* overlay bấm mở chi tiết, chừa chỗ cho controls */}
                 <div
-                    className="absolute inset-0"
+                    className="absolute inset-x-0 top-0 bottom-[50px] cursor-pointer"
                     onClick={(e) => {
-                        // Nếu click vào chính video controls -> bỏ qua
                         if (e.target.tagName.toLowerCase() === "video") return;
                         e.stopPropagation();
+                        pauseAllVideos(); // ⏸ dừng video trước khi mở chi tiết
                         onOpenDetail?.();
                     }}
                 />
@@ -65,7 +73,10 @@ const PostMedia = ({ media, onOpenDetail }) => {
                         alt="media-single"
                         crossOrigin="anonymous"
                         className="w-full h-auto max-h-[600px] object-contain cursor-pointer"
-                        onClick={onOpenDetail}
+                        onClick={() => {
+                            pauseAllVideos();
+                            onOpenDetail?.();
+                        }}
                     />
                 )}
             </div>
@@ -88,12 +99,21 @@ const PostMedia = ({ media, onOpenDetail }) => {
                             alt={`media-${idx}`}
                             crossOrigin="anonymous"
                             className="w-full h-auto max-h-[300px] object-cover object-center cursor-pointer"
-                            onClick={onOpenDetail}
+                            onClick={() => {
+                                pauseAllVideos();
+                                onOpenDetail?.();
+                            }}
                         />
                     )}
 
                     {idx === 3 && media.length > 4 && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xl font-semibold " onClick={onOpenDetail}>
+                        <div
+                            className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xl font-semibold cursor-pointer"
+                            onClick={() => {
+                                pauseAllVideos();
+                                onOpenDetail?.();
+                            }}
+                        >
                             +{media.length - 4}
                         </div>
                     )}

@@ -71,10 +71,10 @@ const FeedCard = ({ post }) => {
             <Dialog open={isPostDetail} onOpenChange={setIsPostDetail}>
                 <DialogContent
                     className={cn(
-                        "md:mx-0 p-0 overflow-hidden border-none rounded-2xl",
+                        "md:mx-0 p-0 overflow-hidden border-none rounded-none",
                         post?.media && post.media.length > 0
-                            ? "min-w-sm md:min-w-2xl lg:min-w-7xl h-[900px]"
-                            : "max-w-sm md:max-w-xl h-[600px]"
+                            ? "min-w-screen h-screen"
+                            : "w-screen h-screen"
                     )}
                 >
                     <PostDetail post={post} onClose={() => setIsPostDetail(false)} />
