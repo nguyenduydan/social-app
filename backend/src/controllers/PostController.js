@@ -1,8 +1,8 @@
-import { createPostService, deletePostService, getFeeds, getPostByIdService, updatePostService, updatePostStatusService } from "../services/PostService.js";
+import { postService } from "../services/PostService.js";
 
 export const getFeed = async (req, res) => {
     try {
-        const feeds = await getFeeds(req.query);
+        const feeds = await postService.getFeeds(req.query);
         return res.status(200).json(feeds);
     } catch (error) {
         console.error("Error in getFeed:", error);
@@ -31,7 +31,7 @@ export const createPost = async (req, res) => {
             originalname: file.originalname,
         }));
 
-        const newPost = await createPostService({
+        const newPost = await postService.create({
             userId,
             content,
             visibility,
@@ -50,7 +50,7 @@ export const getPostById = async (req, res) => {
         const postId = req.params.id;
         if (!postId) return res.status(404).json({ message: "PostId not found" });
 
-        const post = await getPostByIdService(postId);
+        const post = await postService.getById(postId);
 
         return res.status(200).json(post);
     } catch (error) {
@@ -81,7 +81,7 @@ export const updatePost = async (req, res) => {
             originalname: file.originalname,
         }));
 
-        const updatedPost = await updatePostService({
+        const updatedPost = await postService.update({
             postId,
             userId,
             content,
@@ -108,7 +108,7 @@ export const updateStatus = async (req, res, next) => {
         const userId = req.user?._id || req.body.userId;
         const { postId, visibility } = req.body;
 
-        const updatedPost = await updatePostStatusService({
+        const updatedPost = await postService.updateVisibility({
             postId,
             userId,
             visibility,
@@ -129,7 +129,7 @@ export const deletePost = async (req, res) => {
         const { id: postId } = req.params;
         const userId = req.user?._id;
 
-        const result = await deletePostService(postId, userId);
+        const result = await postService.delete(postId, userId);
 
         res.status(200).json(result);
     } catch (error) {

@@ -1,151 +1,124 @@
 import User from "../models/User.js";
-import { comparePassword, createError, generateAccessToken, generateRefreshToken, hashPassword, verifyToken } from "../lib/utils.js";
-import { ENV } from "../config/env.js";
 import Session from "../models/Session.js";
+import {
+    comparePassword,
+    createError,
+    generateAccessToken,
+    generateRefreshToken,
+    hashPassword,
+} from "../lib/utils.js";
 
-const REFRESH_TOKEN_EXPIRE = 14 * 24 * 60 * 60 * 1000;
+const REFRESH_TOKEN_EXPIRE = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 
-export const createUser = async (data) => {
-    try {
-        const { firstName, lastName, email, password } = data;
-
-        // Validate required fields
+export class AuthService {
+    /**
+     * @desc Tạo người dùng mới
+     */
+    async register({ firstName, lastName, email, password }) {
         if (!email || !password || !firstName || !lastName) {
             throw createError("All fields are required", 400);
         }
 
-        // Check for existing email
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
+        const existing = await User.findOne({ email });
+        if (existing) {
             throw createError("Email already exists", 409);
         }
 
-        // Hash password
-        const hashedPassword = await hashPassword(password);
+        const hashed = await hashPassword(password);
 
-        // Create new user
         const newUser = new User({
             displayName: `${firstName} ${lastName}`,
             email,
-            password: hashedPassword,
-            role: "user"
+            password: hashed,
+            role: "user",
         });
 
         const savedUser = await newUser.save();
-        if (!savedUser) {
-            throw createError("Failed to create user", 400);
-        }
+        if (!savedUser) throw createError("Failed to create user", 400);
 
-        // Generate tokens
         const accessToken = generateAccessToken(savedUser._id);
         const refreshToken = generateRefreshToken(savedUser._id);
 
-        // TODO: Send welcome email
-
         return { user: savedUser, accessToken, refreshToken };
-
-    } catch (error) {
-        console.error("Error in createUser:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to create user", 500);
     }
-};
 
-export const signinUser = async ({ email, password }) => {
-    try {
-        // Find user by email
+    /**
+     * @desc Đăng nhập người dùng
+     */
+    async signin({ email, password }) {
         const user = await User.findOne({ email });
         if (!user) {
             throw createError("Email hoặc mật khẩu không đúng", 401);
         }
 
-        // Compare passwords
-        const isPasswordCorrect = await comparePassword(password, user.password);
-        if (!isPasswordCorrect) {
+        const isMatch = await comparePassword(password, user.password);
+        if (!isMatch) {
             throw createError("Email hoặc mật khẩu không đúng", 401);
         }
 
-        // Generate tokens
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
 
-        // Create session
         await Session.create({
             userId: user._id,
             refreshToken,
-            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRE)
+            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRE),
         });
 
         return { user, accessToken, refreshToken };
-
-    } catch (error) {
-        console.error("Error in loginUser:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to login", 500);
     }
-};
 
-export const handleOauthCallback = async ({ oauthUser }) => {
-    try {
-        // Generate tokens
+    /**
+     * @desc Đăng nhập OAuth (Google, Facebook,...)
+     */
+    async oauthSignin({ oauthUser }) {
         const accessToken = generateAccessToken(oauthUser._id);
         const refreshToken = generateRefreshToken(oauthUser._id);
-        // Create session
+
         await Session.create({
             userId: oauthUser._id,
             refreshToken,
-            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRE)
+            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRE),
         });
+
         return { user: oauthUser, accessToken, refreshToken };
-    } catch (error) {
-        console.error("Error in handleOauthCallback:", error.message);
-        throw error.status ? error : createError(error.message || "Failed OAuth login", 500);
     }
-};
 
-
-export const logoutUser = async (refreshToken) => {
-    try {
-        if (!refreshToken) {
-            throw createError("Refresh token is required", 400);
-        }
+    /**
+     * @desc Đăng xuất người dùng
+     */
+    async logout(refreshToken) {
+        if (!refreshToken) throw createError("Refresh token is required", 400);
 
         const result = await Session.deleteOne({ refreshToken });
-
         if (result.deletedCount === 0) {
-            console.warn("Session not found for logout");
+            console.warn("⚠️ Session not found for logout");
         }
 
         return true;
-
-    } catch (error) {
-        console.error("Error in logoutUser:", error.message);
-        throw createError(error.message || "Failed to logout", 500);
     }
-};
 
-export const refreshAccessToken = async (refreshToken) => {
-    try {
-        // So sánh với token trong DB
-        const session = await Session.findOne({ refreshToken: refreshToken });
+    /**
+     * @desc Làm mới access token
+     */
+    async refresh(refreshToken) {
+        if (!refreshToken) throw createError("Refresh token is required", 401);
+
+        const session = await Session.findOne({ refreshToken });
         if (!session) throw createError("Invalid or expired refresh token", 403);
 
-        //Kiểm tra hết hạn chưa
         if (session.expiresAt < new Date()) {
             throw createError("Token expired", 403);
         }
-        //tạo tokenAccess mới
+
         const newAccessToken = generateAccessToken(session.userId);
-        //return
         return newAccessToken;
-
-    } catch (error) {
-        console.error("Error in refreshAccessToken:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to refresh token", 500);
     }
-};
 
-export const updatePassword = async (email, newPassword) => {
-    try {
-        // Validate input
+    /**
+     * @desc Cập nhật mật khẩu
+     */
+    async updatePassword(email, newPassword) {
         if (!email || !newPassword) {
             throw createError("Email and password are required", 400);
         }
@@ -154,37 +127,28 @@ export const updatePassword = async (email, newPassword) => {
             throw createError("Password must be at least 6 characters", 400);
         }
 
-        // Find user
         const user = await User.findOne({ email });
-        if (!user) {
-            throw createError("User not found", 404);
-        }
+        if (!user) throw createError("User not found", 404);
 
-        // Hash new password
-        const hashedPassword = await hashPassword(newPassword);
+        const hashed = await hashPassword(newPassword);
 
-        // Update password
-        const updatedUser = await User.findOneAndUpdate(
+        const updated = await User.findOneAndUpdate(
             { email },
-            { password: hashedPassword },
+            { password: hashed },
             { new: true }
         ).select("-password");
 
-        if (!updatedUser) {
-            throw createError("Failed to update password", 400);
-        }
+        if (!updated) throw createError("Failed to update password", 400);
 
         return {
             message: "Password updated successfully",
             user: {
-                id: updatedUser._id,
-                email: updatedUser.email,
-                username: updatedUser.username
-            }
+                id: updated._id,
+                email: updated.email,
+                username: updated.username,
+            },
         };
-
-    } catch (error) {
-        console.error("Error in updatePassword:", error.message);
-        throw error.status ? error : createError(error.message || "Failed to update password", 500);
     }
-};
+}
+
+export const authService = new AuthService();

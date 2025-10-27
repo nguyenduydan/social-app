@@ -1,4 +1,4 @@
-import { getCurrentUser, updateUserAvatar, updateUserCoverPhoto, updateUserInfo } from "../services/UserService.js";
+import { userService } from "../services/UserService.js";
 
 export const test = async (req, res) => {
     return res.sendStatus(204);
@@ -7,7 +7,7 @@ export const test = async (req, res) => {
 export const getMe = async (req, res) => {
     try {
         if (!req.user._id) return res.status(404).json({ message: "No userId" });
-        const user = await getCurrentUser(req.user._id);
+        const user = await userService.getCurrentUser(req.user._id);
         res.status(200).json({ user });
     } catch (error) {
         res.status(error.status || 500).json({ message: error.message });
@@ -20,7 +20,7 @@ export const getUser = async (req, res) => {
         const userId = req.params.id;
         if (!userId) return res.status(404).json({ message: "No userId" });
 
-        const user = await getCurrentUser(userId);
+        const user = await userService.getCurrentUser(userId);
         res.status(200).json({ user });
     } catch (error) {
         res.status(error.status || 500).json({ message: error.message });
@@ -35,7 +35,7 @@ export const updateUser = async (req, res) => {
 
         if (!userId) throw createError("User ID is required", 400);
 
-        const userUpdated = await updateUserInfo({
+        const userUpdated = await userService.updateInfo({
             id: userId,
             username,
             displayName,
@@ -67,7 +67,7 @@ export const uploadAvatar = async (req, res) => {
         }
 
         // Call update function for avatar
-        const userUpdated = await updateUserAvatar({
+        const userUpdated = await userService.updateAvatar({
             userId,
             file: file
         });
@@ -96,7 +96,7 @@ export const uploadCoverPhoto = async (req, res) => {
         }
 
         // Call update function for cover photo
-        const userUpdated = await updateUserCoverPhoto({
+        const userUpdated = await userService.updateCoverPhoto({
             userId: userId,
             file: file
         });
