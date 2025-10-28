@@ -17,7 +17,6 @@ import {
     CardContent,
     CardHeader,
     CardFooter,
-    CardDescription,
 } from "../ui/card";
 import { Button } from "../ui/button";
 import { getTimeAgo } from "@/lib/calculatorTime";
@@ -31,7 +30,7 @@ import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { usePostStore } from "@/store/usePostStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import PostMedia from "./PostMedia";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import PostDetail from "./PostDetail";
 import UpdatePost from "./UpdatePost";
 import { CustomSelect } from "../common/customSelect";
@@ -45,7 +44,7 @@ const options = [
 ];
 
 
-const FeedCard = ({ post }) => {
+const PostCard = memo(({ post }) => {
     const { user } = useAuthStore();
     const { deletePost, updateVisibility } = usePostStore();
     const [isPostDetail, setIsPostDetail] = useState(false);
@@ -66,7 +65,7 @@ const FeedCard = ({ post }) => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="w-full mx-auto">
             {/* Dialog hiển thị chi tiết bài viết */}
             <Dialog open={isPostDetail} onOpenChange={setIsPostDetail}>
                 <DialogContent
@@ -126,7 +125,7 @@ const FeedCard = ({ post }) => {
                                     onClick={(e) => e.stopPropagation()} // để không mở chi tiết khi bấm select
                                 >
                                     <CustomSelect
-                                        className="w-[50px]"
+                                        className="w-[140px]"
                                         options={options}
                                         value={visibility}
                                         onChange={(value) => {
@@ -196,7 +195,7 @@ const FeedCard = ({ post }) => {
                     <div className="px-8 pb-3 text-sm sm:text-base">{post.content}</div>
                     {post.media?.length > 0 && (
                         <div className="w-full overflow-hidden">
-                            <PostMedia media={post.media} onOpenDetail={handleOpenDetail} />
+                            <PostMedia key={post._id} media={post.media} onOpenDetail={handleOpenDetail} />
                         </div>
                     )}
                 </CardContent>
@@ -227,6 +226,6 @@ const FeedCard = ({ post }) => {
             </Card>
         </div>
     );
-};
-
-export default FeedCard;
+});
+PostCard.displayName = "PostCard";
+export default memo(PostCard, (prev, next) => prev.post._id === next.post._id && prev.post === next.post);

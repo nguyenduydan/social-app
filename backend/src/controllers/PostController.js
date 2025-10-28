@@ -51,6 +51,19 @@ export const getPostById = async (req, res, next) => {
     }
 };
 
+export const getPostByUserId = async (req, res, next) => {
+    try {
+        const userId = req.params.userId || req.user._id;
+        const query = req.query;
+        if (!userId) throw createError("UserId is not found");
+
+        const posts = await postService.getPostByUserId(userId, query);
+        res.status(200).json(posts);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const updatePost = async (req, res, next) => {
     try {
         const userId = req.user?._id;

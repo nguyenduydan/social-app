@@ -15,11 +15,16 @@ export const usePostStore = create((set, get) => ({
         totalPages: 1,
         hasNextPage: false,
     },
+    setLoadingMore: (value) => set({ loadingMore: value }),
 
     fetchPosts: async (page = 1, append = false) => {
         try {
             if (append) {
+                // Bật trạng thái load more ngay lập tức để UI hiện skeleton
                 set({ loadingMore: true });
+
+                // Thêm delay nhỏ (giúp skeleton có thời gian hiển thị)
+                await new Promise((resolve) => setTimeout(resolve, 400));
             } else {
                 set({ loading: true });
             }
@@ -28,16 +33,19 @@ export const usePostStore = create((set, get) => ({
             const postsArray = Array.isArray(res.posts) ? res.posts : [];
 
             set((state) => {
-                // Nối bài cũ + mới nếu append, ngược lại thì reset
-                const combined = append ? [...state.posts, ...postsArray] : postsArray;
+                let newPosts = [];
 
-                // Lọc trùng theo _id
-                const uniquePosts = combined.filter(
-                    (p, index, self) => index === self.findIndex((t) => t._id === p._id)
-                );
+                if (append) {
+                    // Chỉ thêm bài mới chưa có trong danh sách hiện tại
+                    const existingIds = new Set(state.posts.map((p) => p._id));
+                    const freshPosts = postsArray.filter((p) => !existingIds.has(p._id));
+                    newPosts = [...state.posts, ...freshPosts];
+                } else {
+                    newPosts = postsArray;
+                }
 
                 return {
-                    posts: uniquePosts,
+                    posts: newPosts,
                     pagination: res.pagination || {},
                 };
             });
@@ -48,6 +56,7 @@ export const usePostStore = create((set, get) => ({
             set({ loading: false, loadingMore: false });
         }
     },
+
 
     createPost: async (data) => {
         try {
@@ -89,6 +98,39 @@ export const usePostStore = create((set, get) => ({
         } catch (error) {
             console.error("Error in getPostById:", error);
             toast.error("Lấy bài viết không thành công!");
+        }
+    },
+
+    getPostsByUserId: async (userId, page = 1, append = false) => {
+        try {
+            if (append) {
+                set({ loadingMore: true });
+            } else {
+                set({ loading: true });
+            }
+
+            const res = await postService.getPostsByUserId(userId, page);
+            const postsArray = Array.isArray(res.posts) ? res.posts : [];
+
+            set((state) => {
+                // Nối bài cũ + mới nếu append, ngược lại thì reset
+                const combined = append ? [...state.posts, ...postsArray] : postsArray;
+
+                // Lọc trùng theo _id
+                const uniquePosts = combined.filter(
+                    (p, index, self) => index === self.findIndex((t) => t._id === p._id)
+                );
+
+                return {
+                    posts: uniquePosts,
+                    pagination: res.pagination || {},
+                };
+            });
+        } catch (error) {
+            console.error("Error in fetchPosts:", error);
+            toast.error("Không thể tải bài viết!");
+        } finally {
+            set({ loading: false, loadingMore: false });
         }
     },
 

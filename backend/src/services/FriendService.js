@@ -203,11 +203,12 @@ export class FriendService {
 
             return {
                 _id: friend._id,
-                name: friend.name,
+                displayName: friend.displayName || "Người dùng",
+                username: friend.username,
+                avatar: friend.avatar?.url || null,
                 email: friend.email,
-                avatar: friend.avatar,
                 friendshipId: friendship._id,
-                friendsSince: friendship.updatedAt
+                friendsSince: friendship.updatedAt,
             };
         });
     }

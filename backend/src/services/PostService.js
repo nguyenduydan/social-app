@@ -82,6 +82,39 @@ export class PostService {
         }
     }
 
+    async getPostByUserId(userId, query = {}) {
+        try {
+            const { page, limit, skip } = getPaginationParams(query);
+
+            // const visibilityFilter = ["public"];
+            // if (isFriend) visibilityFilter.push("friends");
+
+            const posts = await Post.find({
+                author: userId,
+                // visibility: { $in: visibilityFilter },
+            }).populate("author", "displayName avatar username")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean();
+
+            const formattedPosts = posts.map((post) => ({
+                ...post,
+                commentCount: post.comments?.length || 0,
+                likeCount: post.likes?.length || 0,
+                comments: undefined,
+            }));
+
+            const total = await Post.countDocuments();
+
+            const pagination = getPaginationMetadata(total, page, limit);
+
+            return { posts: formattedPosts, pagination };
+        } catch (error) {
+            throw createError(error.message || "Failed to get post", 500);
+        }
+    }
+
     async update({ postId, userId, content, visibility, existingMedia = [], newMedia = [] }) {
         if (!postId) throw createError("Post ID is required", 400);
         if (!userId) throw createError("User ID is required", 400);

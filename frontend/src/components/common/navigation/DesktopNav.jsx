@@ -1,17 +1,17 @@
 import { useState, cloneElement } from "react";
 import { Bell, Edit, LogOut, X } from "lucide-react";
-import { Dialog, DialogTrigger } from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo/logo.png";
 import { useAuthStore } from "@/store/useAuthStore";
 import routes from "@/routes";
 import NavLink from "./NavLink";
-import CreatePost from "../Posts/CreatePost";
+import CreatePost from "@/components/Posts/CreatePost";
 import { useScrollStatus } from "@/hooks/useScrollStatus";
 import { useScrollRef } from "@/contexts/ScrollContext";
-import Switch from "../ui/switch";
+import Switch from "@/components/ui/switch";
 
 const DesktopNav = () => {
     const scrollRef = useScrollRef();

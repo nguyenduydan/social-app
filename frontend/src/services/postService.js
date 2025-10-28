@@ -20,6 +20,11 @@ export const postService = {
         return res.data;
     },
 
+    getPostsByUserId: async (userId, page = 1, limit = 4) => {
+        const res = await api.get(`/posts/user/${userId}?page=${page}&limit=${limit}`);
+        return res.data;
+    },
+
     update: async ({ postId, formData }) => {
         const res = await api.put(`/posts/${postId}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },

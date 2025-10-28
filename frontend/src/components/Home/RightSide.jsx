@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserPlus, UserCheck } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
+import FriendList from "../Friends/FriendList";
 
 const RightSide = () => {
     const recommended = [
@@ -105,23 +106,7 @@ const RightSide = () => {
             </Card>
 
             {/* --- Danh sách bạn bè --- */}
-
-            <Card className="p-4 bg-background rounded-none shadow-none">
-                <h3 className="font-semibold text-lg px-4">Danh sách bạn bè</h3>
-                <ScrollArea className="h-[360px]">
-                    <div className="grid grid-cols-1 gap-3 overflow-auto overflow-y-auto px-4">
-                        {friends.map((f) => (
-                            <div key={f.id} className="flex flex-row items-center text-left">
-                                <Avatar className="size-12">
-                                    <AvatarImage src={f.avatar} alt={f.name} />
-                                    <AvatarFallback>{f.name[0]}</AvatarFallback>
-                                </Avatar>
-                                <p className="text-xs pl-2 font-medium truncate w-full">{f.name}</p>
-                            </div>
-                        ))}
-                    </div>
-                </ScrollArea>
-            </Card>
+            <FriendList friends={friends} />
         </div>
     );
 };

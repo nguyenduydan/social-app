@@ -12,23 +12,25 @@ import {
 import { Button } from "../ui/button";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { useAuthStore } from "@/store/useAuthStore"; // 👈 thêm dòng này
+import { useAuthStore } from "@/store/useAuthStore";
 import ProfileHeader from "./ProfileHeader";
 import PersonalInfoForm from "./PersonalInfoForm";
 import AccountSettings from "./AccountSettings";
 import ActivityTimeline from "./ActivityTimeline";
+import PostListByUserId from "../Posts/PostListByUserId";
+import RightSide from "../Home/RightSide";
+import FriendList from "../Friends/FriendList";
 
 const ProfileMain = ({ user }) => {
-    const [activeTab, setActiveTab] = useState("personal");
+    const [activeTab, setActiveTab] = useState("posts");
     const { user: currentUser } = useAuthStore();
 
     const isOwner = currentUser?._id === user?._id;
 
-    // Ẩn menu “Cài đặt” với người khác
     const menus = [
+        { value: "posts", label: "Danh sách bài viết" },
         { value: "personal", label: "Thông tin người dùng" },
         { value: "friends", label: "Danh sách bạn bè" },
-        { value: "posts", label: "Danh sách bài viết" },
         { value: "followers", label: "Người theo dõi" },
         { value: "following", label: "Đang theo dõi" },
         ...(isOwner
@@ -46,80 +48,91 @@ const ProfileMain = ({ user }) => {
     ];
 
     return (
-        <div className="container max-w-full md:max-w-5xl px-0 space-y-5 bg-card shadow-lg pb-20 md:pb-40 overflow-hidden">
-            {/* Header vẫn hiển thị avatar, cover, tên... */}
-            <ProfileHeader user={user} />
+        <div className="container max-w-7xl px-4 md:px-6">
+            <div className="max-w-full space-y-5 bg-card border-none">
+                {/* Header: Avatar, Cover, Name... */}
+                <ProfileHeader user={user} />
 
-            <Tabs
-                defaultValue="personal"
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full bg-card rounded-md"
-            >
-                <div className="flex flex-col md:flex-row relative">
-                    {/* === Mobile Popover Menu === */}
-                    <div className="block md:hidden p-4">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between border-none group">
-                                    {menus.find((m) => m.value === activeTab)?.label || "Chọn mục"}
-                                    <ChevronDown
-                                        className="w-4 h-4 ml-2 opacity-70 transition-transform duration-300 group-data-[state=open]:rotate-180"
-                                    />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[calc(100vw-2rem)] border-none">
-                                <div className="flex flex-col gap-1">
-                                    {menus.map((menu) => (
-                                        <Button
-                                            key={menu.value}
-                                            variant="ghost"
-                                            onClick={() => setActiveTab(menu.value)}
-                                            className={`w-full text-left px-3 py-2 rounded-md ${activeTab === menu.value
-                                                ? "bg-primary-glow/20"
-                                                : "hover:bg-muted"
-                                                }`}
-                                        >
-                                            {menu.label}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
+                <Tabs
+                    defaultValue="personal"
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="w-full bg-background shadow-none border-none"
+                >
+                    <div className="flex flex-col md:flex-row relative gap-5 border-none shadow-none">
+                        {/* === Mobile Popover Menu === */}
+                        <div className="block md:hidden p-4">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between border-none group"
+                                    >
+                                        {menus.find((m) => m.value === activeTab)?.label || "Chọn mục"}
+                                        <ChevronDown className="w-4 h-4 ml-2 opacity-70 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[calc(100vw-2rem)] border-none">
+                                    <div className="flex flex-col gap-1">
+                                        {menus.map((menu) => (
+                                            <Button
+                                                key={menu.value}
+                                                variant="ghost"
+                                                onClick={() => setActiveTab(menu.value)}
+                                                className={`w-full text-left px-3 py-2 rounded-md ${activeTab === menu.value
+                                                    ? "bg-primary-glow/20"
+                                                    : "hover:bg-muted"
+                                                    }`}
+                                            >
+                                                {menu.label}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
 
-                    {/* === Desktop Sidebar TabsList === */}
-                    <TabsList className="hidden md:flex bg-card h-full flex-col py-10 justify-evenly gap-1 rounded-l-md min-w-[220px] border-r">
-                        {menus.map((menu) => (
-                            <TabsTrigger
-                                key={menu.value}
-                                value={menu.value}
-                                className="justify-start w-full px-4 py-3 rounded-md cursor-pointer border-b dark:data-[state=active]:bg-white/10 data-[state=active]:bg-primary-glow/20"
-                            >
-                                {menu.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
+                        {/* === Desktop Sidebar TabsList === */}
+                        <TabsList className="hidden md:flex bg-card h-full flex-col py-5 mt-5 px-2 justify-evenly gap-1 min-w-[220px] sticky top-50">
+                            {menus.map((menu) => (
+                                <TabsTrigger
+                                    key={menu.value}
+                                    value={menu.value}
+                                    className="justify-start w-full px-4 py-3 rounded-md cursor-pointer border-b dark:data-[state=active]:bg-white/10 data-[state=active]:bg-primary-glow/20"
+                                >
+                                    {menu.label}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
 
-                    {/* === Tab Contents === */}
-                    <div className="flex-1 p-0 md:p-6">
-                        <TabsContent value="personal">
-                            <PersonalInfoForm user={user} />
-                        </TabsContent>
-
-                        {isOwner && (
-                            <TabsContent value="settings">
-                                <AccountSettings />
+                        {/* === Tab Contents === */}
+                        <div className="flex-1 py-5 bg-background shadow-none overflow-hidden">
+                            <TabsContent value="posts">
+                                <PostListByUserId user={user} />
                             </TabsContent>
-                        )}
-                        {isOwner && (
-                            <TabsContent value="activity">
-                                <ActivityTimeline activities={activities} />
+
+                            <TabsContent value="personal">
+                                <PersonalInfoForm user={user} />
                             </TabsContent>
-                        )}
+
+                            <TabsContent value="friends">
+                                <FriendList />
+                            </TabsContent>
+
+                            {isOwner && (
+                                <TabsContent value="settings">
+                                    <AccountSettings />
+                                </TabsContent>
+                            )}
+                            {isOwner && (
+                                <TabsContent value="activity">
+                                    <ActivityTimeline activities={activities} />
+                                </TabsContent>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </Tabs>
+                </Tabs>
+            </div>
         </div>
     );
 };

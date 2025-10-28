@@ -1,13 +1,13 @@
 import NavLink from "./NavLink";
 import routes from "@/routes";
 import { Edit, Bell, LogOut, Settings } from "lucide-react";
-import { Button } from "../ui/button";
-import { Dialog, DialogTrigger } from "../ui/dialog";
-import CreatePost from "../Posts/CreatePost";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import CreatePost from "@/components/Posts/CreatePost";
 import { useState, cloneElement } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
-import Switch from "../ui/switch";
+import Switch from "@/components/ui/switch";
 import { useThemeStore } from "@/store/useThemeStore";
 import {
     DropdownMenu,
@@ -16,7 +16,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { useScrollStatus } from "@/hooks/useScrollStatus";
 import { useScrollRef } from "@/contexts/ScrollContext";
 
