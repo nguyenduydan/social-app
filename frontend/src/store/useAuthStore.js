@@ -138,14 +138,14 @@ export const useAuthStore = create((set, get) => ({
     forgotPassword: async () => {
         const { formData } = get();
         if (!formData.email) {
-            toast.error("Please enter your email");
+            toast.error("Email không được để trống");
             return;
         }
 
         set({ loading: true });
         try {
             const res = await authService.forgotPassword(formData.email);
-            toast.success(res.data?.message || "Reset code sent!");
+            toast.success(res.data?.message || "Code đã gửi tới email của bạn, làm ơn kiểm tra!");
             set({ step: 2 }); // Chuyển sang bước nhập mã
             get().startCooldown();
         } catch (error) {
@@ -162,14 +162,14 @@ export const useAuthStore = create((set, get) => ({
         const { formData } = get();
 
         if (!formData.code) {
-            toast.error("Please enter the verification code");
+            toast.error("Làm ơn nhập mã code để xác minh");
             return;
         }
 
         set({ loading: true });
         try {
             const res = await authService.verifyResetCode(formData.email, formData.code);
-            toast.success(res.data?.message || "Code verified successfully");
+            toast.success(res.data?.message || "Code đã xác thực thành công");
             set({ step: 3 });
         } catch (error) {
             console.log("Error in verifyResetCode:", error);
@@ -184,19 +184,19 @@ export const useAuthStore = create((set, get) => ({
     resetPassword: async () => {
         const { formData } = get();
         if (!formData.newPassword || !formData.confirmPassword) {
-            toast.error("Please fill in all password fields");
+            toast.error("Các trường không được để trống");
             return;
         }
 
         if (formData.newPassword !== formData.confirmPassword) {
-            toast.error("Passwords do not match");
+            toast.error("Mật khẩu không giống nhau");
             return;
         }
 
         set({ loading: true });
         try {
             const res = await authService.resetPassword(formData.email, formData.newPassword);
-            toast.success(res.data?.message || "Password reset successfully");
+            toast.success(res.data?.message || "Mật khẩu đã được thay đổi");
             get().resetFlow();
         } catch (error) {
             console.log("Error in resetPassword:", error);

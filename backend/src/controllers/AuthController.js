@@ -18,7 +18,7 @@ export const signup = async (req, res, next) => {
     try {
         const { firstName, lastName, email, password } = req.body;
         if (!email || !password)
-            throw createError(400, "Email và mật khẩu là bắt buộc");
+            throw createError("Email và mật khẩu là bắt buộc", 400);
 
         const { accessToken, refreshToken } = await authService.register({
             firstName,
@@ -41,7 +41,7 @@ export const signin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         if (!email || !password)
-            throw createError(400, "Email và mật khẩu không được để trống");
+            throw createError("Email và mật khẩu không được để trống", 400);
 
         const { user, accessToken, refreshToken } = await authService.signin({
             email,
@@ -77,7 +77,7 @@ export const logout = async (req, res, next) => {
 export const refreshToken = async (req, res, next) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
-        if (!refreshToken) throw createError(401, "Không có token refresh");
+        if (!refreshToken) throw createError("Không có token refresh", 401);
 
         const newAccessToken = await authService.refresh(refreshToken);
         res.status(200).json({ accessToken: newAccessToken });
@@ -115,7 +115,7 @@ export const oauthCallback = (req, res, next) => {
 export const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
-        if (!email) throw createError(400, "Email là bắt buộc");
+        if (!email) throw createError("Email là bắt buộc", 400);
 
         const resetCode = generateResetCode();
         resetCodes[email] = {
@@ -141,10 +141,10 @@ export const verifyResetCode = async (req, res, next) => {
     try {
         const { email, code } = req.body;
         if (!email || !code)
-            throw createError(400, "Cần cung cấp email và mã xác nhận");
+            throw createError("Cần cung cấp email và mã xác nhận", 400);
 
         const record = resetCodes[email];
-        if (!record) throw createError(400, "Không tìm thấy yêu cầu khôi phục");
+        if (!record) throw createError("Không tìm thấy yêu cầu khôi phục", 400);
 
         if (record.expiresAt < Date.now()) {
             delete resetCodes[email];
@@ -152,7 +152,7 @@ export const verifyResetCode = async (req, res, next) => {
         }
 
         if (record.code !== code)
-            throw createError(400, "Mã xác nhận không hợp lệ");
+            throw createError("Mã xác nhận không hợp lệ", 400);
 
         res.status(200).json({ message: "Mã hợp lệ" });
     } catch (error) {
@@ -167,7 +167,7 @@ export const resetPassword = async (req, res, next) => {
     try {
         const { email, newPassword } = req.body;
         if (!email || !newPassword)
-            throw createError(400, "Email và mật khẩu mới là bắt buộc");
+            throw createError("Email và mật khẩu mới là bắt buộc", 400);
 
         const result = await authService.updatePassword(email, newPassword);
         delete resetCodes[email];
