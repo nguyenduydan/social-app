@@ -11,19 +11,23 @@ import {
 } from "../ui/popover";
 import { Button } from "../ui/button";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import ProfileHeader from "./ProfileHeader";
 import PersonalInfoForm from "./PersonalInfoForm";
 import AccountSettings from "./AccountSettings";
 import ActivityTimeline from "./ActivityTimeline";
 import PostListByUserId from "../Posts/PostListByUserId";
-import RightSide from "../Home/RightSide";
 import FriendList from "../Friends/FriendList";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 const ProfileMain = ({ user }) => {
     const [activeTab, setActiveTab] = useState("posts");
+    const [open, setOpen] = useState(false);
+    const contentRef = useRef(null);
     const { user: currentUser } = useAuthStore();
+
+    useScrollToTop({ scrollRef: contentRef, deps: [activeTab] });
 
     const isOwner = currentUser?._id === user?._id;
 
@@ -48,7 +52,7 @@ const ProfileMain = ({ user }) => {
     ];
 
     return (
-        <div className="container max-w-7xl px-4 md:px-6">
+        <div className="container max-w-5xl px-4 md:px-6">
             <div className="max-w-full space-y-5 bg-card border-none">
                 {/* Header: Avatar, Cover, Name... */}
                 <ProfileHeader user={user} />
@@ -59,14 +63,13 @@ const ProfileMain = ({ user }) => {
                     onValueChange={setActiveTab}
                     className="w-full bg-background shadow-none border-none"
                 >
-                    <div className="flex flex-col md:flex-row relative gap-5 border-none shadow-none">
+                    <div className="flex flex-col md:flex-row relative gap-0 md:gap-5 border-none shadow-none">
                         {/* === Mobile Popover Menu === */}
-                        <div className="block md:hidden p-4">
-                            <Popover>
+                        <div className="block md:hidden mt-5 sticky top-2 z-10">
+                            <Popover open={open} onOpenChange={setOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
-                                        variant="outline"
-                                        className="w-full justify-between border-none group"
+                                        className="w-full bg-card/50 backdrop-blur-sm text-foreground shadow-md justify-between border-none group rounded-full"
                                     >
                                         {menus.find((m) => m.value === activeTab)?.label || "Chọn mục"}
                                         <ChevronDown className="w-4 h-4 ml-2 opacity-70 transition-transform duration-300 group-data-[state=open]:rotate-180" />
@@ -78,7 +81,10 @@ const ProfileMain = ({ user }) => {
                                             <Button
                                                 key={menu.value}
                                                 variant="ghost"
-                                                onClick={() => setActiveTab(menu.value)}
+                                                onClick={() => {
+                                                    setActiveTab(menu.value);
+                                                    setOpen(false);
+                                                }}
                                                 className={`w-full text-left px-3 py-2 rounded-md ${activeTab === menu.value
                                                     ? "bg-primary-glow/20"
                                                     : "hover:bg-muted"
@@ -106,7 +112,7 @@ const ProfileMain = ({ user }) => {
                         </TabsList>
 
                         {/* === Tab Contents === */}
-                        <div className="flex-1 py-5 bg-background shadow-none overflow-hidden">
+                        <div ref={contentRef} className="flex-1 py-5 bg-background shadow-none overflow-hidden">
                             <TabsContent value="posts">
                                 <PostListByUserId user={user} />
                             </TabsContent>

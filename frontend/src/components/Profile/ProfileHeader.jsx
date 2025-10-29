@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge";
 import { useUserStore } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import ImageEditorDialog from "../common/ImageEditorDialog";
+import { Button } from "../ui/button";
 
 const ProfileHeader = ({ user }) => {
     const { user: currentUser } = useAuthStore();
@@ -72,12 +73,13 @@ const ProfileHeader = ({ user }) => {
                                 {/* Nút thay ảnh bìa (chỉ chủ sở hữu) */}
                                 {isOwner && (
                                     <>
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => coverInputRef.current.click()}
-                                            className="absolute bottom-1 right-2 bg-background rounded-full p-1 shadow-md hover:opacity-80 transition"
+                                            className="absolute bottom-1 right-2 bg-transparent rounded-full p-1 hover:opacity-80 transition"
                                         >
-                                            <Camera className="size-4 md:size-8" />
-                                        </button>
+                                            <Camera className="size-4 md:size-8 text-foreground" />
+                                        </Button>
                                         <input
                                             ref={coverInputRef}
                                             type="file"
@@ -106,12 +108,13 @@ const ProfileHeader = ({ user }) => {
                                     {/* Nút thay avatar (chỉ chủ sở hữu) */}
                                     {isOwner && (
                                         <>
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 onClick={() => avatarInputRef.current.click()}
-                                                className="absolute bottom-1 right-2 bg-background rounded-full p-1 shadow-md hover:opacity-80 transition"
+                                                className="absolute bottom-1 right-8 bg-transparent rounded-full p-1 hover:opacity-80 transition"
                                             >
                                                 <Camera className="size-4 md:size-8" />
-                                            </button>
+                                            </Button>
                                             <input
                                                 ref={avatarInputRef}
                                                 type="file"

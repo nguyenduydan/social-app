@@ -7,6 +7,7 @@ import {
     generateRefreshToken,
     hashPassword,
 } from "../lib/utils.js";
+import { ENV } from "../config/env.js";
 
 const REFRESH_TOKEN_EXPIRE = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 
@@ -26,10 +27,42 @@ export class AuthService {
 
         const hashed = await hashPassword(password);
 
+        // --- Tạo displayName cơ bản ---
+        const displayName = `${firstName} ${lastName}`.trim();
+
+        // --- Generate username ---
+        let base = displayName
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toLowerCase();
+
+        if (!base) {
+            base = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "user";
+        }
+
+        base = base.slice(0, 20);
+        let usernameCandidate = base;
+        let counter = 0;
+
+        while (await User.findOne({ username: usernameCandidate })) {
+            counter++;
+            usernameCandidate = `${base}${Math.floor(Math.random() * 10000)}`;
+            if (counter > 5) break;
+        }
+
+        const username = usernameCandidate;
+
+        // --- Generate linkPersonal ---
+        const linkPersonal = `${ENV.CLIENT_URL}/profile/${username}`;
+
+        // --- Tạo user mới ---
         const newUser = new User({
-            displayName: `${firstName} ${lastName}`,
+            displayName,
             email,
             password: hashed,
+            username,
+            linkPersonal,
             role: "user",
         });
 

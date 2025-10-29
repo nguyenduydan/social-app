@@ -1,4 +1,5 @@
 import Post from "../models/Post.js";
+import User from "../models/User.js";
 import { createError } from "../lib/utils.js";
 import {
     uploadToCloudinary,
@@ -29,12 +30,47 @@ export class PostService {
         }
     }
 
-    async getFeeds(query = {}) {
+    async getFeeds(userId, query = {}) {
         try {
             const { page, limit, skip } = getPaginationParams(query);
 
+            // --- Lấy danh sách bạn bè và người đang theo dõi ---
+            const user = await User.findById(userId)
+                .select("friends following")
+                .lean();
+
+            if (!user) {
+                throw createError("User not found", 404);
+            }
+
+            const visibleAuthors = [
+                userId,
+                ...(user.friends || []),
+                ...(user.following || []),
+            ];
+
+            // --- Truy vấn bài viết theo quyền xem ---
             const posts = await Post.find({
-                visibility: { $ne: "private" },
+                $or: [
+                    // Bài public ai cũng thấy
+                    { visibility: "public" },
+
+                    // Bài friends: chỉ hiển thị nếu là bạn hoặc follow
+                    {
+                        $and: [
+                            { visibility: "friends" },
+                            { author: { $in: visibleAuthors } },
+                        ],
+                    },
+
+                    // Bài private: chỉ chính chủ thấy
+                    {
+                        $and: [
+                            { visibility: "private" },
+                            { author: userId },
+                        ],
+                    },
+                ],
             })
                 .populate("author", "displayName avatar username")
                 .sort({ createdAt: -1 })
@@ -42,6 +78,7 @@ export class PostService {
                 .limit(limit)
                 .lean();
 
+            // --- Định dạng dữ liệu ---
             const formattedPosts = posts.map((post) => ({
                 ...post,
                 commentCount: post.comments?.length || 0,
@@ -49,8 +86,23 @@ export class PostService {
                 comments: undefined,
             }));
 
+            // --- Tổng số bài hợp lệ ---
             const total = await Post.countDocuments({
-                visibility: { $ne: "private" },
+                $or: [
+                    { visibility: "public" },
+                    {
+                        $and: [
+                            { visibility: "friends" },
+                            { author: { $in: visibleAuthors } },
+                        ],
+                    },
+                    {
+                        $and: [
+                            { visibility: "private" },
+                            { author: userId },
+                        ],
+                    },
+                ],
             });
 
             const pagination = getPaginationMetadata(total, page, limit);
@@ -60,6 +112,7 @@ export class PostService {
             throw createError(error.message || "Failed to get feeds", 500);
         }
     }
+
 
     async getById(postId) {
         try {

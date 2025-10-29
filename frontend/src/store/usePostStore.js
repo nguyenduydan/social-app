@@ -19,34 +19,35 @@ export const usePostStore = create((set, get) => ({
 
     fetchPosts: async (page = 1, append = false) => {
         try {
-            if (append) {
-                // Bật trạng thái load more ngay lập tức để UI hiện skeleton
-                set({ loadingMore: true });
-
-                // Thêm delay nhỏ (giúp skeleton có thời gian hiển thị)
-                await new Promise((resolve) => setTimeout(resolve, 400));
-            } else {
-                set({ loading: true });
-            }
+            if (append) set({ loadingMore: true });
+            else set({ loading: true });
 
             const res = await postService.getAll(page);
             const postsArray = Array.isArray(res.posts) ? res.posts : [];
 
             set((state) => {
-                let newPosts = [];
+                if (!append) {
+                    // Trang đầu tiên: ghi đè toàn bộ
+                    return {
+                        posts: postsArray,
+                        pagination: res.pagination || {},
+                    };
+                }
 
-                if (append) {
-                    // Chỉ thêm bài mới chưa có trong danh sách hiện tại
-                    const existingIds = new Set(state.posts.map((p) => p._id));
-                    const freshPosts = postsArray.filter((p) => !existingIds.has(p._id));
-                    newPosts = [...state.posts, ...freshPosts];
-                } else {
-                    newPosts = postsArray;
+                // Trang sau: chỉ thêm nếu có bài mới
+                const existingIds = new Set(state.posts.map((p) => p._id));
+                const freshPosts = postsArray.filter((p) => !existingIds.has(p._id));
+
+                if (freshPosts.length === 0) {
+                    // Không có bài mới → giữ nguyên reference mảng cũ
+                    return {
+                        pagination: res.pagination || state.pagination,
+                    };
                 }
 
                 return {
-                    posts: newPosts,
-                    pagination: res.pagination || {},
+                    posts: [...state.posts, ...freshPosts],
+                    pagination: res.pagination || state.pagination,
                 };
             });
         } catch (error) {

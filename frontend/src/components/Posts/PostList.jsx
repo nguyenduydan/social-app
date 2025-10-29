@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePostStore } from "@/store/usePostStore";
 import PostCard from "./PostCard";
 import FeedCardSkeleton from "./SkeletonPostCard";
@@ -24,45 +24,43 @@ const PostList = () => {
                 try {
                     await fetchPosts(pagination.currentPage + 1, true);
                 } finally {
-                    // Đảm bảo loadingMore luôn được tắt
                     setLoadingMore(false);
                 }
-            }, 400); // Delay nhẹ để skeleton hiển thị mượt
+            }, 350);
         }
     }, [pagination, loading, loadingMore, fetchPosts, setLoadingMore]);
 
-    // Kích hoạt infinite scroll
+    // Luôn khai báo hook trước mọi return
     const { lastElementRef } = useInfiniteScroll(loadMore, pagination.hasNextPage, loading, {
-        rootMargin: window.innerWidth < 768 ? "1000px" : "800px",
+        rootMargin: window.innerWidth < 768 ? "1200px" : "900px",
     });
 
-    // 🔹 Loading ban đầu
-    if (loading && posts.length === 0) {
-        return (
-            <div className="space-y-6">
-                {[...Array(4)].map((_, i) => (
-                    <FeedCardSkeleton key={i} />
-                ))}
+    const renderedPosts = useMemo(() => {
+        return posts.map((post, idx) => (
+            <div
+                key={post._id}
+                ref={idx === posts.length - 1 ? lastElementRef : null}
+                className="animate-in fade-in duration-300 will-change-transform"
+            >
+                <PostCard post={post} />
             </div>
-        );
-    }
+        ));
+    }, [posts, lastElementRef]);
 
-    // 🔹 Danh sách bài viết
+    // Giữ return 1 chỗ duy nhất
     return (
         <div className="space-y-4 min-h-[400px]">
-            {Array.isArray(posts) && posts.length > 0 ? (
-                <>
-                    {posts.map((post, idx) => (
-                        <div
-                            key={post._id}
-                            ref={idx === posts.length - 1 ? lastElementRef : null}
-                            className="animate-in fade-in duration-300 will-change-transform"
-                        >
-                            <PostCard post={post} />
-                        </div>
+            {loading && posts.length === 0 ? (
+                // Hiển thị skeleton khi load lần đầu
+                <div className="space-y-6">
+                    {[...Array(4)].map((_, i) => (
+                        <FeedCardSkeleton key={i} />
                     ))}
+                </div>
+            ) : posts.length > 0 ? (
+                <>
+                    {renderedPosts}
 
-                    {/* 🔹 Skeleton hiển thị khi load thêm */}
                     {loadingMore && (
                         <div className="space-y-4 transition-opacity duration-300">
                             {[...Array(2)].map((_, i) => (

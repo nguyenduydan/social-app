@@ -4,7 +4,8 @@ import { createError } from "../lib/utils.js";
 
 export const getFeed = async (req, res, next) => {
     try {
-        const feeds = await postService.getFeeds(req.query);
+        const userId = req.user._id;
+        const feeds = await postService.getFeeds(userId, req.query);
         res.status(200).json(feeds);
     } catch (error) {
         next(error);
