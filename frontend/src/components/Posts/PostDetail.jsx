@@ -34,7 +34,7 @@ const PostDetail = ({ post }) => {
         >
             {/* LEFT: Media (Image / Video / Carousel) - Only show if media exists */}
             {hasMedia && (
-                <div className="relative bg-black flex items-center">
+                <div className="relative bg-black flex items-center justify-center">
                     {post.media.length > 1 ? (
                         <Carousel className="h-full flex justify-center items-center bg-card-foreground dark:bg-card">
                             <CarouselContent>
@@ -51,7 +51,7 @@ const PostDetail = ({ post }) => {
                                             <img
                                                 src={m.url}
                                                 alt=""
-                                                className="w-full lg:h-full max-h-[500px] object-contain"
+                                                className="w-full h-auto object-contain"
                                             />
                                         )}
                                     </CarouselItem>

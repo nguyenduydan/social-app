@@ -5,6 +5,10 @@ export const userService = {
         const res = await api.get(`/users/${userId}`);
         return res.data;
     },
+    getUserByUsername: async (username) => {
+        const res = await api.get(`/users/username/${username}`);
+        return res.data;
+    },
     updateInfo: async (id, data) => {
         const res = await api.put(`/users/${id}`, data);
         return res.data;

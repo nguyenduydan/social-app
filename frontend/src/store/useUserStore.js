@@ -30,6 +30,25 @@ export const useUserStore = create((set, get) => ({
         }
     },
 
+    fetchUserByUsername: async (username) => {
+        const { currentUser } = get();
+
+        // Nếu đang xem cùng username thì bỏ qua
+        if (currentUser?.username === username) return;
+
+        set({ loading: true, error: null });
+
+        try {
+            const res = await userService.getUserByUsername(username);
+            set({ currentUser: res.user || null });
+        } catch (err) {
+            console.error("Lỗi khi tải người dùng theo username:", err);
+            set({ currentUser: null, error: err.response?.data || err });
+        } finally {
+            set({ loading: false });
+        }
+    },
+
     // Cập nhật thông tin cơ bản
     updateUserInfo: async (userId, info, navigate) => {
         try {

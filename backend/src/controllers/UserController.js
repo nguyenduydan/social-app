@@ -24,6 +24,21 @@ export const getUser = async (req, res, next) => {
     }
 };
 
+export const getUserByUsername = async (req, res, next) => {
+    try {
+        const { username } = req.params;
+
+        if (!username) throw createError("Username is required", 400);
+
+        const user = await userService.getUserByUsername(username);
+
+        if (!user) throw createError("User not found", 404);
+
+        res.status(200).json({ user });
+    } catch (error) {
+        next(error);
+    }
+};
 export const updateUser = async (req, res, next) => {
     try {
         const userId = req.user?._id;
@@ -85,3 +100,4 @@ export const uploadCoverPhoto = async (req, res, next) => {
         next(error);
     }
 };
+

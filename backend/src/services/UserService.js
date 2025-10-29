@@ -19,6 +19,18 @@ export class UserService {
         }
     }
 
+    async getUserByUsername(username) {
+        if (!username) throw createError("Username is required", 400);
+
+        try {
+            const user = await User.findOne({ username }).select("-password");
+            if (!user) throw createError("User not found", 404);
+            return user;
+        } catch (error) {
+            throw createError(error.message || "Failed to get user", error.status || 500);
+        }
+    }
+
     /**
      * Cập nhật thông tin cơ bản của người dùng
      */

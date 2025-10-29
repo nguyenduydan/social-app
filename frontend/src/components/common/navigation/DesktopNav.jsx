@@ -28,10 +28,10 @@ const DesktopNav = () => {
         >
             <div
                 className={cn(
-                    "flex justify-center mx-auto z-10 px-4 py-2 bg-secondary/30 dark:bg-neutral-900/40 backdrop-blur shadow-[0_0_5px] shadow-black/20 dark:shadow-white/10 transition-all duration-300 ease-out",
+                    "flex justify-center mx-auto z-10 py-1 shadow-md bg-secondary/30 dark:bg-neutral-900/40 backdrop-blur transition-all duration-300 ease-out",
                     isAtTop
-                        ? "w-full max-w-full rounded-none"
-                        : "max-w-5xl w-full rounded-full"
+                        ? "w-full max-w-full rounded-none px-20"
+                        : "max-w-4xl w-full rounded-full px-10"
                 )}
             >
                 <div className="flex items-center justify-between w-full">
@@ -48,7 +48,7 @@ const DesktopNav = () => {
                     </div>
 
                     {/* Routes — luôn nằm giữa */}
-                    <div className="flex justify-center flex-1">
+                    <div className="flex justify-center flex-1 border-x-1 px-10 border-muted">
                         <div className="flex gap-10">
                             {routes.map((item, idx) => {
                                 const path =

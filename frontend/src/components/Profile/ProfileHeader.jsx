@@ -3,16 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Camera, Mail, MapPin, Phone } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { useUserStore } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import ImageEditorDialog from "../common/ImageEditorDialog";
-import { Button } from "../ui/button";
+import FriendFollowActions from "./FriendFollowActions";
 
 const ProfileHeader = ({ user }) => {
     const { user: currentUser } = useAuthStore();
     const { updateAvatar, updateCoverPhoto, updating } = useUserStore();
 
-    const isOwner = currentUser?._id === user?._id; // ✅ chỉ chủ sở hữu mới có thể chỉnh sửa
+    const isOwner = currentUser?._id === user?._id;
 
     const avatarInputRef = useRef(null);
     const coverInputRef = useRef(null);
@@ -129,22 +130,29 @@ const ProfileHeader = ({ user }) => {
                         </CardHeader>
 
                         {/* === Thông tin người dùng === */}
-                        <div className="flex-1 text-center md:text-left pl-0 md:pl-10 space-y-5">
-                            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-4">
-                                <h1 className="text-xl md:text-3xl font-bold">
-                                    {user?.displayName || "Nguyen Van A"}
-                                </h1>
-                                <CardDescription className="text-sm md:text-base">
-                                    @{user?.username || "username"}
-                                </CardDescription>
-                                <CardDescription className="italic">
-                                    {user?.createdAt
-                                        ? `Tham gia từ ${new Date(user.createdAt).toLocaleDateString("vi-VN")}`
-                                        : "Ngày tham gia không xác định"}
-                                </CardDescription>
+                        <div className="w-full text-center md:text-left pl-0 md:pl-10 space-y-5">
+                            <div className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4">
+                                <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-4">
+                                    <h1 className="text-xl md:text-3xl font-bold">
+                                        {user?.displayName || "Nguyen Van A"}
+                                    </h1>
+                                    <CardDescription className="text-sm md:text-base">
+                                        @{user?.username || "username"}
+                                    </CardDescription>
+                                    <CardDescription className="italic">
+                                        {user?.createdAt
+                                            ? `Tham gia từ ${new Date(user.createdAt).toLocaleDateString("vi-VN")}`
+                                            : "Ngày tham gia không xác định"}
+                                    </CardDescription>
+                                </div>
+
+                                {/* Friend & Follow Actions - Only show for other users */}
+                                {!isOwner && (
+                                    <FriendFollowActions userId={user?._id} className="mr-10" />
+                                )}
                             </div>
 
-                            <div className="flex justify-between items-center gap-5 md:gap-10">
+                            <div className="flex justify-start items-center gap-5 md:gap-10">
                                 {stats.map((stat) => (
                                     <Badge
                                         key={stat.label}

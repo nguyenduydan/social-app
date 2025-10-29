@@ -18,7 +18,7 @@ import PersonalInfoForm from "./PersonalInfoForm";
 import AccountSettings from "./AccountSettings";
 import ActivityTimeline from "./ActivityTimeline";
 import PostListByUserId from "../Posts/PostListByUserId";
-import FriendList from "../Friends/FriendList";
+import FriendList from "../Friends/FriendListHome";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 const ProfileMain = ({ user }) => {

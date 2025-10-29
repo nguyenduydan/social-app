@@ -6,31 +6,41 @@ import LoadPage from "@/components/common/loaders/LoadPage";
 import ProfileMain from "@/components/Profile/ProfileMain";
 
 const Profile = () => {
-    const { user } = useAuthStore();
+    const { user, loading: authLoading } = useAuthStore();
     const { username } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { fetchUserById, currentUser, loading } = useUserStore();
+    const { fetchUserById, fetchUserByUsername, currentUser, loading } = useUserStore();
 
     useEffect(() => {
+        // Nếu đang load user auth thì chờ
+        if (authLoading) return;
+
+        // Nếu chưa đăng nhập -> chuyển hướng login
+        if (!user) {
+            navigate("/login", { replace: true });
+            return;
+        }
+
         const userId = location.state?.userId;
 
         if (userId) {
-            // Xem profile người khác
+            // Trường hợp xem profile từ click (có state)
             fetchUserById(userId);
-        } else if (user) {
-            // Nếu là profile cá nhân (hoặc refresh lại)
-            fetchUserById(user._id);
+        } else if (username && username !== user.username) {
+            // Trường hợp xem profile người khác qua URL trực tiếp
+            fetchUserByUsername(username);
         } else {
-            navigate("/login");
+            // Trường hợp xem profile cá nhân
+            fetchUserById(user._id);
         }
-    }, [username]);
+    }, [username, user, authLoading, location.state, navigate, fetchUserById, fetchUserByUsername]);
 
-    if (loading) return <LoadPage />;
+    if (authLoading || loading) return <LoadPage />;
 
     if (!currentUser) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground">
+            <div className="flex items-center justify-center min-h-[60vh] bg-background">
                 Không tìm thấy người dùng
             </div>
         );
