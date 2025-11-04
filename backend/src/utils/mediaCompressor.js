@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import ffprobeInstaller from "@ffprobe-installer/ffprobe";
-import { colors, logLine } from "./utils.js";
+import { colors, logLine } from "./logger.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);

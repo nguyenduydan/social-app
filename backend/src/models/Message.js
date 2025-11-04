@@ -2,15 +2,29 @@ import mongoose from "mongoose";
 
 const messageSchema = mongoose.Schema(
     {
-        conversation: { type: ObjectId, ref: 'Conversation', required: true },
-        sender: { type: ObjectId, ref: 'User', required: true },
+        conversation: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Conversation',
+            required: true,
+            index: true
+        },
+        sender: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
         content: { type: String, required: true },
         media: {
             url: String,
             type: String,
             publicId: String
         },
-        readBy: [{ type: ObjectId, ref: 'User' }],
     },
     { timestamps: true }
 );
+
+messageSchema.index({ conversationId: 1, createAt: -1 });
+
+const Message = mongoose.model("Message", messageSchema);
+
+export default Message;

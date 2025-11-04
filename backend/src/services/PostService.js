@@ -1,20 +1,21 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
-import { createError } from "../lib/utils.js";
+import { createError } from "../utils/AppError.js";
 import {
     uploadToCloudinary,
     deleteOnCloudinary,
     deleteMultipleOnCloudinary,
-} from "../lib/useCloudinary.js";
-import { getPaginationMetadata, getPaginationParams } from "../lib/pagination.js";
-import { compressVideo } from "../lib/mediaCompressor.js";
+} from "../utils/useCloudinary.js";
+import { getPaginationMetadata, getPaginationParams } from "../utils/pagination.js";
+import { compressVideo } from "../utils/mediaCompressor.js";
+import { uploadMedia } from "../utils/uploadMediaHelper.js";
 
-export class PostService {
+export const PostService = {
     async create({ userId, content, media = [], visibility = "friends" }) {
         if (!userId) throw createError("User ID is required", 400);
 
         try {
-            const uploadedMedia = await this.#uploadMedia(media);
+            const uploadedMedia = await uploadMedia(media);
 
             const newPost = new Post({
                 author: userId,
@@ -28,7 +29,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to create post", 500);
         }
-    }
+    },
 
     async getFeeds(userId, query = {}) {
         try {
@@ -111,8 +112,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to get feeds", 500);
         }
-    }
-
+    },
 
     async getById(postId) {
         try {
@@ -133,7 +133,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to get post", 500);
         }
-    }
+    },
 
     async getPostByUserId(userId, query = {}) {
         try {
@@ -166,7 +166,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to get post", 500);
         }
-    }
+    },
 
     async update({ postId, userId, content, visibility, existingMedia = [], newMedia = [] }) {
         if (!postId) throw createError("Post ID is required", 400);
@@ -198,7 +198,7 @@ export class PostService {
 
             // Upload media mới
             if (newMedia.length > 0) {
-                const uploadedMedia = await this.#uploadMedia(newMedia);
+                const uploadedMedia = await uploadMedia(newMedia);
                 post.media.push(...uploadedMedia);
             }
 
@@ -209,7 +209,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to update post", 500);
         }
-    }
+    },
 
     async updateVisibility({ postId, userId, visibility }) {
         if (!postId) throw createError("Post ID is required", 400);
@@ -235,7 +235,7 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to update post visibility", 500);
         }
-    }
+    },
 
     async delete(postId, userId) {
         if (!postId) throw createError("Post ID is required", 400);
@@ -257,36 +257,6 @@ export class PostService {
         } catch (error) {
             throw createError(error.message || "Failed to delete post", 500);
         }
-    }
+    },
+};
 
-    // --------------------------
-    // PRIVATE HELPER METHODS
-    // --------------------------
-    async #uploadMedia(mediaList) {
-        if (!Array.isArray(mediaList) || mediaList.length === 0) return [];
-
-        return Promise.all(
-            mediaList.map(async (item) => {
-                const { mimetype, buffer } = item;
-                let processedBuffer = buffer;
-
-                if (mimetype.startsWith("video/")) {
-                    processedBuffer = await compressVideo(buffer);
-                }
-
-                const base64 = processedBuffer.toString("base64");
-                const dataUrl = `data:${mimetype};base64,${base64}`;
-                const uploaded = await uploadToCloudinary(dataUrl, "social_media");
-
-                return {
-                    url: uploaded.secure_url,
-                    public_id: uploaded.public_id,
-                    type: uploaded.resource_type,
-                };
-            })
-        );
-    }
-}
-
-// export instance sẵn để dùng ở controller
-export const postService = new PostService();

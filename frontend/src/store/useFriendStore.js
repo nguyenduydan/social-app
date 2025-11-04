@@ -11,6 +11,7 @@ export const useFriendStore = create((set) => ({
     isRequester: false,
     loading: false,
     loadingMore: false,
+    isProcessing: false,
     pagination: {
         currentPage: 1,
         totalPages: 1,
@@ -23,7 +24,7 @@ export const useFriendStore = create((set) => ({
             const res = await friendService.checkFriend(userId);
             set({
                 friendStatus: res?.status || "none",
-                friendshipId: res?.friendshipId || null,
+                friendshipId: res?.requestId || null,
                 isRequester: res?.isRequester || false,
             });
         } catch (error) {
@@ -32,7 +33,7 @@ export const useFriendStore = create((set) => ({
         }
     },
 
-    // Danh sách bạn bè (có phân trang)
+    // Danh sách bạn bè (phân trang)
     getFriendAll: async (page = 1, append = false, limit = 10) => {
         try {
             if (append) set({ loadingMore: true });
@@ -58,19 +59,19 @@ export const useFriendStore = create((set) => ({
     },
 
     // Danh sách lời mời kết bạn
-    getRequest: async (page = 1, append = false, limit = 10) => {
+    getRequests: async (type = "received", page = 1, append = false, limit = 10) => {
         try {
             if (append) set({ loadingMore: true });
             else set({ loading: true });
 
-            const res = await friendService.getFriendRequests(page, limit);
+            const res = await friendService.getFriendRequests(page, limit, type);
             const requestsArray = Array.isArray(res.friendRequests) ? res.friendRequests : [];
 
             set((state) => ({
                 requests: append
                     ? [
                         ...state.requests,
-                        ...requestsArray.filter((r) => !state.requests.some((x) => x._id === r._id)),
+                        ...requestsArray.filter((r) => !state.requests.some((x) => x.requestId === r.requestId)),
                     ]
                     : requestsArray,
                 pagination: res.pagination || state.pagination,
@@ -82,7 +83,7 @@ export const useFriendStore = create((set) => ({
         }
     },
 
-    // Gợi ý kết bạn
+    // Gợi ý kết bạn (basic)
     getSuggestions: async (limit = 10) => {
         try {
             set({ loading: true });
@@ -99,13 +100,13 @@ export const useFriendStore = create((set) => ({
     },
 
     // Gửi lời mời kết bạn
-    sendFriendRequest: async (userId) => {
+    sendFriendRequest: async (userId, message = "") => {
         set({ loading: true });
         try {
-            const res = await friendService.sendRequest(userId);
+            const res = await friendService.sendRequest(userId, message);
             set({
+                friendshipId: res?.request?._id,
                 friendStatus: "pending",
-                friendshipId: res?._id || null,
                 isRequester: true,
             });
             toast.success("Đã gửi lời mời kết bạn");
@@ -116,11 +117,39 @@ export const useFriendStore = create((set) => ({
         }
     },
 
-    // Hủy lời mời (hoặc hủy kết bạn đang pending)
-    cancelFriendRequest: async (friendshipId) => {
+    // Chấp nhận lời mời
+    acceptFriendRequest: async (requestId) => {
+        set({ isProcessing: true });
+        try {
+            await friendService.acceptRequest(requestId);
+            set({ friendStatus: "accepted" });
+            toast.success("Đã chấp nhận lời mời kết bạn");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Không thể chấp nhận lời mời");
+        } finally {
+            set({ isProcessing: false });
+        }
+    },
+
+    // Từ chối lời mời
+    rejectFriendRequest: async (requestId) => {
+        set({ isProcessing: true });
+        try {
+            await friendService.rejectRequest(requestId);
+            set({ friendStatus: "none" });
+            toast.success("Đã từ chối lời mời kết bạn");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Không thể từ chối lời mời");
+        } finally {
+            set({ isProcessing: false });
+        }
+    },
+
+    // Hủy lời mời đã gửi
+    cancelFriendRequest: async (requestId) => {
         set({ loading: true });
         try {
-            await friendService.removeFriend(friendshipId);
+            await friendService.cancelRequest(requestId);
             set({ friendStatus: "none", friendshipId: null });
             toast.success("Đã hủy lời mời kết bạn");
         } catch (error) {
@@ -130,35 +159,7 @@ export const useFriendStore = create((set) => ({
         }
     },
 
-    // Chấp nhận lời mời
-    acceptFriendRequest: async (friendshipId) => {
-        set({ loading: true });
-        try {
-            await friendService.acceptRequest(friendshipId);
-            set({ friendStatus: "accepted" });
-            toast.success("Đã chấp nhận lời mời kết bạn");
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Không thể chấp nhận lời mời");
-        } finally {
-            set({ loading: false });
-        }
-    },
-
-    // Từ chối lời mời
-    rejectFriendRequest: async (friendshipId) => {
-        set({ loading: true });
-        try {
-            await friendService.rejectRequest(friendshipId);
-            set({ friendStatus: "rejected" });
-            toast.success("Đã từ chối lời mời kết bạn");
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Không thể từ chối lời mời");
-        } finally {
-            set({ loading: false });
-        }
-    },
-
-    // Hủy kết bạn (đã chấp nhận)
+    // Hủy kết bạn (đã là bạn bè)
     unfriend: async (friendshipId) => {
         set({ loading: true });
         try {

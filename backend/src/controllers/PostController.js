@@ -1,11 +1,10 @@
-// controllers/postController.js
-import { postService } from "../services/PostService.js";
-import { createError } from "../lib/utils.js";
+import { PostService } from "../services/PostService.js";
+import { createError } from "../utils/AppError.js";
 
 export const getFeed = async (req, res, next) => {
     try {
         const userId = req.user._id;
-        const feeds = await postService.getFeeds(userId, req.query);
+        const feeds = await PostService.getFeeds(userId, req.query);
         res.status(200).json(feeds);
     } catch (error) {
         next(error);
@@ -27,7 +26,7 @@ export const createPost = async (req, res, next) => {
             originalname: file.originalname,
         }));
 
-        const newPost = await postService.create({
+        const newPost = await PostService.create({
             userId,
             content,
             visibility,
@@ -45,7 +44,7 @@ export const getPostById = async (req, res, next) => {
         const postId = req.params.id;
         if (!postId) throw createError("Post ID is required", 400);
 
-        const post = await postService.getById(postId);
+        const post = await PostService.getById(postId);
         res.status(200).json(post);
     } catch (error) {
         next(error);
@@ -58,7 +57,7 @@ export const getPostByUserId = async (req, res, next) => {
         const query = req.query;
         if (!userId) throw createError("UserId is not found");
 
-        const posts = await postService.getPostByUserId(userId, query);
+        const posts = await PostService.getPostByUserId(userId, query);
         res.status(200).json(posts);
     } catch (error) {
         next(error);
@@ -81,7 +80,7 @@ export const updatePost = async (req, res, next) => {
             originalname: file.originalname,
         }));
 
-        const updatedPost = await postService.update({
+        const updatedPost = await PostService.update({
             postId,
             userId,
             content,
@@ -105,7 +104,7 @@ export const updateStatus = async (req, res, next) => {
         const userId = req.user?._id || req.body.userId;
         const { postId, visibility } = req.body;
 
-        const updatedPost = await postService.updateVisibility({
+        const updatedPost = await PostService.updateVisibility({
             postId,
             userId,
             visibility,
@@ -126,7 +125,7 @@ export const deletePost = async (req, res, next) => {
         const userId = req.user?._id;
         const { id: postId } = req.params;
 
-        const result = await postService.delete(postId, userId);
+        const result = await PostService.delete(postId, userId);
         res.status(200).json(result);
     } catch (error) {
         next(error);

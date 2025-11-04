@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
-import { verifyToken } from "../lib/utils.js";
+import { verifyToken } from "../utils/utils.js";
 
 export const protectRoute = async (req, res, next) => {
     try {
