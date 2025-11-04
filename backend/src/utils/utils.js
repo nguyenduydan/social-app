@@ -67,32 +67,8 @@ export const comparePassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
 
-// Helper function to create error
-export const createError = (message, status = 500) => {
-    const error = new Error(message);
-    error.status = status;
-    return error;
-};
-
-
 export const extractPublicId = (url) => {
     if (!url) return null;
     const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
     return match ? match[1] : null;
-};
-
-// Logger
-export const colors = {
-    reset: "\x1b[0m",
-    red: "\x1b[31m",
-    yellow: "\x1b[33m",
-    cyan: "\x1b[36m",
-    gray: "\x1b[90m",
-    green: "\x1b[32m",
-};
-
-
-export const logLine = (text, color = colors.reset) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
-    console.log(`${colors.green}[${time}]${colors.reset} ${color}${text}${colors.reset}`);
 };

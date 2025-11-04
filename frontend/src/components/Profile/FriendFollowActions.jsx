@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { UserPlus, UserCheck, UserMinus, Check, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { useFriendStore } from "@/store/useFriendStore";
+import { Spinner } from "../ui/spinner";
 
 const FriendFollowActions = ({ userId, className = "" }) => {
     const {
@@ -33,8 +34,17 @@ const FriendFollowActions = ({ userId, className = "" }) => {
                     disabled={loading}
                     className="gap-2"
                 >
-                    <UserPlus className="h-4 w-4" />
-                    Kết bạn
+                    {loading ? (
+                        <>
+                            <Spinner className="size-3" />
+                            Đang gửi...
+                        </>
+                    ) : (
+                        <>
+                            <UserPlus className="h-4 w-4" />
+                            Kết bạn
+                        </>
+                    )}
                 </Button>
             )}
 
@@ -44,10 +54,10 @@ const FriendFollowActions = ({ userId, className = "" }) => {
                     {isRequester ? (
                         // Nếu là người gửi
                         <Button
-                            onClick={() => cancelFriendRequest(friendshipId || userId)}
+                            onClick={() => cancelFriendRequest(friendshipId)}
                             disabled={loading}
                             variant="secondary"
-                            className="gap-2"
+                            className="gap-2 text-destructive"
                         >
                             <UserMinus className="h-4 w-4" />
                             Hủy lời mời

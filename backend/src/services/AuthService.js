@@ -2,16 +2,16 @@ import User from "../models/User.js";
 import Session from "../models/Session.js";
 import {
     comparePassword,
-    createError,
     generateAccessToken,
     generateRefreshToken,
     hashPassword,
-} from "../lib/utils.js";
+} from "../utils/utils.js";
+import { createError } from "../utils/AppError.js";
 import { ENV } from "../config/env.js";
 
 const REFRESH_TOKEN_EXPIRE = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 
-export class AuthService {
+export const AuthService = {
     /**
      * @desc Tạo người dùng mới
      */
@@ -28,7 +28,7 @@ export class AuthService {
         const hashed = await hashPassword(password);
 
         // --- Tạo displayName cơ bản ---
-        const displayName = `${firstName} ${lastName}`.trim();
+        const displayName = `${lastName} ${firstName}`.trim();
 
         // --- Generate username ---
         let base = displayName
@@ -73,7 +73,7 @@ export class AuthService {
         const refreshToken = generateRefreshToken(savedUser._id);
 
         return { user: savedUser, accessToken, refreshToken };
-    }
+    },
 
     /**
      * @desc Đăng nhập người dùng
@@ -99,7 +99,7 @@ export class AuthService {
         });
 
         return { user, accessToken, refreshToken };
-    }
+    },
 
     /**
      * @desc Đăng nhập OAuth (Google, Facebook,...)
@@ -115,8 +115,7 @@ export class AuthService {
         });
 
         return { user: oauthUser, accessToken, refreshToken };
-    }
-
+    },
     /**
      * @desc Đăng xuất người dùng
      */
@@ -129,7 +128,7 @@ export class AuthService {
         }
 
         return true;
-    }
+    },
 
     /**
      * @desc Làm mới access token
@@ -146,7 +145,7 @@ export class AuthService {
 
         const newAccessToken = generateAccessToken(session.userId);
         return newAccessToken;
-    }
+    },
 
     /**
      * @desc Cập nhật mật khẩu
@@ -184,4 +183,3 @@ export class AuthService {
     }
 }
 
-export const authService = new AuthService();

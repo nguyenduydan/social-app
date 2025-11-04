@@ -1,9 +1,9 @@
 import { ENV } from "../config/env.js";
-import { deleteOnCloudinary, uploadToCloudinary } from "../lib/useCloudinary.js";
-import { createError } from "../lib/utils.js";
+import { deleteOnCloudinary, uploadToCloudinary } from "../utils/useCloudinary.js";
+import { createError } from "../utils/AppError.js";
 import User from "../models/User.js";
 
-export class UserService {
+export const UserService = {
     /**
      * Lấy thông tin người dùng hiện tại
      */
@@ -17,7 +17,7 @@ export class UserService {
         } catch (error) {
             throw createError(error.message || "Failed to get user", error.status || 500);
         }
-    }
+    },
 
     async getUserByUsername(username) {
         if (!username) throw createError("Username is required", 400);
@@ -29,7 +29,7 @@ export class UserService {
         } catch (error) {
             throw createError(error.message || "Failed to get user", error.status || 500);
         }
-    }
+    },
 
     /**
      * Cập nhật thông tin cơ bản của người dùng
@@ -81,7 +81,7 @@ export class UserService {
         } catch (error) {
             throw createError(error.message || "Failed to update user", error.status || 500);
         }
-    }
+    },
 
     /**
      * Cập nhật Avatar người dùng
@@ -117,7 +117,7 @@ export class UserService {
         } catch (error) {
             throw createError(error.message || "Failed to update avatar", error.status || 500);
         }
-    }
+    },
 
     /**
      * Cập nhật ảnh bìa người dùng
@@ -156,4 +156,3 @@ export class UserService {
     }
 }
 
-export const userService = new UserService();

@@ -1,14 +1,13 @@
-import { authService } from "../services/AuthService.js";
+import { AuthService } from "../services/AuthService.js";
 import {
     attachAuthCookies,
     clearAuthCookies,
     generateResetCode,
-} from "../lib/utils.js";
+} from "../utils/utils.js";
 import { ENV } from "../config/env.js";
-import sendResetCode from "../config/sendMail.js";
+import sendResetCode from "../utils/mailer.js";
 import passport from "passport";
-import { createError } from "../lib/utils.js";
-
+import { createError } from "../utils/AppError.js";
 const resetCodes = {}; // Lưu tạm code quên mật khẩu trong RAM
 
 // ===============================
@@ -20,7 +19,7 @@ export const signup = async (req, res, next) => {
         if (!email || !password)
             throw createError("Email và mật khẩu là bắt buộc", 400);
 
-        const { accessToken, refreshToken } = await authService.register({
+        const { accessToken, refreshToken } = await AuthService.register({
             firstName,
             lastName,
             email,
@@ -43,7 +42,7 @@ export const signin = async (req, res, next) => {
         if (!email || !password)
             throw createError("Email và mật khẩu không được để trống", 400);
 
-        const { user, accessToken, refreshToken } = await authService.signin({
+        const { user, accessToken, refreshToken } = await AuthService.signin({
             email,
             password,
         });
@@ -62,7 +61,7 @@ export const logout = async (req, res, next) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
         if (refreshToken) {
-            await authService.logout(refreshToken);
+            await AuthService.logout(refreshToken);
             clearAuthCookies(res);
         }
         res.sendStatus(204);
@@ -79,7 +78,7 @@ export const refreshToken = async (req, res, next) => {
         const refreshToken = req.cookies?.refreshToken;
         if (!refreshToken) throw createError("Không có token refresh", 401);
 
-        const newAccessToken = await authService.refresh(refreshToken);
+        const newAccessToken = await AuthService.refresh(refreshToken);
         res.status(200).json({ accessToken: newAccessToken });
     } catch (error) {
         next(error);
@@ -97,7 +96,7 @@ export const oauthCallback = (req, res, next) => {
                 return res.redirect(`${ENV.CLIENT_URL}/signin`);
             }
 
-            const { accessToken, refreshToken } = await authService.oauthSignin({
+            const { accessToken, refreshToken } = await AuthService.oauthSignin({
                 oauthUser: user,
             });
             attachAuthCookies(res, accessToken, refreshToken);
@@ -169,7 +168,7 @@ export const resetPassword = async (req, res, next) => {
         if (!email || !newPassword)
             throw createError("Email và mật khẩu mới là bắt buộc", 400);
 
-        const result = await authService.updatePassword(email, newPassword);
+        const result = await AuthService.updatePassword(email, newPassword);
         delete resetCodes[email];
         res.status(200).json(result);
     } catch (error) {

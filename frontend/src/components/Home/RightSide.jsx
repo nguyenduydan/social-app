@@ -8,7 +8,7 @@ const RightSide = () => {
         friends,
         suggestions,
         getFriendAll,
-        getRequest,
+        getRequests,
         getSuggestions,
         loading,
     } = useFriendStore();
@@ -16,9 +16,9 @@ const RightSide = () => {
     useEffect(() => {
         // Tải dữ liệu khi mount
         getFriendAll(1, false, 10);
-        getRequest();
+        getRequests();
         getSuggestions();
-    }, [getFriendAll, getRequest, getSuggestions]);
+    }, [getFriendAll, getRequests, getSuggestions]);
 
     return (
         <div className="flex flex-col w-full space-y-4">

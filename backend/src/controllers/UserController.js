@@ -1,11 +1,11 @@
-import { userService } from "../services/UserService.js";
-import { createError } from "../lib/utils.js";
+import { UserService } from "../services/UserService.js";
+import { createError } from "../utils/AppError.js";
 
 export const getMe = async (req, res, next) => {
     try {
         if (!req.user?._id) throw createError(404, "No userId");
 
-        const user = await userService.getCurrentUser(req.user._id);
+        const user = await UserService.getCurrentUser(req.user._id);
         res.status(200).json({ user });
     } catch (error) {
         next(error);
@@ -17,7 +17,7 @@ export const getUser = async (req, res, next) => {
         const userId = req.params.id;
         if (!userId) throw createError(404, "No userId");
 
-        const user = await userService.getCurrentUser(userId);
+        const user = await UserService.getCurrentUser(userId);
         res.status(200).json({ user });
     } catch (error) {
         next(error);
@@ -30,7 +30,7 @@ export const getUserByUsername = async (req, res, next) => {
 
         if (!username) throw createError("Username is required", 400);
 
-        const user = await userService.getUserByUsername(username);
+        const user = await UserService.getUserByUsername(username);
 
         if (!user) throw createError("User not found", 404);
 
@@ -46,7 +46,7 @@ export const updateUser = async (req, res, next) => {
 
         if (!userId) throw createError(400, "User ID is required");
 
-        const userUpdated = await userService.updateInfo({
+        const userUpdated = await UserService.updateInfo({
             id: userId,
             username,
             displayName,
@@ -71,7 +71,7 @@ export const uploadAvatar = async (req, res, next) => {
         if (!userId) throw createError(404, "User ID not found");
         if (!file) throw createError(400, "No file uploaded");
 
-        const userUpdated = await userService.updateAvatar({
+        const userUpdated = await UserService.updateAvatar({
             userId,
             file,
         });
@@ -90,7 +90,7 @@ export const uploadCoverPhoto = async (req, res, next) => {
         if (!userId) throw createError(404, "User ID not found");
         if (!file) throw createError(400, "No file uploaded");
 
-        const userUpdated = await userService.updateCoverPhoto({
+        const userUpdated = await UserService.updateCoverPhoto({
             userId,
             file,
         });
