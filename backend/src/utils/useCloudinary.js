@@ -1,5 +1,10 @@
 import cloudinary from "../config/cloudinary.js";
-import { extractPublicId } from "./utils.js";
+
+const extractPublicId = (url) => {
+    if (!url) return null;
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
+    return match ? match[1] : null;
+};
 
 export const uploadToCloudinary = async (file, folder = "uploads") => {
     try {

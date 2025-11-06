@@ -1,11 +1,10 @@
 import User from "../models/User.js";
 import Session from "../models/Session.js";
 import {
-    comparePassword,
     generateAccessToken,
     generateRefreshToken,
-    hashPassword,
-} from "../utils/utils.js";
+} from "../utils/jwt.js";
+import { hashPassword, comparePassword } from "../utils/passwordHelper.js";
 import { createError } from "../utils/AppError.js";
 import { ENV } from "../config/env.js";
 

@@ -58,6 +58,7 @@ connectDB()
         app.listen(PORT, () => {
             logLine(`Server running on host: http://localhost:${PORT}`, colors.cyan);
             logLine(`Press Ctrl + C to exit`, colors.yellow);
+            logLine(`To restart at any time, enter "rs"`, colors.yellow);
         });
     })
     .catch((error) => {

@@ -2,8 +2,8 @@ import { AuthService } from "../services/AuthService.js";
 import {
     attachAuthCookies,
     clearAuthCookies,
-    generateResetCode,
-} from "../utils/utils.js";
+} from "../utils/jwt.js";
+import { generateResetCode } from "../utils/passwordHelper.js";
 import { ENV } from "../config/env.js";
 import sendResetCode from "../utils/mailer.js";
 import passport from "passport";
