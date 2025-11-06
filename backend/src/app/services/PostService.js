@@ -2,30 +2,38 @@ import Post from "../models/Post.js";
 import User from "../models/User.js";
 import { createError } from "../../utils/AppError.js";
 import {
-    uploadToCloudinary,
-    deleteOnCloudinary,
     deleteMultipleOnCloudinary,
 } from "../../utils/useCloudinary.js";
 import { getPaginationMetadata, getPaginationParams } from "../../utils/pagination.js";
-import { compressVideo } from "../../utils/mediaCompressor.js";
 import { uploadMedia } from "../../utils/uploadMediaHelper.js";
+
+const formatPosts = (posts) =>
+    posts.map((post) => ({
+        ...post,
+        commentCount: post.comments?.length || 0,
+        likeCount: post.likes?.length || 0,
+        comments: undefined,
+    }));
 
 export const PostService = {
     async create({ userId, content, media = [], visibility = "friends" }) {
         if (!userId) throw createError("User ID is required", 400);
 
         try {
-            const uploadedMedia = await uploadMedia(media);
+            // tạo trước bài post (trạng thái pending)
+            const post = await Post.create({ author: userId, content, visibility, media: [] });
 
-            const newPost = new Post({
-                author: userId,
-                content,
-                media: uploadedMedia,
-                visibility,
-            });
+            // upload media ở background
+            if (media.length) {
+                uploadMedia(media)
+                    .then(async (uploaded) => {
+                        post.media = uploaded;
+                        await post.save();
+                    })
+                    .catch((e) => log.error("Async upload failed:", e));
+            }
 
-            const savedPost = await newPost.save();
-            return savedPost;
+            return post; // trả về ngay cho FE
         } catch (error) {
             throw createError(error.message || "Failed to create post", 500);
         }
@@ -34,81 +42,37 @@ export const PostService = {
     async getFeeds(userId, query = {}) {
         try {
             const { page, limit, skip } = getPaginationParams(query);
-
-            // --- Lấy danh sách bạn bè và người đang theo dõi ---
             const user = await User.findById(userId)
                 .select("friends following")
                 .lean();
 
-            if (!user) {
-                throw createError("User not found", 404);
-            }
+            if (!user) throw createError("User not found", 404);
 
-            const visibleAuthors = [
-                userId,
-                ...(user.friends || []),
-                ...(user.following || []),
-            ];
+            const visibleAuthors = [userId, ...(user.friends || []), ...(user.following || [])];
 
-            // --- Truy vấn bài viết theo quyền xem ---
-            const posts = await Post.find({
-                $or: [
-                    // Bài public ai cũng thấy
-                    { visibility: "public" },
-
-                    // Bài friends: chỉ hiển thị nếu là bạn hoặc follow
-                    {
-                        $and: [
-                            { visibility: "friends" },
-                            { author: { $in: visibleAuthors } },
-                        ],
-                    },
-
-                    // Bài private: chỉ chính chủ thấy
-                    {
-                        $and: [
-                            { visibility: "private" },
-                            { author: userId },
-                        ],
-                    },
-                ],
-            })
-                .populate("author", "displayName avatar username")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .lean();
-
-            // --- Định dạng dữ liệu ---
-            const formattedPosts = posts.map((post) => ({
-                ...post,
-                commentCount: post.comments?.length || 0,
-                likeCount: post.likes?.length || 0,
-                comments: undefined,
-            }));
-
-            // --- Tổng số bài hợp lệ ---
-            const total = await Post.countDocuments({
+            const visibilityQuery = {
                 $or: [
                     { visibility: "public" },
-                    {
-                        $and: [
-                            { visibility: "friends" },
-                            { author: { $in: visibleAuthors } },
-                        ],
-                    },
-                    {
-                        $and: [
-                            { visibility: "private" },
-                            { author: userId },
-                        ],
-                    },
+                    { visibility: "friends", author: { $in: visibleAuthors } },
+                    { visibility: "private", author: userId },
                 ],
-            });
+            };
 
-            const pagination = getPaginationMetadata(total, page, limit);
+            // Fetch posts and total count in parallel
+            const [posts, total] = await Promise.all([
+                Post.find(visibilityQuery)
+                    .populate("author", "displayName avatar username")
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                Post.countDocuments(visibilityQuery),
+            ]);
 
-            return { posts: formattedPosts, pagination };
+            return {
+                posts: formatPosts(posts),
+                pagination: getPaginationMetadata(total, page, limit),
+            };
         } catch (error) {
             throw createError(error.message || "Failed to get feeds", 500);
         }
@@ -126,10 +90,11 @@ export const PostService = {
 
             if (!post) throw createError("Post not found", 404);
 
-            post.commentCount = post.comments?.length || 0;
-            post.likeCount = post.likes?.length || 0;
-
-            return post;
+            return {
+                ...post,
+                commentCount: post.comments?.length || 0,
+                likeCount: post.likes?.length || 0,
+            };
         } catch (error) {
             throw createError(error.message || "Failed to get post", 500);
         }
@@ -139,64 +104,55 @@ export const PostService = {
         try {
             const { page, limit, skip } = getPaginationParams(query);
 
-            // const visibilityFilter = ["public"];
-            // if (isFriend) visibilityFilter.push("friends");
+            const filter = { author: userId };
 
-            const posts = await Post.find({
-                author: userId,
-                // visibility: { $in: visibilityFilter },
-            }).populate("author", "displayName avatar username")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .lean();
+            // Run queries in parallel
+            const [posts, total] = await Promise.all([
+                Post.find(filter)
+                    .populate("author", "displayName avatar username")
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                Post.countDocuments(filter),
+            ]);
 
-            const formattedPosts = posts.map((post) => ({
-                ...post,
-                commentCount: post.comments?.length || 0,
-                likeCount: post.likes?.length || 0,
-                comments: undefined,
-            }));
-
-            const total = await Post.countDocuments();
-
-            const pagination = getPaginationMetadata(total, page, limit);
-
-            return { posts: formattedPosts, pagination };
+            return {
+                posts: formatPosts(posts),
+                pagination: getPaginationMetadata(total, page, limit),
+            };
         } catch (error) {
-            throw createError(error.message || "Failed to get post", 500);
+            throw createError(error.message || "Failed to get user posts", 500);
         }
     },
 
     async update({ postId, userId, content, visibility, existingMedia = [], newMedia = [] }) {
-        if (!postId) throw createError("Post ID is required", 400);
-        if (!userId) throw createError("User ID is required", 400);
+        if (!postId || !userId) throw createError("Post ID and User ID required", 400);
 
         try {
             const post = await Post.findById(postId);
             if (!post) throw createError("Post not found", 404);
             if (post.author.toString() !== userId.toString()) {
-                throw createError("You are not authorized to edit this post", 403);
+                throw createError("Unauthorized", 403);
             }
 
-            // Cập nhật content / visibility
             if (content !== undefined) post.content = content;
             if (visibility !== undefined) post.visibility = visibility;
 
-            // Xử lý media bị xóa
+            // Remove deleted media
             const removedMedia = post.media.filter(
                 (m) => !existingMedia.includes(m._id.toString())
             );
             if (removedMedia.length > 0) {
-                await Promise.allSettled(removedMedia.map((m) => deleteOnCloudinary(m)));
+                await deleteMultipleOnCloudinary(removedMedia);
             }
 
-            // Giữ lại media còn dùng
+            // Keep existing media
             post.media = post.media.filter((m) =>
                 existingMedia.includes(m._id.toString())
             );
 
-            // Upload media mới
+            // Add new media
             if (newMedia.length > 0) {
                 const uploadedMedia = await uploadMedia(newMedia);
                 post.media.push(...uploadedMedia);
@@ -212,51 +168,38 @@ export const PostService = {
     },
 
     async updateVisibility({ postId, userId, visibility }) {
-        if (!postId) throw createError("Post ID is required", 400);
-        if (!userId) throw createError("User ID is required", 400);
-        if (!visibility) throw createError("Visibility is required", 400);
+        if (!postId || !userId || !visibility)
+            throw createError("Missing parameters", 400);
 
         const allowed = ["public", "friends", "private"];
-        if (!allowed.includes(visibility)) {
-            throw createError("Invalid visibility type", 400);
-        }
+        if (!allowed.includes(visibility)) throw createError("Invalid visibility", 400);
 
         try {
-            const post = await Post.findById(postId);
-            if (!post) throw createError("Post not found", 404);
-            if (post.author.toString() !== userId.toString()) {
-                throw createError("You are not authorized to update this post", 403);
-            }
+            const post = await Post.findOneAndUpdate(
+                { _id: postId, author: userId },
+                { visibility },
+                { new: true }
+            ).lean();
 
-            post.visibility = visibility;
-            await post.save();
-
+            if (!post) throw createError("Post not found or unauthorized", 404);
             return post;
         } catch (error) {
-            throw createError(error.message || "Failed to update post visibility", 500);
+            throw createError(error.message || "Failed to update visibility", 500);
         }
     },
 
     async delete(postId, userId) {
-        if (!postId) throw createError("Post ID is required", 400);
-        if (!userId) throw createError("User ID is required", 400);
+        if (!postId || !userId) throw createError("Missing parameters", 400);
 
         try {
-            const post = await Post.findById(postId);
-            if (!post) throw createError("Post not found", 404);
-            if (post.author.toString() !== userId.toString()) {
-                throw createError("You are not authorized to delete this post", 403);
-            }
+            const post = await Post.findOneAndDelete({ _id: postId, author: userId }).lean();
+            if (!post) throw createError("Post not found or unauthorized", 404);
 
-            if (post.media?.length) {
-                await deleteMultipleOnCloudinary(post.media);
-            }
+            if (post.media?.length) await deleteMultipleOnCloudinary(post.media);
 
-            await Post.findByIdAndDelete(postId);
             return { message: "Post deleted successfully" };
         } catch (error) {
             throw createError(error.message || "Failed to delete post", 500);
         }
     },
 };
-

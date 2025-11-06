@@ -11,9 +11,9 @@ const routes = [
         element: <HomePage />
     },
     {
-        name: "Tin nhắn",
+        name: "Hội thoại",
         layout: "/client",
-        path: "/messages",
+        path: "/conversations",
         icon: <MessageSquareText className="size-4 md:size-6" />,
         element: <HomePage />
     },

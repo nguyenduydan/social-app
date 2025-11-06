@@ -58,12 +58,11 @@ export const usePostStore = create((set, get) => ({
         }
     },
 
-
     createPost: async (data) => {
         try {
             set({ creatingPost: true });
-            const { content, media = [], visibility } = data;
 
+            const { content, media = [], visibility } = data;
             const formData = new FormData();
             formData.append("content", content || "");
             formData.append("visibility", visibility || "public");
@@ -80,17 +79,23 @@ export const usePostStore = create((set, get) => ({
                 formData.append("media", file);
             }
 
-            // Gửi đến API
+            // Gửi đến API — nhưng KHÔNG fetch lại ngay
             await postService.create(formData);
-            await get().fetchPosts(); // refresh lại danh sách
-            toast.success("Tạo bài viết thành công!");
+
+            //  Chỉ hiện toast báo đang xử lý
+            toast.success("Bài viết đang được xử lý, vui lòng tải lại để xem!");
+
+            //  Không fetchPosts()
+            // await get().fetchPosts();
+
         } catch (error) {
-            console.error("❌ Lỗi createPost:", error);
+            console.error("Lỗi createPost:", error);
             toast.error("Tạo bài viết thất bại!");
         } finally {
             set({ creatingPost: false });
         }
     },
+
 
     getPostById: async (postId) => {
         try {

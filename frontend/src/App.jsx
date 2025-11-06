@@ -1,16 +1,18 @@
 import { Toaster } from '@/components/ui/sonner';
 import "@/assets/global.css";
 import { Route, Routes, BrowserRouter } from 'react-router';
-import MainLayout from '@/components/common/layout/MainLayout';
-//Pages
-import LoginPage from '@/pages/LoginPage';
-import SignupPage from '@/pages/SignupPage';
-import HomePage from '@/pages/HomePage';
-import ProfilePage from '@/pages/ProfilePage';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useEffect } from 'react';
 import { ScrollProvider } from '@/contexts/ScrollContext';
+//Pages
+import MainLayout from '@/components/common/layout/MainLayout';
+import LoginPage from '@/pages/LoginPage';
+import SignupPage from '@/pages/SignupPage';
+import HomePage from '@/pages/HomePage';
+import ProfilePage from '@/pages/ProfilePage';
+import ConversationPage from '@/pages/ConversationPage';
+
 import NotFound from '@/pages/NotFound';
 
 const App = () => {
@@ -36,6 +38,7 @@ const App = () => {
               <Route element={<MainLayout />}>
                 <Route path='/' element={<HomePage />} />
                 <Route path='/profile/:username?' element={<ProfilePage />} />
+                <Route path='/conversations' element={<ConversationPage />} />
               </Route>
             </Route>
           </Routes>

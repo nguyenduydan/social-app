@@ -20,7 +20,7 @@ const PostMedia = memo(({ media, onOpenDetail }) => {
                             alt="media-single"
                             crossOrigin="anonymous"
                             loading="lazy"
-                            className="w-full h-auto max-h-[600px] object-contain cursor-pointer transition-transform hover:scale-[1.01]"
+                            className="w-auto max-h-[600px] object-contain cursor-pointer transition-transform hover:scale-[1.01]"
                             onClick={() => {
                                 pauseAllVideos();
                                 onOpenDetail?.();
@@ -47,7 +47,7 @@ const PostMedia = memo(({ media, onOpenDetail }) => {
                                 alt={`media-${idx}`}
                                 crossOrigin="anonymous"
                                 loading="lazy"
-                                className="w-full h-auto max-h-[300px] object-cover object-center cursor-pointer transition-transform hover:scale-[1.02]"
+                                className="w-auto max-h-[300px] object-contain object-center cursor-pointer transition-transform hover:scale-[1.02]"
                                 onClick={() => {
                                     pauseAllVideos();
                                     onOpenDetail?.();

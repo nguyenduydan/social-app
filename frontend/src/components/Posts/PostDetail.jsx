@@ -36,10 +36,10 @@ const PostDetail = ({ post }) => {
             {hasMedia && (
                 <div className="relative bg-black flex items-center justify-center">
                     {post.media.length > 1 ? (
-                        <Carousel className="h-full flex justify-center items-center bg-card-foreground dark:bg-card">
+                        <Carousel className="h-full w-full flex justify-center items-center bg-black dark:bg-card">
                             <CarouselContent>
                                 {post.media.map((m, i) => (
-                                    <CarouselItem key={i} className="flex justify-center items-center">
+                                    <CarouselItem key={i} className="flex justify-center items-center w-full h-full">
                                         {m.type?.startsWith("video") ? (
                                             <video
                                                 src={m.url}
@@ -50,8 +50,8 @@ const PostDetail = ({ post }) => {
                                         ) : (
                                             <img
                                                 src={m.url}
-                                                alt=""
-                                                className="w-full h-auto object-contain"
+                                                alt="img"
+                                                className="w-auto max-h-[300px] lg:max-h-[1000px] object-contain"
                                             />
                                         )}
                                     </CarouselItem>

@@ -1,4 +1,31 @@
 import cloudinary from "../config/cloudinary.js";
+import pLimit from "p-limit";
+import { log } from "./logger.js";
+
+const limit = pLimit(5);
+
+export const uploadToCloudinary = (fileData, folder = "uploads", mimetype) => {
+    return new Promise((resolve, reject) => {
+        const opts = {
+            folder,
+            resource_type: mimetype?.startsWith("video/") ? "video" : "image",
+            transformation: [{ quality: "auto" }],
+        };
+
+        // Nếu là Buffer → upload_stream (nhanh hơn)
+        if (Buffer.isBuffer(fileData)) {
+            const stream = cloudinary.uploader.upload_stream(opts, (err, res) =>
+                err ? reject(err) : resolve(res)
+            );
+            stream.end(fileData);
+        } else {
+            cloudinary.uploader
+                .upload(fileData, opts)
+                .then(resolve)
+                .catch(reject);
+        }
+    });
+};
 
 const extractPublicId = (url) => {
     if (!url) return null;
@@ -6,43 +33,9 @@ const extractPublicId = (url) => {
     return match ? match[1] : null;
 };
 
-export const uploadToCloudinary = async (file, folder = "uploads") => {
-    try {
-        // Nếu file là object, lấy ra base64 string
-        const fileData =
-            typeof file === "object" && file?.avatar
-                ? file.avatar
-                : typeof file === "object" && file?.cover
-                    ? file.cover
-                    : file;
-
-        if (typeof fileData !== "string") {
-            throw new Error("Invalid file data: must be a base64 string or file URL");
-        }
-
-        const result = await cloudinary.uploader.upload(fileData, {
-            folder,
-            resource_type: "auto", // ảnh hoặc video
-            transformation: [{ quality: "auto" }],
-        });
-
-        return result;
-    } catch (error) {
-        console.error("Cloudinary upload failed:", error);
-        throw new Error(`Cloudinary upload failed: ${error.message}`);
-    }
-};
-
-
 export const deleteOnCloudinary = async (media) => {
     try {
         if (!media) return;
-
-        // Cho phép truyền string, object, hoặc array
-        if (Array.isArray(media)) {
-            await deleteMultipleOnCloudinary(media);
-            return;
-        }
 
         let public_id, resourceType, url;
 
@@ -59,7 +52,7 @@ export const deleteOnCloudinary = async (media) => {
 
         const cloudId = public_id || extractPublicId(url);
         if (!cloudId) {
-            console.warn("⚠️ No valid Cloudinary ID found to delete:", media);
+            log.warn("⚠️ No valid Cloudinary ID found to delete:", media);
             return;
         }
 
@@ -68,27 +61,29 @@ export const deleteOnCloudinary = async (media) => {
         });
 
         if (result.result === "ok") {
-            console.log(`✅ Deleted ${resourceType || "image"}: ${cloudId}`);
+            log.info(`Deleted ${resourceType || "image"}: ${cloudId}`);
         } else {
-            console.warn(`⚠️ Delete result: ${result.result} (${cloudId})`);
+            log.warn(`Delete result: ${result.result} (${cloudId})`);
         }
     } catch (error) {
-        console.error("❌ Cloudinary delete failed:", error.message);
+        log.error(`Cloudinary delete failed: ${error.message}`);
     }
 };
 
 /**
- * Xóa nhiều file Cloudinary song song
+ * Xóa nhiều file Cloudinary song song (có giới hạn)
  */
 export const deleteMultipleOnCloudinary = async (mediaList = []) => {
-    if (!Array.isArray(mediaList) || mediaList.length === 0) return;
+    if (!Array.isArray(mediaList) || !mediaList.length) return;
 
-    const results = await Promise.allSettled(
-        mediaList.map((item) => deleteOnCloudinary(item))
+    const tasks = mediaList.map((m) =>
+        limit(() => deleteOnCloudinary(m))
     );
+
+    const results = await Promise.allSettled(tasks);
 
     const failed = results.filter((r) => r.status === "rejected");
     if (failed.length) {
-        console.warn(`⚠️ ${failed.length} Cloudinary deletions failed.`);
+        log.warn(`${failed.length} Cloudinary deletions failed.`);
     }
 };

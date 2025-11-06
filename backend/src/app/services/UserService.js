@@ -1,5 +1,5 @@
 import { ENV } from "../../config/env.js";
-import { deleteOnCloudinary, uploadToCloudinary } from "../../utils/useCloudinary.js";
+import { deleteMultipleOnCloudinary, uploadToCloudinary } from "../../utils/useCloudinary.js";
 import { createError } from "../../utils/AppError.js";
 import User from "../models/User.js";
 
@@ -96,7 +96,7 @@ export const UserService = {
 
             // Xoá avatar cũ nếu có
             if (user.avatar?.publicId) {
-                await deleteOnCloudinary(user.avatar);
+                await deleteMultipleOnCloudinary(user.avatar);
             }
 
             // Upload avatar mới

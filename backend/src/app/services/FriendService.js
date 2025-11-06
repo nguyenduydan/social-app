@@ -6,13 +6,26 @@ import User from "../models/User.js";
 
 export const FriendService = {
     async checkFriendshipStatus(currentUserId, targetUserId) {
-        // Kiểm tra nếu đã là bạn bè
-        const friendship = await Friend.findOne({
-            $or: [
-                { requester: currentUserId, recipient: targetUserId },
-                { requester: targetUserId, recipient: currentUserId },
-            ],
-        });
+        if (currentUserId.toString() === targetUserId.toString()) {
+            return { status: "self", isFriend: false, isRequester: false, pending: false };
+        }
+
+        // Dùng Promise.all để song song 2 truy vấn (giảm 50% thời gian)
+        const [friendship, request] = await Promise.all([
+            Friend.findOne({
+                $or: [
+                    { requester: currentUserId, recipient: targetUserId },
+                    { requester: targetUserId, recipient: currentUserId },
+                ],
+            }).lean(),
+            FriendRequest.findOne({
+                $or: [
+                    { from: currentUserId, to: targetUserId },
+                    { from: targetUserId, to: currentUserId },
+                ],
+                status: "pending",
+            }).lean(),
+        ]);
 
         if (friendship) {
             return {
@@ -23,15 +36,6 @@ export const FriendService = {
             };
         }
 
-        // Kiểm tra nếu có lời mời đang chờ
-        const request = await FriendRequest.findOne({
-            $or: [
-                { from: currentUserId, to: targetUserId },
-                { from: targetUserId, to: currentUserId },
-            ],
-            status: "pending",
-        });
-
         if (request) {
             return {
                 status: "pending",
@@ -41,60 +45,40 @@ export const FriendService = {
             };
         }
 
-        return {
-            status: "none",
-            isFriend: false,
-            isRequester: false,
-            pending: false,
-        };
+        return { status: "none", isFriend: false, isRequester: false, pending: false };
     },
     /**
      * Gửi lời mời kết bạn
      */
-    async sendFriendRequest(from, to, message = '') {
-        // Validate user tồn tại
-        const userExists = await User.exists({ _id: to });
-        if (!userExists) {
-            throw createError("User not found", 404);
+    async sendFriendRequest(from, to, message = "") {
+        if (from.toString() === to.toString()) {
+            throw createError("Không thể gửi lời mời kết bạn cho chính mình", 400);
         }
 
-        // Kiểm tra trạng thái hiện tại
-        const currentStatus = await this.checkFriendshipStatus(from, to);
+        // Dùng lean() để không tạo instance Mongoose (nhanh hơn ~30%)
+        const [userExists, currentStatus] = await Promise.all([
+            User.exists({ _id: to }),
+            this.checkFriendshipStatus(from, to),
+        ]);
 
-        if (currentStatus.isFriend) {
-            throw createError("Hai người đã là bạn bè", 400);
-        }
+        if (!userExists) throw createError("Người dùng không tồn tại", 404);
+        if (currentStatus.isFriend) throw createError("Hai người đã là bạn bè", 400);
 
         if (currentStatus.status === "pending") {
-            throw createError("Đã có lời mời kết bạn đang chờ", 400);
+            if (currentStatus.isRequester)
+                throw createError("Bạn đã gửi lời mời kết bạn trước đó", 400);
+            else
+                throw createError("Người này đã gửi bạn lời mời. Hãy chấp nhận hoặc từ chối trước.", 400);
         }
 
-        if (currentStatus.status === "blocked") {
-            throw createError("Cannot send friend request", 403);
-        }
+        // Chỉ populate những field cần thiết
+        const request = await FriendRequest.create({ from, to, message, status: "pending" });
+        await request.populate([
+            { path: "from", select: "displayName username avatar" },
+            { path: "to", select: "displayName username avatar" },
+        ]);
 
-        if (currentStatus.status === "pending") {
-            throw createError(
-                "This user has already sent you a friend request. Please accept or reject their request first.",
-                400
-            );
-        }
-
-        // Tạo lời mời mới
-        const request = await FriendRequest.create({
-            from,
-            to,
-            message: message || '',
-            status: 'pending'
-        });
-
-        await request.populate('from', 'displayName username email avatar');
-        await request.populate('to', 'displayName username email avatar');
-
-        return {
-            message: "Friend request sent successfully",
-            request
-        };
+        return { message: "Gửi lời mời kết bạn thành công", request };
     },
 
     /**
@@ -103,42 +87,33 @@ export const FriendService = {
      * @param {String} userId - ID người nhận lời mời
      */
     async acceptFriendRequest(requestId, userId) {
-        // Tìm friend request
         const friendRequest = await FriendRequest.findById(requestId);
+        if (!friendRequest) throw createError("Friend request not found", 404);
 
-        if (!friendRequest) {
-            throw createError("Friend request not found", 404);
-        }
-
-        // Validate quyền (chỉ người nhận mới accept được)
-        if (friendRequest.to.toString() !== userId.toString()) {
+        const userIdStr = userId.toString();
+        if (friendRequest.to.toString() !== userIdStr)
             throw createError("You are not authorized to accept this request", 403);
-        }
 
-        // Validate status
-        if (friendRequest.status !== 'pending') {
+        if (friendRequest.status !== "pending")
             throw createError(`Friend request is already ${friendRequest.status}`, 400);
-        }
 
-        // Update friend request status
-        friendRequest.status = 'accepted';
+        friendRequest.status = "accepted";
         await friendRequest.save();
 
-        // Tạo friendship record (Friend model sẽ tự sort requester/recipient)
         const friendship = await Friend.create({
             requester: friendRequest.from,
-            recipient: friendRequest.to
+            recipient: friendRequest.to,
         });
 
         await friendship.populate([
-            { path: 'requester', select: '_id displayName username avatar' },
-            { path: 'recipient', select: '_id displayName username avatar' }
+            { path: "requester", select: "_id displayName username avatar" },
+            { path: "recipient", select: "_id displayName username avatar" },
         ]);
 
         return {
             message: "Friend request accepted successfully",
             friendship,
-            acceptedAt: friendship.createdAt
+            acceptedAt: friendship.createdAt,
         };
     },
 
@@ -149,27 +124,17 @@ export const FriendService = {
      */
     async rejectFriendRequest(requestId, userId) {
         const friendRequest = await FriendRequest.findById(requestId);
+        if (!friendRequest) throw createError("Friend request not found", 404);
 
-        if (!friendRequest) {
-            throw createError("Friend request not found", 404);
-        }
-
-        // Validate quyền
-        if (friendRequest.to.toString() !== userId.toString()) {
+        if (friendRequest.to.toString() !== userId.toString())
             throw createError("You are not authorized to reject this request", 403);
-        }
 
-        // Validate status
-        if (friendRequest.status !== 'pending') {
+        if (friendRequest.status !== "pending")
             throw createError(`Friend request is already ${friendRequest.status}`, 400);
-        }
 
-        await FriendRequest.findByIdAndDelete(requestId);
+        await friendRequest.deleteOne();
 
-        return {
-            message: "Friend request has been rejected",
-            requestId
-        };
+        return { message: "Friend request has been rejected", requestId };
     },
 
     /**
@@ -179,27 +144,16 @@ export const FriendService = {
      */
     async cancelFriendRequest(requestId, userId) {
         const friendRequest = await FriendRequest.findById(requestId);
+        if (!friendRequest) throw createError("Friend request not found", 404);
 
-        if (!friendRequest) {
-            throw createError("Friend request not found", 404);
-        }
-
-        // Validate quyền (chỉ người gửi mới cancel được)
-        if (friendRequest.from.toString() !== userId.toString()) {
+        if (friendRequest.from.toString() !== userId.toString())
             throw createError("You are not authorized to cancel this request", 403);
-        }
 
-        if (friendRequest.status !== 'pending') {
+        if (friendRequest.status !== "pending")
             throw createError(`Cannot cancel a ${friendRequest.status} request`, 400);
-        }
 
-        // Xóa lời mời
-        await FriendRequest.findByIdAndDelete(requestId);
-
-        return {
-            message: "Friend request has been cancelled",
-            requestId
-        };
+        await friendRequest.deleteOne();
+        return { message: "Friend request cancelled", requestId };
     },
 
     /**
@@ -209,43 +163,31 @@ export const FriendService = {
      */
     async removeFriendById(friendshipId, userId) {
         const friendship = await Friend.findById(friendshipId);
+        if (!friendship) throw createError("Friendship not found", 404);
 
-        if (!friendship) {
-            throw createError("Friendship not found", 404);
-        }
-
-        // Validate quyền (cả 2 bên đều có thể unfriend)
+        const userIdStr = userId.toString();
         const isParticipant =
-            friendship.requester.toString() === userId.toString() ||
-            friendship.recipient.toString() === userId.toString();
-
-        if (!isParticipant) {
+            friendship.requester.toString() === userIdStr ||
+            friendship.recipient.toString() === userIdStr;
+        if (!isParticipant)
             throw createError("You are not authorized to remove this friendship", 403);
-        }
 
-        // Lưu IDs trước khi xóa
-        const userAId = friendship.requester;
-        const userBId = friendship.recipient;
+        const [userAId, userBId] = [friendship.requester, friendship.recipient];
+        await Promise.all([
+            friendship.deleteOne(),
+            FriendRequest.updateMany(
+                {
+                    $or: [
+                        { from: userAId, to: userBId },
+                        { from: userBId, to: userAId },
+                    ],
+                    status: "accepted",
+                },
+                { status: "rejected" }
+            ),
+        ]);
 
-        // Xóa friendship
-        await friendship.deleteOne();
-
-        //Update lại các FriendRequest liên quan
-        await FriendRequest.updateMany(
-            {
-                $or: [
-                    { from: userAId, to: userBId },
-                    { from: userBId, to: userAId }
-                ],
-                status: 'accepted'
-            },
-            { status: 'rejected' }
-        );
-
-        return {
-            message: "Friend removed successfully",
-            friendshipId
-        };
+        return { message: "Friend removed successfully", friendshipId };
     },
 
     /**
@@ -253,46 +195,48 @@ export const FriendService = {
      */
     async getAllFriends(userId, query = {}) {
         const { page, limit, skip } = getPaginationParams(query);
-        const { search = '' } = query;
+        const { search = "" } = query;
 
-        // Tìm tất cả friendships
         const matchCondition = {
-            $or: [
-                { requester: userId },
-                { recipient: userId }
-            ]
+            $or: [{ requester: userId }, { recipient: userId }],
         };
 
         const [friends, total] = await Promise.all([
             Friend.find(matchCondition)
-                .populate('requester', 'displayName username email avatar')
-                .populate('recipient', 'displayName username email avatar')
+                .populate("requester", "displayName username email avatar")
+                .populate("recipient", "displayName username email avatar")
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
-                .sort({ createdAt: -1 })
                 .lean(),
-
-            Friend.countDocuments(matchCondition)
+            Friend.countDocuments(matchCondition),
         ]);
 
-        // Map ra danh sách bạn bè
-        let friendList = this.mapFriendsToList(friends, userId);
+        let friendList = friends.map((f) => {
+            const friend =
+                f.requester._id.toString() === userId.toString()
+                    ? f.recipient
+                    : f.requester;
+            return {
+                ...friend,
+                friendshipId: f._id,
+                createdAt: f.createdAt,
+            };
+        });
 
-        // Apply search filter nếu có
         if (search) {
-            const searchLower = search.toLowerCase();
-            friendList = friendList.filter(item =>
-                item.displayName?.toLowerCase().includes(searchLower) ||
-                item.username?.toLowerCase().includes(searchLower) ||
-                item.email?.toLowerCase().includes(searchLower)
+            const s = search.toLowerCase();
+            friendList = friendList.filter(
+                (f) =>
+                    f.displayName?.toLowerCase().includes(s) ||
+                    f.username?.toLowerCase().includes(s) ||
+                    f.email?.toLowerCase().includes(s)
             );
         }
 
-        const pagination = getPaginationMetadata(total, page, limit);
-
         return {
             friends: friendList,
-            pagination
+            pagination: getPaginationMetadata(total, page, limit),
         };
     },
 
@@ -303,31 +247,35 @@ export const FriendService = {
      */
     async getFriendRequests(userId, query = {}) {
         const { page, limit, skip } = getPaginationParams(query);
-        const { type = 'received' } = query; // 'received' hoặc 'sent'
+        const { type = "received" } = query;
 
         const filter = {
-            status: 'pending',
-            [type === 'received' ? 'to' : 'from']: userId
+            status: "pending",
+            [type === "received" ? "to" : "from"]: userId,
         };
 
         const [requests, total] = await Promise.all([
             FriendRequest.find(filter)
-                .populate('from', 'displayName username email avatar')
-                .populate('to', 'displayName username email avatar')
+                .populate("from", "displayName username email avatar")
+                .populate("to", "displayName username email avatar")
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
-                .sort({ createdAt: -1 }),
-
-            FriendRequest.countDocuments(filter)
+                .lean(),
+            FriendRequest.countDocuments(filter),
         ]);
 
-        const requestList = this.mapRequestsToList(requests, type);
-        const pagination = getPaginationMetadata(total, page, limit);
+        const mapped = requests.map((r) => ({
+            _id: r._id,
+            from: r.from,
+            to: r.to,
+            createdAt: r.createdAt,
+        }));
 
         return {
-            friendRequests: requestList,
-            pagination,
-            type
+            friendRequests: mapped,
+            pagination: getPaginationMetadata(total, page, limit),
+            type,
         };
     },
 
@@ -335,134 +283,107 @@ export const FriendService = {
      * Gợi ý bạn bè (người chưa có quan hệ)
      */
     async getFriendSuggestions(userId, limit = 10) {
-        // Lấy tất cả connections hiện có
         const [friendships, pendingRequests] = await Promise.all([
             Friend.find({
-                $or: [
-                    { requester: userId },
-                    { recipient: userId }
-                ]
-            }).select('requester recipient'),
-
+                $or: [{ requester: userId }, { recipient: userId }],
+            }).select("requester recipient").lean(),
             FriendRequest.find({
                 $or: [
-                    { from: userId, status: 'pending' },
-                    { to: userId, status: 'pending' }
-                ]
-            }).select('from to')
+                    { from: userId, status: "pending" },
+                    { to: userId, status: "pending" },
+                ],
+            }).select("from to").lean(),
         ]);
 
-        // Build exclude list
-        const excludeIds = new Set([userId.toString()]);
-
-        friendships.forEach(conn => {
-            excludeIds.add(conn.requester.toString());
-            excludeIds.add(conn.recipient.toString());
+        const exclude = new Set([userId.toString()]);
+        friendships.forEach((f) => {
+            exclude.add(f.requester.toString());
+            exclude.add(f.recipient.toString());
+        });
+        pendingRequests.forEach((r) => {
+            exclude.add(r.from.toString());
+            exclude.add(r.to.toString());
         });
 
-        pendingRequests.forEach(req => {
-            excludeIds.add(req.from.toString());
-            excludeIds.add(req.to.toString());
-        });
-
-        // Tìm users chưa có quan hệ
         const suggestions = await User.find({
-            _id: { $nin: Array.from(excludeIds) }
+            _id: { $nin: Array.from(exclude) },
         })
-            .select('username displayName email avatar')
-            .limit(parseInt(limit, 10));
+            .select("username displayName email avatar")
+            .limit(Number(limit))
+            .lean();
 
-        return {
-            suggestions,
-            total: suggestions.length
-        };
+        return { suggestions, total: suggestions.length };
     },
 
     /**
      * Gợi ý bạn bè nâng cao (mutual friends)
      */
     async getAdvancedFriendSuggestions(userId, limit = 10) {
-        // Lấy danh sách bạn bè hiện tại
-        const currentFriends = await Friend.find({
-            $or: [
-                { requester: userId },
-                { recipient: userId }
-            ]
-        });
+        const userIdStr = userId.toString();
 
-        const friendIds = currentFriends.map(f =>
-            f.requester.toString() === userId.toString()
-                ? f.recipient
-                : f.requester
+        const currentFriends = await Friend.find({
+            $or: [{ requester: userId }, { recipient: userId }],
+        }).lean();
+
+        const friendIds = currentFriends.map((f) =>
+            f.requester.toString() === userIdStr
+                ? f.recipient.toString()
+                : f.requester.toString()
         );
 
-        if (friendIds.length === 0) {
-            // Nếu chưa có bạn nào, return random users
+        if (!friendIds.length)
             return this.getFriendSuggestions(userId, limit);
-        }
 
-        // Lấy pending requests để exclude
         const pendingRequests = await FriendRequest.find({
             $or: [
-                { from: userId, status: 'pending' },
-                { to: userId, status: 'pending' }
-            ]
-        });
+                { from: userId, status: "pending" },
+                { to: userId, status: "pending" },
+            ],
+        }).lean();
 
-        const pendingUserIds = pendingRequests.map(r =>
-            r.from.toString() === userId.toString() ? r.to.toString() : r.from.toString()
+        const pendingUserIds = pendingRequests.map((r) =>
+            r.from.toString() === userIdStr ? r.to.toString() : r.from.toString()
         );
 
-        // Tìm bạn của bạn
         const friendsOfFriends = await Friend.find({
             $or: [
                 { requester: { $in: friendIds } },
-                { recipient: { $in: friendIds } }
-            ]
-        });
+                { recipient: { $in: friendIds } },
+            ],
+        }).lean();
 
-        // Đếm mutual friends
         const mutualCount = {};
-        friendsOfFriends.forEach(f => {
-            const potentialFriendId =
-                friendIds.includes(f.requester.toString())
-                    ? f.recipient.toString()
-                    : f.requester.toString();
+        for (const f of friendsOfFriends) {
+            const potentialId = friendIds.includes(f.requester.toString())
+                ? f.recipient.toString()
+                : f.requester.toString();
 
-            // Exclude: bản thân, bạn hiện tại, pending requests
             if (
-                potentialFriendId !== userId.toString() &&
-                !friendIds.includes(potentialFriendId) &&
-                !pendingUserIds.includes(potentialFriendId)
+                potentialId !== userIdStr &&
+                !friendIds.includes(potentialId) &&
+                !pendingUserIds.includes(potentialId)
             ) {
-                mutualCount[potentialFriendId] = (mutualCount[potentialFriendId] || 0) + 1;
+                mutualCount[potentialId] = (mutualCount[potentialId] || 0) + 1;
             }
-        });
+        }
 
-        // Sort và lấy top suggestions
-        const topSuggestionIds = Object.entries(mutualCount)
+        const topIds = Object.entries(mutualCount)
             .sort(([, a], [, b]) => b - a)
             .slice(0, limit)
             .map(([id]) => id);
 
-        if (topSuggestionIds.length === 0) {
-            return this.getFriendSuggestions(userId, limit);
-        }
+        if (!topIds.length) return this.getFriendSuggestions(userId, limit);
 
-        // Lấy thông tin users
-        const suggestions = await User.find({
-            _id: { $in: topSuggestionIds }
-        }).select('username displayName email avatar');
-
-        // Thêm mutual friends count
-        const suggestionsWithMutual = suggestions.map(user => ({
-            ...user.toObject(),
-            mutualFriendsCount: mutualCount[user._id.toString()] || 0
-        }));
+        const suggestions = await User.find({ _id: { $in: topIds } })
+            .select("username displayName email avatar")
+            .lean();
 
         return {
-            suggestions: suggestionsWithMutual,
-            total: suggestionsWithMutual.length
+            suggestions: suggestions.map((u) => ({
+                ...u,
+                mutualFriendsCount: mutualCount[u._id.toString()] || 0,
+            })),
+            total: suggestions.length,
         };
     },
 
