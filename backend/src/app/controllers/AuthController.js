@@ -2,12 +2,12 @@ import { AuthService } from "../services/AuthService.js";
 import {
     attachAuthCookies,
     clearAuthCookies,
-} from "../utils/jwt.js";
-import { generateResetCode } from "../utils/passwordHelper.js";
-import { ENV } from "../config/env.js";
-import sendResetCode from "../utils/mailer.js";
+} from "../../utils/jwt.js";
+import { generateResetCode } from "../../utils/passwordHelper.js";
+import { ENV } from "../../config/env.js";
+import sendResetCode from "../../utils/mailer.js";
 import passport from "passport";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 const resetCodes = {}; // Lưu tạm code quên mật khẩu trong RAM
 
 // ===============================

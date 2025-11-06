@@ -1,5 +1,5 @@
 import { UserService } from "../services/UserService.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 export const getMe = async (req, res, next) => {
     try {

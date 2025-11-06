@@ -1,5 +1,5 @@
-import { getPaginationMetadata, getPaginationParams } from "../utils/pagination.js";
-import { createError } from "../utils/AppError.js";
+import { getPaginationMetadata, getPaginationParams } from "../../utils/pagination.js";
+import { createError } from "../../utils/AppError.js";
 import Friend from "../models/Friend.js";
 import FriendRequest from "../models/FriendRequest.js";
 import User from "../models/User.js";

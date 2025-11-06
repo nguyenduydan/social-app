@@ -1,5 +1,5 @@
-import { ENV } from "../config/env.js";
-import { colors, logLine } from "../utils/logger.js";
+import { ENV } from "../../config/env.js";
+import { colors, logLine } from "../../utils/logger.js";
 
 export const errorHandler = (err, req, res, next) => {
     const statusCode = err.status || 500;

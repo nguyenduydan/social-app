@@ -1,6 +1,6 @@
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 export const ConversationService = {
     async createConversation(userId, type, name, memberIds) {

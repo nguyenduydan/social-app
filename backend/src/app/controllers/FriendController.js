@@ -1,4 +1,4 @@
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 import { FriendService } from "../services/FriendService.js";
 
 /**

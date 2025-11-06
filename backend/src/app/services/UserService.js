@@ -1,6 +1,6 @@
-import { ENV } from "../config/env.js";
-import { deleteOnCloudinary, uploadToCloudinary } from "../utils/useCloudinary.js";
-import { createError } from "../utils/AppError.js";
+import { ENV } from "../../config/env.js";
+import { deleteOnCloudinary, uploadToCloudinary } from "../../utils/useCloudinary.js";
+import { createError } from "../../utils/AppError.js";
 import User from "../models/User.js";
 
 export const UserService = {

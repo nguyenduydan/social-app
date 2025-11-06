@@ -1,5 +1,5 @@
 import { MessageService } from "../services/MessageService.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 
 export const sendDirectMessage = async (req, res, next) => {

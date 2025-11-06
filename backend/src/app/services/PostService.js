@@ -1,14 +1,14 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 import {
     uploadToCloudinary,
     deleteOnCloudinary,
     deleteMultipleOnCloudinary,
-} from "../utils/useCloudinary.js";
-import { getPaginationMetadata, getPaginationParams } from "../utils/pagination.js";
-import { compressVideo } from "../utils/mediaCompressor.js";
-import { uploadMedia } from "../utils/uploadMediaHelper.js";
+} from "../../utils/useCloudinary.js";
+import { getPaginationMetadata, getPaginationParams } from "../../utils/pagination.js";
+import { compressVideo } from "../../utils/mediaCompressor.js";
+import { uploadMedia } from "../../utils/uploadMediaHelper.js";
 
 export const PostService = {
     async create({ userId, content, media = [], visibility = "friends" }) {

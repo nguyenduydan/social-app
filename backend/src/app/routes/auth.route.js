@@ -1,7 +1,7 @@
 import express from "express";
 import { forgotPassword, signin, logout, oauthCallback, refreshToken, resetPassword, signup, verifyResetCode } from "../controllers/AuthController.js";
 import passport from "passport";
-import { ENV } from "../config/env.js";
+import { ENV } from "../../config/env.js";
 
 const router = express.Router();
 

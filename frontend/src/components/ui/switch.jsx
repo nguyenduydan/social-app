@@ -19,7 +19,7 @@ const Switch = ({ className }) => {
             />
 
             <span
-                className={`flex items-center justify-center w-6 h-6 md:w-10 md:h-10 rounded-full transition-all duration-300 hover:text-foreground
+                className={`flex items-center mt-1 justify-center w-6 h-6 md:w-10 md:h-10 rounded-full transition-all duration-300 hover:text-foreground
                         hover:scale-110 active:scale-75 ${className}`}
             >
                 {/* Mặt trăng (Dark Mode) */}

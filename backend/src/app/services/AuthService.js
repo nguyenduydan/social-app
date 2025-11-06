@@ -3,10 +3,10 @@ import Session from "../models/Session.js";
 import {
     generateAccessToken,
     generateRefreshToken,
-} from "../utils/jwt.js";
-import { hashPassword, comparePassword } from "../utils/passwordHelper.js";
-import { createError } from "../utils/AppError.js";
-import { ENV } from "../config/env.js";
+} from "../../utils/jwt.js";
+import { hashPassword, comparePassword } from "../../utils/passwordHelper.js";
+import { createError } from "../../utils/AppError.js";
+import { ENV } from "../../config/env.js";
 
 const REFRESH_TOKEN_EXPIRE = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 

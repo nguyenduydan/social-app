@@ -1,5 +1,5 @@
 import { ConversationService } from "../services/ConversationService.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 export const createConversation = async (req, res, next) => {
     try {

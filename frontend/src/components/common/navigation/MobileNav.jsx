@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useScrollStatus } from "@/hooks/useScrollStatus";
 import { useScrollRef } from "@/contexts/ScrollContext";
+import logo from "@/assets/logo/logo.png";
 
 const MobileNav = () => {
     const [open, setOpen] = useState(false);
@@ -34,6 +35,15 @@ const MobileNav = () => {
                        border-t border-border/30 shadow-[0_-2px_5px_rgba(0,0,0,0.15)]
                        z-50 px-4 flex justify-between items-center gap-3 ${isScrolling ? "translate-y-20 scale-50" : "scale-100 translate-0"} transition-all duration-300`}
         >
+            {/* Logo */}
+            <div className="flex items-center space-x-1 cursor-default ">
+                <img
+                    src={logo}
+                    className="h-8 w-8"
+                    alt="Social Logo"
+                />
+            </div>
+            <div className="h-10 w-[1px] bg-muted/30 rounded-full" />
             {/* Routes (các tab điều hướng chính) */}
             <div className="flex justify-evenly flex-1">
                 {routes.map((item, idx) => {
@@ -49,7 +59,7 @@ const MobileNav = () => {
                     );
                 })}
             </div>
-            <div className="h-10 w-[1px] bg-background rounded-full" />
+            <div className="h-10 w-[1px] bg-muted/30 rounded-full" />
 
             {/* Nút tạo bài viết (ở giữa hoặc cuối) */}
             {!isAtTop && (

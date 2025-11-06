@@ -2,7 +2,7 @@
 import Conversation from "../models/Conversation.js";
 import Friend from "../models/Friend.js";
 import FriendRequest from "../models/FriendRequest.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 const normalizePair = (a, b) => (a < b ? [a, b] : [b, a]);
 

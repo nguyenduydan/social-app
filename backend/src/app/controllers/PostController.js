@@ -1,5 +1,5 @@
 import { PostService } from "../services/PostService.js";
-import { createError } from "../utils/AppError.js";
+import { createError } from "../../utils/AppError.js";
 
 export const getFeed = async (req, res, next) => {
     try {
