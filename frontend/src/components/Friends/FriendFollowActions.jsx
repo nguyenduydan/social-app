@@ -88,7 +88,7 @@ const FriendFollowActions = ({ userId, className = "" }) => {
             )}
 
             {/* Đã là bạn bè */}
-            {friendStatus === "accepted" && (
+            {friendStatus === "friend" && (
                 <Button
                     onClick={() => unfriend(friendshipId || userId)}
                     disabled={loading}

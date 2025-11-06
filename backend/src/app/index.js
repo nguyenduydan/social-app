@@ -12,10 +12,9 @@ import { setupSwagger } from "./docs/swagger.js";
 import { httpLogger } from "./middlewares/httpLogger.js";
 
 const app = express();
-
+app.use(httpLogger);
 app.use(express.json({ limit: "30mb" }));
 app.use(cookieParser());
-app.use(httpLogger);
 app.use(passport.initialize());
 app.use(
     cors({

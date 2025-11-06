@@ -5,7 +5,49 @@ import FriendRequest from "../models/FriendRequest.js";
 import User from "../models/User.js";
 
 export const FriendService = {
+    async checkFriendshipStatus(currentUserId, targetUserId) {
+        // Kiểm tra nếu đã là bạn bè
+        const friendship = await Friend.findOne({
+            $or: [
+                { requester: currentUserId, recipient: targetUserId },
+                { requester: targetUserId, recipient: currentUserId },
+            ],
+        });
 
+        if (friendship) {
+            return {
+                status: "friend",
+                isFriend: true,
+                isRequester: friendship.requester.toString() === currentUserId.toString(),
+                pending: false,
+            };
+        }
+
+        // Kiểm tra nếu có lời mời đang chờ
+        const request = await FriendRequest.findOne({
+            $or: [
+                { from: currentUserId, to: targetUserId },
+                { from: targetUserId, to: currentUserId },
+            ],
+            status: "pending",
+        });
+
+        if (request) {
+            return {
+                status: "pending",
+                isFriend: false,
+                isRequester: request.from.toString() === currentUserId.toString(),
+                pending: true,
+            };
+        }
+
+        return {
+            status: "none",
+            isFriend: false,
+            isRequester: false,
+            pending: false,
+        };
+    },
     /**
      * Gửi lời mời kết bạn
      */
@@ -91,7 +133,7 @@ export const FriendService = {
         await friendship.populate([
             { path: 'requester', select: '_id displayName username avatar' },
             { path: 'recipient', select: '_id displayName username avatar' }
-        ]).lean();
+        ]);
 
         return {
             message: "Friend request accepted successfully",

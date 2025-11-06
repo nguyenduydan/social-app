@@ -40,8 +40,8 @@
                                 }
                             },
                             "example": {
-                                "email": "user@example.com",
-                                "password": "Password123!"
+                                "email": "admin@gmail.com",
+                                "password": "danvip123"
                             }
                         }
                     }

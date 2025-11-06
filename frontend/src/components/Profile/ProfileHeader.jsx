@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { useUserStore } from "@/store/useUserStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import ImageEditorDialog from "../common/ImageEditorDialog";
-import FriendFollowActions from "./FriendFollowActions";
+import FriendFollowActions from "../Friends/FriendFollowActions";
 
 const ProfileHeader = ({ user }) => {
     const { user: currentUser } = useAuthStore();

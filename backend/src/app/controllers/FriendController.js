@@ -1,6 +1,23 @@
 import { createError } from "../../utils/AppError.js";
 import { FriendService } from "../services/FriendService.js";
 
+export const checkStatus = async (req, res, next) => {
+    try {
+        const currentUserId = req.user._id;
+        const { userId } = req.params;
+
+        if (!userId) throw createError("User ID is required", 400);
+        if (currentUserId.toString() === userId.toString()) {
+            throw createError("Cannot check friendship status with yourself", 400);
+        }
+
+        const result = await FriendService.checkFriendshipStatus(currentUserId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 /**
  * Gửi lời mời kết bạn
  * POST /api/friends/requests

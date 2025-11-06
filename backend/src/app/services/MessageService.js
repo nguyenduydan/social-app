@@ -7,7 +7,7 @@ export const MessageService = {
         let conversation;
 
         if (conversationId) {
-            conversation = await Conversation.findbyId(conversationId);
+            conversation = await Conversation.findById(conversationId);
         }
 
         if (!conversation) {

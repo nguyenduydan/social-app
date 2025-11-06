@@ -2,7 +2,7 @@ import express from "express";
 import {
     acceptRequest,
     cancelRequest,
-    // checkStatus,
+    checkStatus,
     getAdvancedFriendSuggestions,
     getAllFriends,
     getFriendRequests,
@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-// router.get("/status/:userId", checkStatus);
+router.get("/status/:userId", checkStatus);
 
 router.post("/requests", sendRequest);
 router.get("/requests", getFriendRequests);
