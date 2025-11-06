@@ -1,17 +1,34 @@
-import { ENV } from "./config/env.js";
-import { connectDB } from "./config/db.js";
-import { logLine, colors } from "./utils/logger.js";
-import app from "./app/index.js";
+import { log, startupLog } from "./utils/logger.js";
+
+process.on("uncaughtException", (err) => {
+    log.error("Uncaught Exception", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+    log.error("Unhandled Rejection", reason);
+});
 
 const startServer = async () => {
     try {
+        const { ENV } = await import("./config/env.js");
+        const { connectDB } = await import("./config/db.js");
+        const { default: app } = await import("./app/index.js");
+        // Kết nối Database
         await connectDB();
-        app.listen(ENV.PORT, () => {
-            logLine(`Server running at http://localhost:${ENV.PORT}`, colors.green);
-            logLine(`Press Ctrl + C to exit`, colors.yellow);
+        log.info("Connected to MongoDB");
+
+        // Khởi động server
+        const server = app.listen(ENV.PORT, () => {
+            startupLog(ENV.PORT);
         });
+
+        // // Khởi tạo socket.io
+        // import("./socket/index.js").then(({ initSocket }) => {
+        //     initSocket(server);
+        //     log.info("📡 Socket.IO initialized");
+        // });
     } catch (err) {
-        logLine(`Failed to start server: ${err}`, colors.red);
+        log.error("Failed to start server", err);
         process.exit(1);
     }
 };

@@ -9,11 +9,13 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import { protectRoute } from "./middlewares/auth.middleware.js";
 import routes from "./routes/index.js";
 import { setupSwagger } from "./docs/swagger.js";
+import { httpLogger } from "./middlewares/httpLogger.js";
 
 const app = express();
 
 app.use(express.json({ limit: "30mb" }));
 app.use(cookieParser());
+app.use(httpLogger);
 app.use(passport.initialize());
 app.use(
     cors({

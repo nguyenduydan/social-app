@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import ffprobeInstaller from "@ffprobe-installer/ffprobe";
-import { colors, logLine } from "./logger.js";
+import { log } from "./logger.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);
@@ -12,81 +12,95 @@ ffmpeg.setFfprobePath(ffprobeInstaller.path);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Nén video bằng FFmpeg (có log màu + timestamp đẹp)
+ * Tạo file tạm an toàn
+ */
+const createTempFile = (prefix, ext = ".mp4") =>
+    path.join(__dirname, `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+
+/**
+ * Xóa file nếu tồn tại (an toàn)
+ */
+const safeDelete = (filePath) => {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+};
+
+/**
+ * Lấy metadata video (dùng ffprobe)
+ */
+export const analyzeVideo = (filePath) => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(filePath, (err, data) => {
+            if (err) return reject(err);
+            resolve(data);
+        });
+    });
+};
+
+/**
+ * Nén video bằng FFmpeg
+ * @param {Buffer} buffer - Video input
+ * @returns {Promise<Buffer>} - Nén thành công trả về buffer nén
  */
 export const compressVideo = async (buffer) => {
-    const tempInput = path.join(__dirname, `temp_input_${Date.now()}.mp4`);
-    const tempOutput = path.join(__dirname, `temp_output_${Date.now()}.mp4`);
+    const tempInput = createTempFile("input");
+    const tempOutput = createTempFile("output");
+
+    const startTime = Date.now();
 
     try {
-        // Ghi file tạm
         fs.writeFileSync(tempInput, buffer);
-        const inputSizeMB = fs.statSync(tempInput).size / 1024 / 1024;
-        logLine(`📥 Input video size: ${inputSizeMB.toFixed(2)} MB`, colors.cyan);
+        const inputSizeMB = (fs.statSync(tempInput).size / 1024 / 1024).toFixed(2);
+        log.info(`📥 Input video size: ${inputSizeMB} MB`);
 
-        // Kiểm tra metadata để xem có audio không
-        const metadata = await new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(tempInput, (err, data) => {
-                if (err) reject(err);
-                else resolve(data);
-            });
-        });
-
+        // Lấy metadata
+        const metadata = await analyzeVideo(tempInput);
         const hasAudio = metadata.streams.some((s) => s.codec_type === "audio");
-        logLine(`🎧 Audio stream detected: ${hasAudio ? "✅ Yes" : "❌ No"}`, hasAudio ? colors.green : colors.red);
+        log.info(`🎧 Audio stream detected: ${hasAudio ? "Yes" : "No"}`);
 
-        // Chạy nén video
+        // Tạo lệnh FFmpeg
         await new Promise((resolve, reject) => {
-            let command = ffmpeg(tempInput).outputOptions([
-                "-c:v libx264",
-                "-preset veryfast",
-                "-crf 23",
-                "-vf scale=-2:1080",
-                "-movflags +faststart",
-            ]);
+            let cmd = ffmpeg(tempInput)
+                .outputOptions([
+                    "-c:v libx264",
+                    "-preset veryfast",
+                    "-crf 23",
+                    "-vf scale=-2:1080",
+                    "-movflags +faststart",
+                ])
+                .on("start", (commandLine) => log.debug(`FFmpeg started: ${commandLine}`))
+                .on("progress", (progress) => {
+                    if (progress.percent && progress.percent % 10 < 1) {
+                        log.debug(`Progress: ${progress.percent.toFixed(1)}%`);
+                    }
+                })
+                .on("end", resolve)
+                .on("error", reject);
 
-            if (hasAudio) {
-                command = command.outputOptions(["-c:a aac", "-b:a 96k"]);
-            } else {
-                command = command.noAudio();
-            }
+            if (hasAudio) cmd = cmd.outputOptions(["-c:a aac", "-b:a 96k"]);
+            else cmd = cmd.noAudio();
 
-            command
-                .on("start", (cmd) => {
-                    logLine("🚀 FFmpeg started", colors.yellow);
-                    logLine(cmd, colors.gray);
-                })
-                .on("end", () => {
-                    logLine("✅ FFmpeg compression finished", colors.green);
-                    resolve();
-                })
-                .on("error", (err) => {
-                    logLine(`❌ FFmpeg compression error: ${err.message}`, colors.red);
-                    reject(err);
-                })
-                .save(tempOutput);
+            cmd.save(tempOutput);
         });
 
         // Kết quả nén
         const inputSize = fs.statSync(tempInput).size;
         const outputSize = fs.statSync(tempOutput).size;
+        const ratio = ((outputSize / inputSize) * 100).toFixed(2);
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
-        logLine("📊 Compression result:", colors.cyan);
-        logLine(`- Before: ${(inputSize / 1024 / 1024).toFixed(2)} MB`, colors.gray);
-        logLine(`- After: ${(outputSize / 1024 / 1024).toFixed(2)} MB`, colors.gray);
-        logLine(`- Ratio: ${((outputSize / inputSize) * 100).toFixed(2)}%`, colors.yellow);
+        log.info("📊 Compression result:");
+        log.info(`- Before: ${(inputSize / 1024 / 1024).toFixed(2)} MB`);
+        log.info(`- After: ${(outputSize / 1024 / 1024).toFixed(2)} MB`);
+        log.info(`- Ratio: ${ratio}%`);
+        log.info(`- Time: ${duration}s`);
 
         const compressedBuffer = fs.readFileSync(tempOutput);
-
-        // Dọn file tạm
-        fs.unlinkSync(tempInput);
-        fs.unlinkSync(tempOutput);
-
         return compressedBuffer;
     } catch (error) {
-        logLine(`💥 Video compression failed: ${error.message}`, colors.red);
-        if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput);
-        if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput);
-        return buffer; // fallback nếu nén lỗi
+        log.error(`💥 Video compression failed: ${error.message}`);
+        return buffer; // fallback buffer nếu lỗi
+    } finally {
+        safeDelete(tempInput);
+        safeDelete(tempOutput);
     }
 };

@@ -1,51 +1,46 @@
 import { ENV } from "../../config/env.js";
-import { colors, logLine } from "../../utils/logger.js";
+import { log } from "../../utils/logger.js";
 
+/**
+ * Global Error Handler Middleware
+ * Xử lý tất cả lỗi phát sinh trong hệ thống.
+ */
 export const errorHandler = (err, req, res, next) => {
     const statusCode = err.status || 500;
     const message = err.message || "Internal Server Error";
 
+    const errorData = {
+        method: req.method,
+        url: req.originalUrl,
+        status: statusCode,
+        message,
+        stack: err.stack,
+    };
 
-    const colorForStatus =
-        statusCode >= 500
-            ? colors.red
-            : statusCode >= 400
-                ? colors.yellow
-                : colors.green;
-
+    // Ghi log chi tiết
     if (ENV.APP_ENV === "development") {
-        console.log("\n");
-
-        logLine(`❌ [${req.method}] ${req.originalUrl}`, colorForStatus);
-        logLine(`→ Status: ${statusCode}`, colorForStatus);
-        logLine(`→ Message: ${message}`, colors.cyan);
-
-        if (err.stack) {
-            logLine("📦 Stack Trace:", colors.gray);
-            err.stack.split("\n").forEach((line) => {
-                logLine(line.trim(), colors.gray);
-            });
-        }
-
-        console.log("\n"); // kết thúc log
+        log.error(
+            `[${req.method}] ${req.originalUrl} — ${message}\nStatus: ${statusCode}\n${err.stack}`
+        );
     } else {
-        // Production
-        const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
-        console.error(`${colors.gray}[${time}]${colors.reset} ${colorForStatus}❌ [${req.method}] ${req.originalUrl} — ${message}${colors.reset}`);
+        log.error(
+            `[${req.method}] ${req.originalUrl} — ${message} (Status: ${statusCode})`
+        );
     }
 
-    // JSON return client
-    const errorResponse = {
+    // Gửi phản hồi JSON cho client
+    const response = {
         success: false,
         message,
     };
 
+    // Dev mode hiển thị chi tiết lỗi
     if (ENV.APP_ENV === "development") {
-        errorResponse.error = {
+        response.error = {
             name: err.name,
             stack: err.stack?.split("\n").map((line) => line.trim()),
         };
     }
 
-    return res.status(statusCode).json(errorResponse);
+    return res.status(statusCode).json(response);
 };

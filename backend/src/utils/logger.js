@@ -1,48 +1,37 @@
-// src/utils/logger.js
-export const colors = {
-    reset: "\x1b[0m",
-    red: "\x1b[31m",
-    yellow: "\x1b[33m",
-    green: "\x1b[32m",
-    cyan: "\x1b[36m",
-    gray: "\x1b[90m",
+import { createLogger } from "winston";
+import { loggerConfig } from "../config/logger.config.js";
+import chalk from "chalk";
+
+export const logger = createLogger(loggerConfig);
+
+export const log = {
+    info: (msg) => logger.info(msg),
+    warn: (msg) => logger.warn(msg),
+    error: (msg, err = null) => {
+        if (err) logger.error(`${msg} - ${err.message}\n${err.stack}`);
+        else logger.error(msg);
+    },
+    debug: (msg) => logger.debug(msg),
 };
 
-export const logLine = (text, color = colors.reset) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
-    console.log(`${colors.green}[${time}]${colors.reset} - ${color}${text}${colors.reset}`);
+export const startupLog = (port) => {
+    const divider = chalk.gray("------------------------------------------------------");
+    console.log("\n" + divider);
+    console.log(chalk.green.bold("🚀 SERVER STARTED SUCCESSFULLY"));
+    console.log(divider);
+    console.log(`${chalk.white("🌐  URL:")} ${chalk.cyan(`http://localhost:${port}`)}`);
+    console.log(`${chalk.white("📘  Swagger Docs:")} ${chalk.cyan(`http://localhost:${port}/api-docs`)}`);
+    console.log(`${chalk.white("🧩  Mode:")} ${chalk.yellow(process.env.NODE_ENV || "development")}`);
+    console.log(`${chalk.white("🕒  Started At:")} ${chalk.gray(new Date().toLocaleString())}`);
+    console.log(divider + "\n");
 };
 
-export const logErrorDev = (err, req) => {
-    console.log("\n");
-    const statusColor =
-        err.status >= 500
-            ? colors.red
-            : err.status >= 400
-                ? colors.yellow
-                : colors.green;
+// Ghi log lỗi toàn cục
+process.on("uncaughtException", (err) => {
+    log.error("Uncaught Exception", err);
+    process.exit(1);
+});
 
-    logLine(`❌ [${req.method}] ${req.originalUrl}`, statusColor);
-    logLine(`→ Status: ${err.status}`, statusColor);
-    logLine(`→ Message: ${err.message}`, colors.cyan);
-
-    if (err.stack) {
-        logLine("📦 Stack Trace:", colors.gray);
-        err.stack.split("\n").forEach((line) => logLine(line.trim(), colors.gray));
-    }
-    console.log("\n");
-};
-
-export const logErrorProd = (err, req) => {
-    const time = new Date().toLocaleTimeString("vi-VN", { hour12: false });
-    const color =
-        err.status >= 500
-            ? colors.red
-            : err.status >= 400
-                ? colors.yellow
-                : colors.green;
-
-    console.error(
-        `${colors.gray}[${time}]${colors.reset} ${color}❌ [${req.method}] ${req.originalUrl} — ${err.message}${colors.reset}`
-    );
-};
+process.on("unhandledRejection", (reason) => {
+    log.error("Unhandled Promise Rejection", reason);
+});

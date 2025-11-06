@@ -1,7 +1,6 @@
 import swaggerUi from "swagger-ui-express";
 import fs from "fs";
-import { createError } from "../../utils/AppError.js";
-import { colors, logLine } from "../../utils/logger.js";
+import { log } from "../../utils/logger.js";
 
 export const setupSwagger = (app) => {
     try {
@@ -10,6 +9,6 @@ export const setupSwagger = (app) => {
         );
         app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
     } catch (err) {
-        logLine(`Failed to load Swagger docs: ${err}`, colors.red);
+        log.error(`Failed to load Swagger docs: ${err}`);
     }
 };
