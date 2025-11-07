@@ -3,9 +3,10 @@ import { usePostStore } from '@/store/usePostStore';
 import React, { useCallback, useEffect } from 'react';
 import PostCard from "./PostCard";
 import FeedCardSkeleton from './SkeletonPostCard';
+import { useLoadMore } from '@/hooks/useLoadMore';
 
 const PostListById = ({ user }) => {
-    const { getPostsByUserId, posts, loading, loadingMore, pagination } = usePostStore();
+    const { getPostsByUserId, posts, loading, loadingMore, pagination, setLoadingMore } = usePostStore();
 
     useEffect(() => {
         if (user?._id) {
@@ -13,11 +14,23 @@ const PostListById = ({ user }) => {
         }
     }, [getPostsByUserId, user?._id]);
 
-    const loadMore = useCallback(() => {
-        if (pagination.hasNextPage && !loadingMore && !loading) {
-            getPostsByUserId(user._id, pagination.currentPage + 1, true);
+    // const loadMore = useCallback(() => {
+    //     if (pagination.hasNextPage && !loadingMore && !loading) {
+    //         getPostsByUserId(user._id, pagination.currentPage + 1, true);
+    //     }
+    // }, [pagination, loading, loadingMore, getPostsByUserId, user._id]);
+
+    const loadMore = useLoadMore(
+        getPostsByUserId,
+        pagination,
+        loading,
+        loadingMore,
+        setLoadingMore,
+        {
+            delay: 350,
+            additionalArgs: [user._id]
         }
-    }, [pagination, loading, loadingMore, getPostsByUserId, user._id]);
+    );
 
     const { lastElementRef } = useInfiniteScroll(
         loadMore,

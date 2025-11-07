@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { usePostStore } from "@/store/usePostStore";
 import PostCard from "./PostCard";
 import FeedCardSkeleton from "./SkeletonPostCard";
 import { useInfiniteScroll } from "@/hooks/useInfinityScroll";
+import { useLoadMore } from "@/hooks/useLoadMore";
 
 const PostList = () => {
     const { fetchPosts, posts, loading, loadingMore, pagination, setLoadingMore } = usePostStore();
@@ -15,20 +16,14 @@ const PostList = () => {
     }, [fetchPosts]);
 
     // Load thêm khi cuộn xuống
-    const loadMore = useCallback(() => {
-        if (pagination.hasNextPage && !loading && !loadingMore) {
-            setLoadingMore(true);
-
-            clearTimeout(delayRef.current);
-            delayRef.current = setTimeout(async () => {
-                try {
-                    await fetchPosts(pagination.currentPage + 1, true);
-                } finally {
-                    setLoadingMore(false);
-                }
-            }, 350);
-        }
-    }, [pagination, loading, loadingMore, fetchPosts, setLoadingMore]);
+    const loadMore = useLoadMore(
+        fetchPosts,
+        pagination,
+        loading,
+        loadingMore,
+        setLoadingMore,
+        { delay: 350 }
+    );
 
     // Luôn khai báo hook trước mọi return
     const { lastElementRef } = useInfiniteScroll(loadMore, pagination.hasNextPage, loading, {

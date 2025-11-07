@@ -8,7 +8,7 @@ import GroupList from "./GroupList";
 import ColorTheme from "./ColorTheme";
 import SettingNotification from "./SettingNotification";
 import SettingMessage from "./SettingMessage";
-import { ArrowBigLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 const Sidebar = ({ className = "" }) => {
@@ -60,7 +60,7 @@ const Sidebar = ({ className = "" }) => {
     };
 
     return (
-        <aside className={`flex flex-col border-r border-border bg-card ${className}`}>
+        <aside className={`flex flex-col bg-card ${className}`}>
             {/* Header (animate riêng) */}
             <div className="relative h-[56px] border-b border-border overflow-hidden">
                 <AnimatePresence mode="popLayout" custom={direction}>
@@ -89,7 +89,7 @@ const Sidebar = ({ className = "" }) => {
                                 onClick={handleGoBack}
                                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition cursor-pointer"
                             >
-                                <ArrowBigLeft />
+                                <ArrowLeft />
                             </Button>
                             <span className="text-sm font-semibold">{renderHeaderTitle()}</span>
                             <div className="w-10" />

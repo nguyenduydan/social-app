@@ -1,6 +1,7 @@
 import { useThemeStore } from "@/store/useThemeStore";
 import { Moon, Sun } from "lucide-react";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Switch = ({ className }) => {
     const { isDark, toggleTheme } = useThemeStore();
@@ -10,28 +11,35 @@ const Switch = ({ className }) => {
     }, [isDark]);
 
     return (
-        <label className="relative inline-flex items-center cursor-pointer group">
-            <input
-                type="checkbox"
-                checked={isDark}
-                onChange={toggleTheme}
-                className="hidden"
-            />
-
-            <span
-                className={`flex items-center mt-1 justify-center w-6 h-6 md:w-10 md:h-10 rounded-full transition-all duration-300 hover:text-foreground
-                        hover:scale-110 active:scale-75 ${className}`}
-            >
-                {/* Mặt trăng (Dark Mode) */}
-                <Moon
-                    className="absolute w-4 h-4 md:w-6 md:h-6 text-sky-700 opacity-0 group-has-[input:checked]:opacity-100 translate-y-5 group-has-[input:checked]:translate-y-0 transition-all duration-300"
-                />
-
-                {/* Mặt trời (Light Mode) */}
-                <Sun
-                    className="absolute w-4 h-4 md:w-6 md:h-6 text-yellow-500 opacity-100 group-has-[input:checked]:opacity-0 translate-y-0 group-has-[input:checked]:-translate-y-5 transition-all duration-300"
-                />
-            </span>
+        <label
+            onClick={toggleTheme}
+            className={`relative inline-flex items-center justify-center cursor-pointer group select-none overflow-hidden w-8 h-8 md:w-10 md:h-10 ${className}`}
+        >
+            <AnimatePresence mode="popLayout" initial={false}>
+                {isDark ? (
+                    <motion.div
+                        key="moon"
+                        initial={{ y: 22, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ duration: 0.35, ease: "easeInOut" }}
+                        className="absolute flex items-center justify-center w-full h-full"
+                    >
+                        <Moon className="w-5 h-5 md:w-6 md:h-6 text-sky-500" />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="sun"
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 20, opacity: 0 }}
+                        transition={{ duration: 0.35, ease: "easeInOut" }}
+                        className="absolute flex items-center justify-center w-full h-full"
+                    >
+                        <Sun className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </label>
     );
 };

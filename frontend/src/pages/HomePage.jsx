@@ -8,9 +8,9 @@ const Home = () => {
         <section className="bg-background">
             <div className="grid grid-cols-12 gap-2 min-h-screen">
                 {/* Info User and button add post - Fixed Left  - desktop*/}
-                <div className="hidden lg:block lg:col-span-3 h-screen overflow-y-auto sticky top-0">
-                    <LeftSide className="flex flex-col gap-5 " />
-                </div>
+                <aside className="hidden lg:block lg:col-span-3 sticky top-0 self-start">
+                    <LeftSide className="flex flex-col gap-5" />
+                </aside>
 
                 {/* Feeds - Scrollable Center */}
                 <main className="col-span-12 md:col-span-7 lg:col-span-6">
@@ -18,9 +18,9 @@ const Home = () => {
                 </main>
 
                 {/* ListFriend and message - Fixed Right */}
-                <div className="hidden md:block md:col-span-5 lg:col-span-3 h-screen overflow-y-auto sticky top-0">
+                <aside className="hidden md:block md:col-span-5 lg:col-span-3 sticky top-0 self-start">
                     <RightSide />
-                </div>
+                </aside>
             </div>
         </section>
     );

@@ -4,21 +4,35 @@ import { persist } from "zustand/middleware";
 export const useThemeStore = create()(
     persist(
         (set, get) => ({
-            isDark: false,
-            setTheme: (dark) => {
-                document.documentElement.classList.toggle("dark", dark);
-                set({ isDark: dark });
+            themeMode: "system", // "light" | "dark" | "system"
+
+            // Thay đổi theme mode
+            setTheme: (mode) => {
+                set({ themeMode: mode });
+                const isDark = get().resolveTheme(mode);
+                document.documentElement.classList.toggle("dark", isDark);
             },
+
+            // Toggle nhanh giữa sáng/tối (bỏ qua system)
             toggleTheme: () => {
-                set((state) => {
-                    const newTheme = !state.isDark;
-                    document.documentElement.classList.toggle("dark", newTheme);
-                    return { isDark: newTheme };
-                });
+                const { themeMode } = get();
+                const newMode = themeMode === "dark" ? "light" : "dark";
+                get().setTheme(newMode);
             },
+
+            // Xác định thực tế nên dark hay không (dựa theo system)
+            resolveTheme: (mode) => {
+                if (mode === "system") {
+                    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+                }
+                return mode === "dark";
+            },
+
+            // Gọi khi khởi tạo app (đảm bảo theme áp dụng đúng)
             applyTheme: () => {
-                const dark = get().isDark;
-                document.documentElement.classList.toggle("dark", dark);
+                const { themeMode, resolveTheme } = get();
+                const isDark = resolveTheme(themeMode);
+                document.documentElement.classList.toggle("dark", isDark);
             },
         }),
         {
