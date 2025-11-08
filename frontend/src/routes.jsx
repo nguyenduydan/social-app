@@ -11,7 +11,7 @@ const routes = [
         element: <HomePage />
     },
     {
-        name: "Hội thoại",
+        name: "Nhắn tin",
         layout: "/client",
         path: "/conversations",
         icon: <MessageSquareText className="size-4 md:size-6" />,

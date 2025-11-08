@@ -10,7 +10,7 @@ const MainLayout = () => {
             <Navigation />
             <main
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto scrollbar-hide mt-15"
+                className="flex-1 overflow-y-auto scrollbar-hide mt-0 md:mt-15"
             >
                 <Outlet />
             </main>

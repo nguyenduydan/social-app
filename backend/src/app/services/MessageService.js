@@ -10,6 +10,7 @@ export const MessageService = {
             conversation = await Conversation.findById(conversationId);
         }
 
+        // nếu chưa có cuộc trò chuyện thì tạo mới
         if (!conversation) {
             conversation = await Conversation.create({
                 type: "direct",
@@ -23,8 +24,8 @@ export const MessageService = {
         }
 
         const message = await Message.create({
-            conversationId: conversation._id,
-            senderId,
+            conversation: conversation._id,
+            sender: senderId,
             content,
         });
 
@@ -37,8 +38,8 @@ export const MessageService = {
 
     async sendGroupMessage(content, conversationId, senderId, conversation) {
         const message = await Message.create({
-            conversationId,
-            senderId,
+            conversation: conversationId,
+            sender: senderId,
             content
         });
 

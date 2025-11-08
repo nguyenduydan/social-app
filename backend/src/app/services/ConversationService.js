@@ -61,9 +61,6 @@ export const ConversationService = {
                 path: 'participants.userId', select: 'displayName avatar'
             })
             .populate({
-                path: 'participants.senderId', select: 'displayName avatar'
-            })
-            .populate({
                 path: 'seenBy', select: 'displayName avatar'
             });
 
@@ -84,10 +81,18 @@ export const ConversationService = {
         return formatted;
     },
 
-    async getMessages(conversationId, limit, cursor, query) {
+    async getMessages(conversationId, limit = 50, cursor) {
+        const query = { conversation: conversationId };
+
+        if (cursor) {
+            query.createdAt = { $lt: new Date(cursor) };
+        }
+
         let messages = await Message.find(query)
             .sort({ createdAt: -1 })
-            .limit(Number(limit) + 1);
+            .limit(Number(limit) + 1)
+            .populate('sender', 'name avatar')
+            .lean();
 
         let nextCursor = null;
         if (messages.length > Number(limit)) {
@@ -96,8 +101,8 @@ export const ConversationService = {
             messages.pop();
         }
 
-        messages = messages.reverse();
+        messages.reverse(); // newest at bottom
 
         return { messages, nextCursor };
-    },
+    }
 };

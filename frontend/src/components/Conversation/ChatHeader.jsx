@@ -5,8 +5,10 @@ import { FieldDescription } from "@/components/ui/field";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Search, X } from "lucide-react";
+import { EllipsisVertical, Search, X, Users, Archive, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -16,11 +18,20 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import useConversationStore from "@/store/useConversationStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const ChatHeader = () => {
     const [isSearch, setIsSearch] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const searchRef = useRef(null);
+
+    const { currentConversation, getConversationInfo } = useConversationStore();
+    const { user: currentUser } = useAuthStore();
+
+    const conversationInfo = getConversationInfo(currentConversation, currentUser?._id);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -42,8 +53,57 @@ const ChatHeader = () => {
         setSearchValue("");
     };
 
+    const getInitials = (name) => {
+        if (!name) return "?";
+        return name
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    const formatLastSeen = (lastSeen) => {
+        if (!lastSeen) return "Offline";
+        try {
+            return formatDistanceToNow(new Date(lastSeen), {
+                addSuffix: true,
+                locale: vi
+            });
+        } catch {
+            return "Offline";
+        }
+    };
+
+    const getActivityStatus = () => {
+        if (!conversationInfo) return "";
+
+        if (currentConversation?.type === 'group') {
+            const memberCount = currentConversation.participants?.length || 0;
+            return `${memberCount} thành viên`;
+        }
+
+        if (conversationInfo.isOnline) {
+            return "Đang hoạt động";
+        }
+
+        return conversationInfo.lastSeen
+            ? `Hoạt động ${formatLastSeen(conversationInfo.lastSeen)}`
+            : "Offline";
+    };
+
+    if (!currentConversation) {
+        return (
+            <div className="flex px-8 py-3 justify-center items-center">
+                <p className="text-sm text-muted-foreground">
+                    Chọn một cuộc trò chuyện để bắt đầu
+                </p>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex px-8 py-3 justify-between items-center relative overflow-hidden">
+        <div className="flex px-8 py-3 justify-between items-center relative overflow-hidden border-b">
             {/* Avatar + Name */}
             <motion.div
                 initial={{ opacity: 1, x: 0 }}
@@ -55,15 +115,29 @@ const ChatHeader = () => {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="flex gap-5 items-center overflow-hidden"
             >
-                <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/40 hover:scale-105">
-                    <AvatarImage src="/dsds" alt={"User avatar"} className="object-cover" />
-                    <AvatarFallback className="text-5xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                        {"?"}
-                    </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                    <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/40 hover:scale-105">
+                        <AvatarImage
+                            src={conversationInfo?.avatar}
+                            alt={conversationInfo?.name}
+                            className="object-cover"
+                        />
+                        <AvatarFallback className="text-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            {getInitials(conversationInfo?.name)}
+                        </AvatarFallback>
+                    </Avatar>
+                    {/* Online indicator for direct conversations */}
+                    {currentConversation.type === 'direct' && conversationInfo?.isOnline && (
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
+                    )}
+                </div>
                 <div className="flex flex-col items-start">
-                    <Label className="text-lg">DisplayName</Label>
-                    <FieldDescription>Time activity</FieldDescription>
+                    <Label className="text-lg font-semibold">
+                        {conversationInfo?.name}
+                    </Label>
+                    <FieldDescription className="text-xs">
+                        {getActivityStatus()}
+                    </FieldDescription>
                 </div>
             </motion.div>
 
@@ -92,7 +166,7 @@ const ChatHeader = () => {
                                     <InputGroupInput
                                         value={searchValue}
                                         onChange={(e) => setSearchValue(e.target.value)}
-                                        placeholder="Tìm kiếm..."
+                                        placeholder="Tìm kiếm tin nhắn..."
                                         autoFocus
                                         className="animate-in fade-in duration-300"
                                     />
@@ -140,6 +214,20 @@ const ChatHeader = () => {
                             <EllipsisVertical className="size-6" />
                         </Button>
                     </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuItem>
+                            <Users className="size-4 mr-2" />
+                            Thông tin cuộc trò chuyện
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Archive className="size-4 mr-2" />
+                            Lưu trữ
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="size-4 mr-2" />
+                            Xóa cuộc trò chuyện
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
                 </DropdownMenu>
             </div>
         </div>

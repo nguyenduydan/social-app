@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,44 +10,60 @@ import SettingNotification from "./SettingNotification";
 import SettingMessage from "./SettingMessage";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
+import useConversationStore from "@/store/useConversationStore";
 
 const Sidebar = ({ className = "" }) => {
-    const [activeTab, setActiveTab] = React.useState("users");
-    const [direction, setDirection] = React.useState(0);
+    const [settingTab, setSettingTab] = useState(null);
+    const [direction, setDirection] = useState(0);
 
-    const isMainTab = activeTab === "users" || activeTab === "groups";
+    const { activeTab, setActiveTab } = useConversationStore();
+
+    const isMainTab = !settingTab;
 
     const handleTabChange = (nextTab) => {
+        // Nếu là tab settings, chỉ thay đổi settingTab
+        if (['theme', 'notification', 'message'].includes(nextTab)) {
+            setDirection(1);
+            setSettingTab(nextTab);
+            return;
+        }
+
+        // Nếu là tab users/groups
         if (activeTab === nextTab) return;
-        // direction chỉ để xác định hướng trượt (ko ảnh hưởng đến tab)
-        setDirection(1);
         setActiveTab(nextTab);
     };
 
     const handleGoBack = () => {
         setDirection(-1);
-        setActiveTab("users");
+        setSettingTab(null);
     };
 
     const renderContent = () => {
+        if (settingTab) {
+            switch (settingTab) {
+                case "theme":
+                    return <ColorTheme />;
+                case "notification":
+                    return <SettingNotification />;
+                case "message":
+                    return <SettingMessage />;
+                default:
+                    return null;
+            }
+        }
+
         switch (activeTab) {
             case "users":
                 return <UserList />;
             case "groups":
                 return <GroupList />;
-            case "theme":
-                return <ColorTheme />;
-            case "notification":
-                return <SettingNotification />;
-            case "message":
-                return <SettingMessage />;
             default:
-                return null;
+                return <UserList />;
         }
     };
 
     const renderHeaderTitle = () => {
-        switch (activeTab) {
+        switch (settingTab) {
             case "theme":
                 return "Giao diện";
             case "notification":
@@ -105,13 +121,13 @@ const Sidebar = ({ className = "" }) => {
                         <TabsList className="grid grid-cols-2 w-full bg-muted/30 rounded-md">
                             <TabsTrigger
                                 value="users"
-                                className="text-sm data-[state=active]:text-accent data-[state=active]:font-medium"
+                                className="text-sm  data-[state=active]:bg-accent dark:data-[state=active]:bg-accent data-[state=active]:text-background data-[state=active]:font-medium"
                             >
                                 Bạn bè
                             </TabsTrigger>
                             <TabsTrigger
                                 value="groups"
-                                className="text-sm data-[state=active]:text-accent data-[state=active]:font-medium"
+                                className="text-sm data-[state=active]:bg-accent dark:data-[state=active]:bg-accent data-[state=active]:text-background data-[state=active]:font-medium"
                             >
                                 Nhóm
                             </TabsTrigger>
@@ -124,7 +140,7 @@ const Sidebar = ({ className = "" }) => {
             <div className="relative flex-1 overflow-hidden">
                 <AnimatePresence custom={direction} mode="wait">
                     <motion.div
-                        key={activeTab}
+                        key={settingTab || activeTab}
                         custom={direction}
                         initial={{ x: direction > 0 ? 100 : -100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}

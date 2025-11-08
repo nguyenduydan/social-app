@@ -17,9 +17,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import useConversationStore from "@/store/useConversationStore";
 
 const SidebarHeader = ({ onChangeTab }) => {
     const [open, setOpen] = useState(false);
+    const { searchQuery, setSearchQuery } = useConversationStore();
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
 
     return (
         <div className="flex items-center justify-between px-3 py-2 border-b border-muted gap-2">
@@ -27,7 +33,11 @@ const SidebarHeader = ({ onChangeTab }) => {
             <div className="flex w-full items-center gap-3">
                 <div className="relative hidden w-full sm:block">
                     <InputGroup className="w-full">
-                        <InputGroupInput placeholder="Tìm kiếm..." />
+                        <InputGroupInput
+                            placeholder="Tìm kiếm..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                        />
                         <InputGroupAddon>
                             <SearchIcon />
                         </InputGroupAddon>

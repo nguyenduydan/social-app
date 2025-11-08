@@ -14,6 +14,7 @@ import ProfilePage from '@/pages/ProfilePage';
 import ConversationPage from '@/pages/ConversationPage';
 
 import NotFound from '@/pages/NotFound';
+import MiniChatProvider from './components/Conversation/MiniChatManager';
 
 const App = () => {
   const applyTheme = useThemeStore((s) => s.applyTheme); //only use applyTheme method
@@ -27,21 +28,23 @@ const App = () => {
       <Toaster richColors />
       <BrowserRouter>
         <ScrollProvider>
-          <Routes>
-            {/* public routes */}
-            <Route path='/signin' element={<LoginPage />} />
-            <Route path='/signup' element={<SignupPage />} />
-            <Route path='*' element={<NotFound />} />
+          <MiniChatProvider maxChats={3}>
+            <Routes>
+              {/* public routes */}
+              <Route path='/signin' element={<LoginPage />} />
+              <Route path='/signup' element={<SignupPage />} />
+              <Route path='*' element={<NotFound />} />
 
-            {/* protect routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route element={<MainLayout />}>
-                <Route path='/' element={<HomePage />} />
-                <Route path='/profile/:username?' element={<ProfilePage />} />
-                <Route path='/conversations' element={<ConversationPage />} />
+              {/* protect routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<MainLayout />}>
+                  <Route path='/' element={<HomePage />} />
+                  <Route path='/profile/:username?' element={<ProfilePage />} />
+                  <Route path='/conversations' element={<ConversationPage />} />
+                </Route>
               </Route>
-            </Route>
-          </Routes>
+            </Routes>
+          </MiniChatProvider>
         </ScrollProvider>
       </BrowserRouter>
     </>
