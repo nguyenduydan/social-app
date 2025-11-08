@@ -13,6 +13,8 @@ import { useScrollRef } from "@/contexts/ScrollContext";
 import { useScrollStatus } from "@/hooks/useScrollStatus";
 import { useThemeStore } from "@/store/useThemeStore";
 import MenuSettings from "./MenuSettings";
+import Notification from "../notification";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DesktopNav = () => {
     const scrollRef = useScrollRef();
@@ -31,7 +33,7 @@ const DesktopNav = () => {
                 "fixed top-0 left-0 w-full z-[99] transition-all duration-500 ease-out will-change-transform",
                 isAtTop
                     ? "bg-background/95 backdrop-blur-md shadow-sm"
-                    : "bg-background/10 dark:bg-neutral-900/30 backdrop-blur-xl shadow-lg"
+                    : "bg-background/50 dark:bg-neutral-900/30 backdrop-blur-xl shadow-lg"
             )}
         >
             <div
@@ -82,24 +84,34 @@ const DesktopNav = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-5 justify-end flex-1">
+                    <div className="flex items-center gap-10 justify-end flex-1">
                         {/* Create Post */}
-                        {/* <Dialog open={open} onOpenChange={setOpen}>
-                            <DialogTrigger asChild>
-                                <AnimatedIcon
-                                    icon={<Edit />}
-                                    label="Tạo bài viết"
-                                    onClick={handleOpenPost}
-                                />
-                            </DialogTrigger>
-                            <CreatePost onOpen={open} onClose={handleClosePost} />
-                        </Dialog> */}
+                        {!isAtTop && (
+                            <AnimatePresence>
+                                <motion.div
+                                    key="create-post-button"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                                >
+                                    <Dialog open={open} onOpenChange={setOpen}>
+                                        <DialogTrigger asChild>
+                                            <AnimatedIcon
+                                                icon={<Edit />}
+                                                label="Tạo bài viết"
+                                                onClick={handleOpenPost}
+                                            />
+                                        </DialogTrigger>
+                                        <CreatePost onOpen={open} onClose={handleClosePost} />
+                                    </Dialog>
+                                </motion.div>
+                            </AnimatePresence>
+                        )}
 
-                        <AnimatedIcon
-                            icon={<Bell />}
-                            label="Tạo bài viết"
-                            onClick={handleOpenPost}
-                        />
+                        {/* Notification */}
+                        <Notification />
+
                         {/* Dropdown menu */}
                         <MenuSettings onLogout={handleSignOut} themeMode={themeMode} setTheme={setTheme} user={user} />
                     </div>
