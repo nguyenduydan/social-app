@@ -38,9 +38,9 @@
     --accent-foreground: 0 0% 100%;
 
     /* Chat colors */
-    --chat-bubble-sent: 142 76% 36%;
+    --chat-bubble-sent: 142 76% 60%;
     --chat-bubble-sent-foreground: 0 0% 100%;
-    --chat-bubble-received: 0 0% 96%;
+    --chat-bubble-received: 0 0% 90%;
     --chat-bubble-received-foreground: 0 0% 10%;
 
     /* Status colors */
@@ -134,9 +134,9 @@
     --accent-foreground: 0 0% 100%;
 
     /* Chat bubbles in dark mode */
-    --chat-bubble-sent: 142 71% 45%;
+    --chat-bubble-sent: 142 71% 30%;
     --chat-bubble-sent-foreground: 0 0% 0%;
-    --chat-bubble-received: 0 0% 15%;
+    --chat-bubble-received: 0 0% 20%;
     --chat-bubble-received-foreground: 0 0% 95%;
 
     /* Status colors */

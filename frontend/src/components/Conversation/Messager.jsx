@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import useConversationStore from '@/store/useConversationStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import CuberLoader from '../common/loaders/CuberLoader';
+import formatTime from '@/utils/formatTime';
 
 const Messager = () => {
     const scrollRef = useRef(null);
@@ -188,40 +189,61 @@ const Messager = () => {
                                     ) : null}
                                 </div>
 
-                                {/* Message bubble */}
-                                <div className={cn(
-                                    'flex flex-col max-w-[70%]',
-                                    isSent ? 'items-end' : 'items-start'
-                                )}>
-                                    {/* Sender name (for group chats) */}
+                                {/* Message container */}
+                                <div
+                                    className={cn(
+                                        'flex flex-col max-w-[60%]',
+                                        isSent ? 'items-end self-end' : 'items-start self-start'
+                                    )}
+                                >
+                                    {/* Tên người gửi (nếu là nhóm) */}
                                     {!isSent && currentConversation.type === 'group' && showAvatar && (
                                         <span className='text-xs text-muted-foreground mb-1 px-3'>
                                             {senderInfo?.name}
                                         </span>
                                     )}
 
-                                    {/* Message content */}
-                                    <div className={cn(
-                                        'px-4 py-2 rounded-2xl break-words',
-                                        isSent
-                                            ? 'bg-chat-bubble-received-fg text-background rounded-tr-sm'
-                                            : 'bg-chat-bubble-sent text-background rounded-tl-sm'
-                                    )}>
-                                        <p className='text-sm whitespace-pre-wrap'>
+                                    {/* Bong bóng tin nhắn */}
+                                    <div
+                                        className={cn(
+                                            'inline-flex flex-col w-full px-3 py-2 rounded-2xl font-medium',
+                                            isSent
+                                                ? 'bg-chat-bubble-sent text-chat-bubble-sent-foreground rounded-br-xs'
+                                                : 'bg-chat-bubble-received text-chat-bubble-received-foreground rounded-bl-xs'
+                                        )}
+                                    >
+                                        {/* Nội dung tin nhắn */}
+                                        <p className='text-sm whitespace-pre-wrap break-words'>
                                             {message.content}
                                         </p>
-                                    </div>
 
-                                    {/* Message status (for sent messages) */}
-                                    {isSent && (
-                                        <div className='flex items-center gap-1 mt-1 px-3'>
-                                            <span className='text-xs text-muted-foreground'>
-                                                {message.status === 'sent' && '✓'}
-                                                {message.status === 'delivered' && '✓✓'}
-                                                {message.status === 'read' && '✓✓'}
+                                        {/* Footer: thời gian + trạng thái */}
+                                        <div
+                                            className={cn(
+                                                'flex items-center gap-1 mt-1 text-[11px] opacity-70',
+                                                isSent ? 'justify-end' : 'justify-start'
+                                            )}
+                                        >
+                                            <span className='text-muted-foreground'>
+                                                {formatTime(message.createdAt)}
                                             </span>
+
+                                            {/* Dấu đã đọc (icon hoặc tick) */}
+                                            {isSent && (
+                                                <>
+                                                    {message.status === 'sent' && (
+                                                        <span className='text-muted-foreground'>✓</span>
+                                                    )}
+                                                    {message.status === 'delivered' && (
+                                                        <span className='text-muted-foreground'>✓✓</span>
+                                                    )}
+                                                    {message.status === 'read' && (
+                                                        <span className='text-blue-400'>✓✓</span>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

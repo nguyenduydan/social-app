@@ -6,6 +6,7 @@ import { vi } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import useConversationStore from "@/store/useConversationStore";
+import { cn } from "@/lib/utils";
 
 const UserList = () => {
     const {
@@ -143,14 +144,19 @@ const UserList = () => {
                                 </div>
 
                                 <div className="flex items-center justify-between gap-2">
-                                    <p className={`
-                                        text-sm truncate
-                                        ${unreadCount > 0
-                                            ? 'text-foreground font-medium'
-                                            : 'text-muted-foreground'
-                                        }
-                                    `}>
-                                        {conversation.lastMessage?.content || "Chưa có tin nhắn"}
+                                    <p
+                                        className={cn(
+                                            'text-sm',
+                                            unreadCount > 0
+                                                ? 'text-foreground font-medium'
+                                                : 'text-muted-foreground'
+                                        )}
+                                    >
+                                        {conversation.lastMessage?.content
+                                            ? conversation.lastMessage.content.length > 50
+                                                ? conversation.lastMessage.content.slice(0, 50) + '...'
+                                                : conversation.lastMessage.content
+                                            : 'Chưa có tin nhắn'}
                                     </p>
 
                                     {/* Unread badge */}

@@ -113,9 +113,9 @@ const ChatHeader = () => {
                         : { opacity: 1, x: 0, width: "auto" }
                 }
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex gap-5 items-center overflow-hidden"
+                className="flex items-center gap-5 overflow-hidden min-w-0 flex-shrink"
             >
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                     <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/40 hover:scale-105">
                         <AvatarImage
                             src={conversationInfo?.avatar}
@@ -126,16 +126,16 @@ const ChatHeader = () => {
                             {getInitials(conversationInfo?.name)}
                         </AvatarFallback>
                     </Avatar>
-                    {/* Online indicator for direct conversations */}
                     {currentConversation.type === 'direct' && conversationInfo?.isOnline && (
                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
                     )}
                 </div>
-                <div className="flex flex-col items-start">
-                    <Label className="text-lg font-semibold">
+
+                <div className="flex flex-col min-w-0">
+                    <Label className="text-lg font-semibold truncate max-w-[180px]">
                         {conversationInfo?.name}
                     </Label>
-                    <FieldDescription className="text-xs">
+                    <FieldDescription className="text-xs truncate max-w-[180px]">
                         {getActivityStatus()}
                     </FieldDescription>
                 </div>

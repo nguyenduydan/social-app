@@ -59,7 +59,8 @@ const SidebarHeader = ({ onChangeTab }) => {
 
                 <DropdownMenuContent
                     align="end"
-                    className="w-52 bg-background border-zinc-800 py-2 px-2"
+                    sideOffset={8}
+                    className="w-52 bg-background border-zinc-800 py-2 px-2 transition-transform duration-200 animate-fadeIn"
                 >
                     <DropdownMenuLabel className="text-xs uppercase tracking-wide">
                         Cài đặt

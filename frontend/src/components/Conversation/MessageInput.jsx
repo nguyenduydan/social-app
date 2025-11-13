@@ -116,7 +116,7 @@ const MessageInput = () => {
                             {isSending ? (
                                 <Loader2 className='size-5 mr-6 animate-spin' />
                             ) : (
-                                <SendIcon className='size-5 mr-6' />
+                                <SendIcon className='size-5 mr-6 ml-4' />
                             )}
                         </InputGroupButton>
                     </InputGroupAddon>
