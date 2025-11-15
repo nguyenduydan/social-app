@@ -6,6 +6,7 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import useConversationStore from '@/store/useConversationStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useUIStore } from '@/store/useUIStore';
 import CuberLoader from '../common/loaders/CuberLoader';
 import formatTime from '@/utils/formatTime';
 
@@ -19,6 +20,7 @@ const Messager = () => {
         hasMore,
     } = useConversationStore();
     const { user: currentUser } = useAuthStore();
+    const { theme } = useUIStore();
 
     const currentMessages = currentConversation
         ? messages[currentConversation._id] || []
@@ -27,7 +29,6 @@ const Messager = () => {
     // Auto scroll to bottom when new message
     useEffect(() => {
         if (scrollRef.current && currentMessages.length > 0) {
-            // scrollRef is the anchor div at the bottom
             scrollRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [currentMessages]);
@@ -45,7 +46,6 @@ const Messager = () => {
         }
     };
 
-    // normalize sender id for a message (supports message.sender._id, message.sender (id), legacy senderId)
     const getMessageSenderId = (message) => {
         if (!message) return null;
         return message.sender?._id || message.sender || message.senderId || null;
@@ -62,7 +62,6 @@ const Messager = () => {
 
         if (String(nextSender) !== String(curSender)) return true;
 
-        // Show avatar if time gap > 5 minutes
         const timeDiff = differenceInMinutes(
             new Date(nextMessage.createdAt || nextMessage.createdAt),
             new Date(message.createdAt || message.createdAt)
@@ -82,7 +81,6 @@ const Messager = () => {
 
         if (String(prevSender) !== String(curSender)) return true;
 
-        // Show time if time gap > 5 minutes
         const timeDiff = differenceInMinutes(
             new Date(message.createdAt),
             new Date(prevMessage.createdAt)
@@ -104,13 +102,11 @@ const Messager = () => {
     const getSenderInfo = (senderId) => {
         if (!currentConversation) return null;
 
-        // participants may be either user objects or { userId: {...} } depending on backend
         const participant = currentConversation.participants?.find((p) => {
             const pid = p._id || p.userId?._id;
             return pid && String(pid) === String(senderId);
         });
 
-        // avatar might be stored as { url } or string
         const avatar = participant?.avatar?.url || participant?.avatar || participant?.userId?.avatar?.url || null;
         const name = participant?.displayName || participant?.userId?.displayName || 'Unknown';
 
@@ -158,12 +154,23 @@ const Messager = () => {
                     const showTime = shouldShowTime(message, index);
                     const senderInfo = getSenderInfo(senderId);
 
+                    // Get bubble style from theme
+                    const bubbleStyle = isSent
+                        ? {
+                            backgroundColor: theme?.messageSent?.bg,
+                            color: theme?.messageSent?.text
+                        }
+                        : {
+                            backgroundColor: theme?.messageReceived?.bg,
+                            color: theme?.messageReceived?.text
+                        };
+
                     return (
                         <div key={message._id}>
                             {/* Time separator */}
                             {showTime && (
                                 <div className='flex justify-center my-3'>
-                                    <span className='text-xs text-muted-foreground px-3 py-1 rounded-full bg-muted/50'>
+                                    <span className='text-xs text-muted-foreground px-3 py-1 rounded-full bg-muted/50 backdrop-blur-sm'>
                                         {formatMessageTime(message.createdAt)}
                                     </span>
                                 </div>
@@ -203,14 +210,13 @@ const Messager = () => {
                                         </span>
                                     )}
 
-                                    {/* Bong bóng tin nhắn */}
+                                    {/* Bong bóng tin nhắn với theme */}
                                     <div
                                         className={cn(
-                                            'inline-flex flex-col w-full px-3 py-2 rounded-2xl font-medium',
-                                            isSent
-                                                ? 'bg-chat-bubble-sent text-chat-bubble-sent-foreground rounded-br-xs'
-                                                : 'bg-chat-bubble-received text-chat-bubble-received-foreground rounded-bl-xs'
+                                            'inline-flex flex-col w-full px-3 py-2 rounded-2xl font-medium shadow-lg',
+                                            isSent ? 'rounded-br-xs' : 'rounded-bl-xs'
                                         )}
+                                        style={bubbleStyle}
                                     >
                                         {/* Nội dung tin nhắn */}
                                         <p className='text-sm whitespace-pre-wrap break-words'>
@@ -223,19 +229,20 @@ const Messager = () => {
                                                 'flex items-center gap-1 mt-1 text-[11px] opacity-70',
                                                 isSent ? 'justify-end' : 'justify-start'
                                             )}
+                                            style={{ color: bubbleStyle.color }}
                                         >
-                                            <span className='text-muted-foreground'>
+                                            <span>
                                                 {formatTime(message.createdAt)}
                                             </span>
 
-                                            {/* Dấu đã đọc (icon hoặc tick) */}
+                                            {/* Dấu đã đọc */}
                                             {isSent && (
                                                 <>
                                                     {message.status === 'sent' && (
-                                                        <span className='text-muted-foreground'>✓</span>
+                                                        <span>✓</span>
                                                     )}
                                                     {message.status === 'delivered' && (
-                                                        <span className='text-muted-foreground'>✓✓</span>
+                                                        <span>✓✓</span>
                                                     )}
                                                     {message.status === 'read' && (
                                                         <span className='text-blue-400'>✓✓</span>
@@ -254,7 +261,7 @@ const Messager = () => {
                 {hasMore[currentConversation._id] && (
                     <div className='flex justify-center py-2'>
                         <button
-                            className='text-xs text-primary hover:underline'
+                            className='text-xs text-primary hover:underline px-3 py-1 rounded-full bg-muted/50 backdrop-blur-sm'
                             onClick={() => fetchMessages(currentConversation._id, true)}
                         >
                             Tải thêm tin nhắn

@@ -13,7 +13,7 @@ import { useScrollRef } from "@/contexts/ScrollContext";
 import { useScrollStatus } from "@/hooks/useScrollStatus";
 import { useThemeStore } from "@/store/useThemeStore";
 import MenuSettings from "./MenuSettings";
-import Notification from "../notification";
+import Notification from "../notifications/Notification";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DesktopNav = () => {

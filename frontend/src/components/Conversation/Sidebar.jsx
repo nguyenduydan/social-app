@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
 import SidebarHeader from "./SidebarHeader";
 import UserList from "./UserList";
 import GroupList from "./GroupList";
-import ColorTheme from "./ColorTheme";
+import UISettings from "../common/themes/UISettings";
 import SettingNotification from "./SettingNotification";
 import SettingMessage from "./SettingMessage";
 import { ArrowLeft } from "lucide-react";
@@ -13,6 +12,7 @@ import { Button } from "../ui/button";
 import useConversationStore from "@/store/useConversationStore";
 
 import { slideVariants, headerVariants } from "@/components/animations/sidebarAnimations.js";
+import { AnimatedDiv, AnimatedPresence } from "../animations/AnimatedWrapper";
 
 const Sidebar = ({ className = "" }) => {
     const [settingTab, setSettingTab] = useState(null);
@@ -41,11 +41,12 @@ const Sidebar = ({ className = "" }) => {
         setSettingTab(null);
     }, []);
 
-    const renderContent = useCallback(() => {
+    // Memoize content để tránh re-render
+    const content = useMemo(() => {
         if (settingTab) {
             switch (settingTab) {
                 case "theme":
-                    return <ColorTheme />;
+                    return <UISettings />;
                 case "notification":
                     return <SettingNotification />;
                 case "message":
@@ -58,7 +59,7 @@ const Sidebar = ({ className = "" }) => {
         return activeTab === "groups" ? <GroupList /> : <UserList />;
     }, [settingTab, activeTab]);
 
-    const renderHeaderTitle = useCallback(() => {
+    const headerTitle = useMemo(() => {
         switch (settingTab) {
             case "theme":
                 return "Giao diện";
@@ -73,26 +74,21 @@ const Sidebar = ({ className = "" }) => {
 
     return (
         <aside className={`flex flex-col bg-card ${className}`}>
-            <div className="relative h-14 sm:h-[56px] border-b border-border overflow-hidden">
-                <AnimatePresence mode="wait" custom={direction}>
+            {/* Header - Không dùng overflow-hidden để tránh repaint */}
+            <div className="relative h-14 sm:h-[56px] border-b border-border">
+                <AnimatedPresence mode="wait">
                     {isMainTab ? (
-                        <motion.div
+                        <AnimatedDiv
                             key="main-header"
                             variants={headerVariants}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
                             className="absolute inset-0"
                         >
                             <SidebarHeader onChangeTab={handleTabChange} />
-                        </motion.div>
+                        </AnimatedDiv>
                     ) : (
-                        <motion.div
+                        <AnimatedDiv
                             key="sub-header"
                             variants={headerVariants}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
                             className="absolute inset-0 flex items-center justify-between px-2 sm:px-3"
                         >
                             <Button
@@ -105,15 +101,16 @@ const Sidebar = ({ className = "" }) => {
                             </Button>
 
                             <span className="text-sm sm:text-base font-semibold truncate px-2">
-                                {renderHeaderTitle()}
+                                {headerTitle}
                             </span>
 
                             <div className="w-8 sm:w-10" />
-                        </motion.div>
+                        </AnimatedDiv>
                     )}
-                </AnimatePresence>
+                </AnimatedPresence>
             </div>
 
+            {/* Tabs - Không animate */}
             {isMainTab && (
                 <div className="border-b border-border bg-card px-2 sm:px-3 py-1.5 sm:py-2">
                     <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -136,25 +133,26 @@ const Sidebar = ({ className = "" }) => {
                 </div>
             )}
 
+            {/* Content Area - Tối ưu animation */}
             <div className="relative flex-1 overflow-hidden">
-                <AnimatePresence mode="wait" custom={direction}>
-                    <motion.div
+                <AnimatedPresence mode="wait" initial={false}>
+                    <AnimatedDiv
                         key={settingTab || activeTab}
                         variants={slideVariants}
                         custom={direction}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        className="absolute inset-0 h-full w-full"
+                        className="absolute inset-0"
                     >
-                        <ScrollArea className="h-full p-2 sm:p-3">
-                            {renderContent()}
+                        {/* ScrollArea bên trong AnimatedDiv */}
+                        <ScrollArea className="h-full">
+                            <div className="p-2 sm:p-3">
+                                {content}
+                            </div>
                         </ScrollArea>
-                    </motion.div>
-                </AnimatePresence>
+                    </AnimatedDiv>
+                </AnimatedPresence>
             </div>
         </aside>
     );
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);
