@@ -173,8 +173,9 @@ const ChatHeader = () => {
                                     <InputGroupAddon align="inline-end">
                                         <InputGroupButton
                                             size="icon"
+                                            variant="ghost"
                                             onClick={handleCloseSearch}
-                                            className="hover:bg-destructive/10 w-5 h-6"
+                                            className=""
                                         >
                                             <X className="size-4 text-destructive" />
                                         </InputGroupButton>

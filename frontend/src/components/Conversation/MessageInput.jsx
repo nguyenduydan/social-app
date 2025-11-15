@@ -89,7 +89,7 @@ const MessageInput = () => {
         <div className='flex items-center gap-2 justify-between'>
             {/* Input */}
             <div className='flex-11'>
-                <InputGroup className="h-13 shadow-lg bg-card/70 dark:bg-card/70 backdrop-blur-md">
+                <InputGroup className="h-13 px-2 shadow-lg bg-card/70 dark:bg-card/70 backdrop-blur-md">
                     <InputGroupInput
                         placeholder="Nhập tin nhắn..."
                         value={message}
@@ -104,7 +104,7 @@ const MessageInput = () => {
                             onClick={handleEmojiClick}
                             disabled={isSending}
                         >
-                            <Smile className='size-5 ml-3' />
+                            <Smile className='size-5' />
                         </Button>
                     </InputGroupAddon>
                     <InputGroupAddon align="inline-end">
@@ -116,16 +116,16 @@ const MessageInput = () => {
                             {isSending ? (
                                 <Loader2 className='size-5 mr-6 animate-spin' />
                             ) : (
-                                <SendIcon className='size-5 mr-6 ml-4' />
+                                <SendIcon className='size-5' />
                             )}
                         </InputGroupButton>
                     </InputGroupAddon>
                 </InputGroup>
             </div>
             {/* Voice */}
-            <div className='flex-1 justify-center flex'>
+            <div className='flex-1'>
                 <Button
-                    className="rounded-full w-9 h-9"
+                    className="rounded-full h-11"
                     onClick={handleVoiceClick}
                     disabled={isSending}
                 >

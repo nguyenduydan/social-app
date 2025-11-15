@@ -71,51 +71,54 @@ const MenuSettings = ({ onLogout, themeMode, setTheme, user }) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="transition-all duration-200 hover:pl-3 hover:text-foreground">
-                    <Settings className="size-4" />
+                <DropdownMenuItem className="transition-all duration-200 hover:pl-3 hover:text-background group">
+                    <Settings className="size-4 group-hover:text-background" />
                     <span>Cài đặt</span>
                 </DropdownMenuItem>
 
                 {/* Accordion thay submenu */}
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="theme">
-                        <AccordionTrigger className="flex items-center px-2 py-2 hover:pl-3 cursor-pointer !no-underline hover:!no-underline justify-between hover:bg-accent transition-all">
+                        <AccordionTrigger className="flex items-center px-2 py-2 hover:pl-3 cursor-pointer !no-underline hover:!no-underline justify-between hover:bg-accent hover:text-background transition-all">
                             <div className="flex items-center">
                                 <SunMoon className="size-4 mr-2" />
                                 <span className="font-normal">Chế độ hiển thị</span>
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="pl-3 pt-1 pb-2 space-y-1">
-                            <button
+                            <Button
                                 onClick={() => setTheme("light")}
+                                variant="ghost"
                                 className={cn(
-                                    "flex items-center w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover:bg-accent/40",
+                                    "justify-start w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover:bg-accent hover:text-foreground",
                                     themeMode === "light" && " bg-accent/30"
                                 )}
                             >
                                 <Sun className="size-4 mr-2" />
                                 Sáng
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={() => setTheme("dark")}
+                                variant="ghost"
                                 className={cn(
-                                    "flex items-center w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover: hover:bg-accent/40",
+                                    "justify-start w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover:bg-accent hover:text-foreground",
                                     themeMode === "dark" && " bg-accent/30"
                                 )}
                             >
                                 <Moon className="size-4 mr-2" />
                                 Tối
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={() => setTheme("system")}
+                                variant="ghost"
                                 className={cn(
-                                    "flex items-center w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover: hover:bg-accent/40",
+                                    "justify-start w-full rounded-md px-4 py-1.5 text-sm text-left transition-all hover:bg-accent hover:text-foreground",
                                     themeMode === "system" && " bg-accent/30"
                                 )}
                             >
                                 <Monitor className="size-4 mr-2" />
                                 Hệ thống
-                            </button>
+                            </Button>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>

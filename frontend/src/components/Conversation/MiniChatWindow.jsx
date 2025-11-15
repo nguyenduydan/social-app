@@ -24,7 +24,6 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
 
     const { user: currentUser } = useAuthStore();
 
-    // Tìm conversation với friend này
     const conversation = conversations.find(conv =>
         conv.type === 'direct' &&
         conv.participants.some(p => p.userId?._id === friend._id)
@@ -34,14 +33,12 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
         ? messages[conversation._id] || []
         : [];
 
-    // Fetch messages khi mở chat
     useEffect(() => {
         if (conversation && !isMinimized) {
             fetchMessages(conversation._id);
         }
     }, [conversation, isMinimized]);
 
-    // Auto scroll
     useEffect(() => {
         if (scrollRef.current && !isMinimized) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -78,8 +75,15 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
-    // Calculate position offset (320px width + 12px gap)
-    const rightOffset = 16 + (position * 332);
+    // Responsive positioning and sizing
+    const baseWidth = typeof window !== 'undefined' && window.innerWidth < 640 ? 280 : 320;
+    const gap = typeof window !== 'undefined' && window.innerWidth < 640 ? 8 : 12;
+    const rightOffset = 16 + (position * (baseWidth + gap));
+
+    // Hide mini chat on very small screens (< 400px)
+    if (typeof window !== 'undefined' && window.innerWidth < 400) {
+        return null;
+    }
 
     return (
         <AnimatePresence>
@@ -88,7 +92,7 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
                 animate={{
                     y: 0,
                     opacity: 1,
-                    height: isMinimized ? 56 : 480 // 56px là chiều cao header
+                    height: isMinimized ? 48 : window.innerWidth < 640 ? 400 : 480
                 }}
                 exit={{ y: 500, opacity: 0 }}
                 transition={{
@@ -97,62 +101,65 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
                     stiffness: 300,
                     mass: 0.8
                 }}
-                className="fixed bottom-0 w-80 bg-card border border-border rounded-t-lg shadow-2xl z-50 flex flex-col overflow-hidden"
-                style={{ right: `${rightOffset}px` }}
+                className="fixed bottom-0 bg-card border border-border rounded-t-lg shadow-2xl z-50 flex flex-col overflow-hidden"
+                style={{
+                    right: `${rightOffset}px`,
+                    width: `${baseWidth}px`
+                }}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between p-3 border-b bg-card/95 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Avatar className="h-8 w-8 flex-shrink-0">
+                {/* Header - Responsive */}
+                <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card/95 backdrop-blur-sm">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                             <AvatarImage src={friend.avatar} alt={friend.displayName} />
                             <AvatarFallback className="text-xs bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                                 {getInitials(friend.displayName)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm truncate">
+                            <h4 className="font-semibold text-xs sm:text-sm truncate">
                                 {friend.displayName || 'User'}
                             </h4>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
                                 {friend.isOnline ? 'Đang hoạt động' : 'Offline'}
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 sm:gap-1">
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-6 w-6 sm:h-7 sm:w-7"
                             onClick={() => setIsMinimized(!isMinimized)}
                         >
-                            <Minus className="h-4 w-4" />
+                            <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
+                            className="h-6 w-6 sm:h-7 sm:w-7 hover:bg-destructive/10 hover:text-destructive"
                             onClick={onClose}
                         >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                     </div>
                 </div>
 
-                {/* Messages - Only render when not minimized */}
+                {/* Messages - Only when not minimized */}
                 {!isMinimized && (
                     <>
                         <ScrollArea
-                            className="flex-1 p-3"
+                            className="flex-1 p-2 sm:p-3"
                             ref={scrollRef}
                         >
                             {conversationMessages.length === 0 ? (
                                 <div className="flex items-center justify-center h-full">
-                                    <p className="text-xs text-muted-foreground text-center">
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
                                         Bắt đầu cuộc trò chuyện
                                     </p>
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-1.5 sm:space-y-2">
                                     {conversationMessages.map((msg) => {
                                         const isSent = msg.senderId === currentUser?._id;
                                         return (
@@ -165,7 +172,9 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
                                             >
                                                 <div
                                                     className={cn(
-                                                        'max-w-[75%] px-3 py-2 rounded-2xl text-sm break-words',
+                                                        'max-w-[75%] rounded-2xl break-words',
+                                                        'px-2 py-1.5 sm:px-3 sm:py-2',
+                                                        'text-xs sm:text-sm',
                                                         isSent
                                                             ? 'bg-primary text-primary-foreground rounded-br-sm'
                                                             : 'bg-muted text-foreground rounded-bl-sm'
@@ -182,26 +191,26 @@ const MiniChatWindow = ({ friend, onClose, position = 0 }) => {
                             )}
                         </ScrollArea>
 
-                        {/* Input */}
-                        <div className="p-3 border-t bg-card/95 backdrop-blur-sm">
-                            <InputGroup className="h-10">
+                        {/* Input - Responsive */}
+                        <div className="p-2 sm:p-3 border-t bg-card/95 backdrop-blur-sm">
+                            <InputGroup className="h-8 sm:h-10">
                                 <InputGroupInput
                                     placeholder="Aa"
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     onKeyPress={handleKeyPress}
                                     disabled={isSending}
-                                    className="text-sm"
+                                    className="text-xs sm:text-sm"
                                 />
                                 <InputGroupButton
                                     onClick={handleSend}
                                     disabled={!message.trim() || isSending}
-                                    className="px-3"
+                                    className="px-2 sm:px-3"
                                 >
                                     {isSending ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                                     ) : (
-                                        <Send className="h-4 w-4" />
+                                        <Send className="h-3 w-3 sm:h-4 sm:w-4" />
                                     )}
                                 </InputGroupButton>
                             </InputGroup>

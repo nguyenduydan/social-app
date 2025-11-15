@@ -18,17 +18,17 @@ const ChatContainer = ({ className }) => {
     }
 
     return (
-        <aside className={`flex flex-col ${className}`}>
+        <aside className={`flex flex-col  bg-muted ${className}`}>
             {/* Chat Header */}
-            <div className='bg-card border-b'>
+            <div className=' bg-transition border-b '>
                 <ChatHeader />
             </div>
             {/* Messager */}
-            <div className='flex-1 overflow-hidden'>
+            <div className='flex-1 overflow-hidden bg-transition'>
                 <Messager />
             </div>
             {/* MessagerInput */}
-            <div className='px-8 py-4 bg-transparent'>
+            <div className='px-8 py-4  bg-transition'>
                 <MessageInput />
             </div>
         </aside>
