@@ -1,29 +1,30 @@
 import LeftSide from "@/components/Home/LeftSide";
 import MainSide from "@/components/Home/MainSide";
 import RightSide from "@/components/Home/RightSide";
+import PageHeader from "@/components/common/navigation/PageHeader";
 
-const Home = () => {
-
+const HomePage = () => {
     return (
-        <section className="bg-background">
-            <div className="grid grid-cols-12 gap-2 min-h-screen">
-                {/* Info User and button add post - Fixed Left  - desktop*/}
-                <aside className="hidden lg:block lg:col-span-3 sticky top-0 self-start">
-                    <LeftSide className="flex flex-col gap-5" />
-                </aside>
+        <div className="w-full h-full flex flex-col bg-background">
+            {/* PAGE TOP BAR - Local to this page */}
+            <PageHeader showSearch={true} showActions={true} title="Home" />
 
-                {/* Feeds - Scrollable Center */}
-                <main className="col-span-12 md:col-span-7 lg:col-span-6">
+            {/* MAIN CONTENT WITH 2 COLUMNS */}
+            <div className="flex-1 overflow-hidden flex gap-0">
+                {/* PRIMARY COLUMN - Feed */}
+                <main className="flex-1 overflow-y-auto scrollbar-hide">
                     <MainSide />
                 </main>
 
-                {/* ListFriend and message - Fixed Right */}
-                <aside className="hidden md:block md:col-span-5 lg:col-span-3 sticky top-0 self-start">
-                    <RightSide />
+                {/* SECONDARY COLUMN - Widgets (Hidden on tablet/mobile) */}
+                <aside className="hidden lg:flex lg:w-72 2xl:w-80 xl:w-96 lg:flex-col lg:border-l lg:border-border/30 lg:bg-card/20 lg:overflow-hidden flex-shrink-0">
+                    <div className="flex-1 overflow-y-auto scrollbar-hide">
+                        <RightSide />
+                    </div>
                 </aside>
             </div>
-        </section>
+        </div>
     );
 };
 
-export default Home;
+export default HomePage;

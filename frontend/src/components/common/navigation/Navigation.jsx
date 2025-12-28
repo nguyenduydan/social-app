@@ -4,13 +4,13 @@ import MobileNav from "./MobileNav";
 const Navigation = () => {
     return (
         <>
-            {/* Desktop */}
-            <div className="hidden md:block">
+            {/* Desktop - Left Sidebar */}
+            <div className="hidden md:flex">
                 <DesktopNav />
             </div>
 
-            {/* Mobile */}
-            <div className="md:hidden">
+            {/* Mobile - Bottom Bar */}
+            <div className="md:hidden w-full">
                 <MobileNav />
             </div>
         </>

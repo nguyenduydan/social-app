@@ -28,7 +28,7 @@ const PostListById = ({ user }) => {
         setLoadingMore,
         {
             delay: 350,
-            additionalArgs: [user._id]
+            additionalArgs: [user?._id]
         }
     );
 
